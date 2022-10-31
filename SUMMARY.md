@@ -1,10 +1,14 @@
 # Table of contents
 
 * [🔄 Decentralized Transport Protocol (DTP)](README.md)
-* [Quick Start](quick-start.md)
 
-## Reference
+## Documentation <a href="#doc" id="doc"></a>
 
-* [API Reference](reference/api-reference/README.md)
-  * [Pets](reference/api-reference/pets.md)
-  * [Users](reference/api-reference/users.md)
+* [Quick Start](doc/quick-start.md)
+* [API Reference](doc/api-reference/README.md)
+  * [Pets](doc/api-reference/pets.md)
+  * [Users](doc/api-reference/users.md)
+
+## Links <a href="#doc/links" id="doc/links"></a>
+
+* [Page 1](doc/links/page-1.md)
