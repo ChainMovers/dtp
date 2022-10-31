@@ -2,9 +2,9 @@
 description: Standard Network Protocol over SUI Network
 ---
 
-# 🔄 Decentralized Transport Protocol (DTP)
+# Introduction
 
-## Welcome to MyAPI
+## ![](https://images.unsplash.com/photo-1606765962248-7ff407b51667?crop=entropy\&cs=tinysrgb\&fm=jpg\&ixid=MnwxOTcwMjR8MHwxfHNlYXJjaHwxfHxFdGhlcm5ldHxlbnwwfHx8fDE2NjcxODY3MTE\&ixlib=rb-4.0.3\&q=80)Welcome to MyAPI
 
 Welcome to MyAPI! Here you'll find all the documentation you need to get up and running with the MyAPI API.
 
@@ -12,8 +12,8 @@ Welcome to MyAPI! Here you'll find all the documentation you need to get up and 
 
 Feeling like an eager beaver? Jump in to the quick start docs and get making your first request:
 
-{% content-ref url="doc/quick-start.md" %}
-[quick-start.md](doc/quick-start.md)
+{% content-ref url="doc/architecture.md" %}
+[architecture.md](doc/architecture.md)
 {% endcontent-ref %}
 
 ## Want to deep dive?
