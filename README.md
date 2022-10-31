@@ -6,9 +6,11 @@ Put intro here...
 Using a blockchain has certainly drawback (not free, high latency, limited bandwidth).
 
 The use of DTP is for when a connection would benefit fromt the advantage brought by the SUI network:
-- Censorship resistant. All DTP client and server on the SUI network can freely communicate with each other. If you can't reach the SUI network, you now have free speech.
+- Censorship resistant. All DTP clients and servers on the SUI network can freely communicate with each other. If you can reach the SUI network, you have free speech!
 
-- Better protection against some DDoS attacks for your server.
+- Better protection against DDoS attacks to a server hidden behind the SUI network.
+
+- UDP servers protected against any form of UDP amplification attacks.
 
 - Privacy. All user-to-user DTP connections are encrypted in both directions. Nothing to setup or forget, both parties are always protected.
 
@@ -19,6 +21,6 @@ The use of DTP is for when a connection would benefit fromt the advantage brough
 - Anonymity (Future)
 
 ## Quick Links
-Documentation: https://dtp-sui.gitbook.io
-Discord: 
-Twitter:
+- Documentation: https://dtp-sui.gitbook.io
+- Discord: <TBD>
+- Twitter: <TBD>
