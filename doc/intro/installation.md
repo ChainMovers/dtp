@@ -4,34 +4,10 @@ description: '<<TODO : Very incomplete. For now, just showing intended dev setup
 
 # Installation
 
-### Setup for Rust App Development - All Local (Do this first!)
+### Setup for Rust App Development  (All Local)
 
-### Allow to run locally (with "no value" Sui gas token) two apps talking to each other (could be two instances of the same app).
+Allows to test data exchange between two local apps on the same development machine.
 
-Some "hard coded" pre-funded accounts are provided for convenience.
+<figure><img src="../.gitbook/assets/all_local_dev_setup.png" alt=""><figcaption><p>All Local Development Setup</p></figcaption></figure>
 
-
-
-### Setup for Rust App Development - Local apps with remote Sui network
-
-Your apps still running local, but DTP use an official remote Sui testnet/devnet or mainnet(!) for data transfer.
-
-
-
-Your local apps operate as if they were remote from each others (assuming they are configured with different Sui address). All DTP communications are done via the remote Sui network.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\
+The Sui network is a **local instance** running on the same machine. It comes with some prefunded accounts for convenience and automation of your tests.

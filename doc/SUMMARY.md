@@ -11,7 +11,8 @@
 
 * [User to user messaging](use-cases/user-to-user-messaging.md)
 * [Rust Client/Server](use-cases/rust-client-server.md)
-* [Broadcasting](use-cases/broadcasting.md)
+* [Anonymous Tips Line](use-cases/anonymous-tips-line.md)
+* [Audio Broadcasting](use-cases/broadcasting.md)
 
 ## Advanced Guides
 
