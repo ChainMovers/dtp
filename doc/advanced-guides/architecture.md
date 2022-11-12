@@ -38,20 +38,21 @@ Most standard IP service name and protocol port less than 65536 are reserved to 
 ### Terminologies
 
 **Objects:** Usually refer to on-chain Sui objects ( See [Sui Docs](https://docs.sui.io/build/programming-with-objects) )\
-
-
-Connection: \
-**End-Point**: An off-chain process that can receive data from other end-points. An end point can handle multiple end users, protocol and connections simultaneously (each independently encrypted).
-
+\
 **End-User**: A signature authority that can send/receive data.
 
-**Node Object**: Any end-user that want to receive or send data must create its own Node object. The node object is configured to allow/block the services that your app provides. Nodes allows others to access and use your services, including returning data in a bi-directional connection.
+**Connection:** One connection allows to exchange data between two end-users. Can be simplex or duplex. A end-user can create a connection by calling a function of the peer DTP Node object (TBD Connection API).\
+\
+**End-Point**: An off-chain process that can receive data from other end-points. An end point can handle multiple local end users, protocols and connections simultaneously (each independently encrypted).
+
+**Node Object**: Any end-user that want to receive or send data must create its own Node object. The node object is configured to allow/block the services that your app needs. Nodes allows others to access and use your services, including returning data in a bi-directional connection.\
+Nodes also allow to control the firewall settings.
 
 **Client**: End-point initiating a bi-directional connection with a Node.
 
 **Server**: End-point assigned to respond to client requests.
 
-**Pipe Object**: Exist for every direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Notice that even if a Pipe can have multiple end-points, they must all be for the same end-user.\
+**Pipe Object**: Exist for every direction of a connection. It is the object used to transfer data after a connection is created. End-points cannot talk to each other directly, they always need to go through a Pipe object. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Notice that even if a Pipe can have multiple end-points, they must all be for the same end-user.\
 
 
 <figure><img src="../.gitbook/assets/terminology_connections.png" alt=""><figcaption><p>Example of two connections between 3 end-users</p></figcaption></figure>
