@@ -16,7 +16,7 @@
 
 ## Advanced Guides
 
-* [DTP Built-In Services](advanced-guides/dtp-built-in-services/README.md)
+* [DTP Rust SDK](advanced-guides/dtp-built-in-services/README.md)
   * [Connection API](advanced-guides/dtp-built-in-services/connection-api.md)
   * [Ping API](advanced-guides/dtp-built-in-services/ping-api.md)
   * [DNS API](advanced-guides/dtp-built-in-services/dns-api.md)
