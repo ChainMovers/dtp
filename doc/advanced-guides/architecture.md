@@ -4,7 +4,7 @@ description: <<Work in progress. High level for now, exhaustive RFC/specs later>
 
 # Architecture
 
-## **Should you read the architecture document?**
+## **Should you read about the architecture?**
 
 Developers should start with the API documentation of the SDK, and come to this document only if curious on the inner workings.
 
@@ -78,13 +78,13 @@ Although the data is intended to flow in one direction, some lightweight bi-dire
 
 (3) Pipe are not **purely** unidirectional. Sender interactions with a Pipe are done with transactions, which means return values allows some responses in failure cases (e.g. the data was immediately dropped by the Pipe because of a receiver firewall rule).
 
-## End-point High-Availability and Load Balancing
+## High-Availability and Load Balancing
 
 <figure><img src="../.gitbook/assets/load_balancing_1 (1).png" alt=""><figcaption><p>Forwarding decision made by Pipe object when multiple end-points (servers) </p></figcaption></figure>
 
 Off-chain servers can share the incoming load or be each others fallback for high-availability.
 
-Unlike traditional network, the data is not physically forwarded toward a server. Instead, the data remains on the network and an event is emitted toward who should "pick it up".\
+Unlike traditional network, the data is not physically forwarded toward a server. Instead, the data remains on the network and an event is emitted about who should "pick it up".\
 \
 The receiving Pipe object is therefore only responsible to emit an event. It is an off-chain responsibility for the DTP daemons to subscribe to their respective event stream (with proper identifier filtering) and normally retrieve only its assigned data (which is ignored in some recovery scenario).\
 \
@@ -97,7 +97,7 @@ Once some data is confirmed consumed, the L1 network is no longer responsible fo
 One advantage of DTP compared to TCP, is that the notion of reliable transport can extend at L7 (application level). That is, the application can choose to confirm that the data was more than just transported, but also fully processed.\
 
 
-## **Broadcasting/Multicasting Encryption**
+## **Broadcasting Encryption**
 
 The broadcasted data can be independently consumed by anyone subscribing to the outlet event stream. Only the user with the decryption key will be able to make sense of the data. The distribution of the decryption key is a responsibility left to the dApps. More research to be done here how DTP could one day mitigate (impossible to eliminate) key sharing/piracy problems \[1]\[2]**.**\
 ****\
