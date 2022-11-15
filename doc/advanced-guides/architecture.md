@@ -64,6 +64,20 @@ Nodes also allow to control the firewall settings.
 **Outlet:** Similar to pipe object, but without an endpoint or transport object. Intended for broadcast and multicast application. \
 
 
+## Firewall
+
+<figure><img src="../.gitbook/assets/Flowcharts.png" alt=""><figcaption><p>Built-in Firewall Capabilities</p></figcaption></figure>
+
+(1) Cost of processing incoming traffic is paid by the sender. That includes running the firewall logic in the Pipe Object. Filtering and most rate limiting can therefore be done without costing anything to the Server.
+
+(2) Optionally, the DTP object can gather statistics from all its Pipe objects and potentially adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The cost of these adjustments here are handled by the Server, but it is expected to be done rarely.\
+\
+(3) The server update the rules with transaction to the DTP Node object. The DTP Node forward these rules to all its Pipes. That may include filtering base on source IP address.\
+\
+(4) When a transaction has no-effect because of the firewall, there is no event emitted (and origin is inform that the transaction was executed, but blocked by the firewall). Therefore the Server is not impacted.\
+\
+The design is such that DDoS are too expensive, since excessive incoming traffic might actually be drop with no effect, yet the gaz fee when executing the Pipe object still have to be done.
+
 ## Uni-directional Connection
 
 <figure><img src="../.gitbook/assets/unidirectional_connection.png" alt=""><figcaption><p>Uni-Directional Connection. One direction data plane, but still bi-directional control plane.</p></figcaption></figure>
