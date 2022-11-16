@@ -16,6 +16,8 @@ One difficulty is to resolve the mapping between IP and Sui address. This could 
 \
 An alternative would be the notion of "Sui VPN". The servers public IP should still not be visible to peers, but would be NAT translated to an IP on the "VPN". DTP would then provide a DNS service mapping between: \
 &#x20;                 Sui domain name <--> Sui address <--> IP VPN address\
+\
+Note that there is no global storage on the Sui network, so not clear (yet) how DNS would work here (off-chain service? How to trust?)\
 ![](../.gitbook/assets/udp\_tcp\_vpn.png)
 
 ### L1 Network Ephemeral Data&#x20;

@@ -24,16 +24,9 @@ The data is received through event streams.
 
 ## DTP Address
 
-The typical \<IP address>:\<Port> becomes a \<Node Sui Address>:\<Protocol Sui address>\
+The typical \<IP address>:\<Port> becomes a \<Node Sui Address>:\<Port>\
 \
-Anyone can create a new "protocol port".\
-\
-To user, DTP address could look like "acme.com:80", "myradio:channel\_6".
-
-DNS is provided for both Node and Protocol Sui address (a node can choose to designate a default protocol in DNS).\
-\
-Most standard IP service name and protocol port less than 65536 are reserved to minimize confusion ( [IANA- Service Name and Transport Protocol Port Registry](https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml) )\
-
+There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](https://suins.medium.com/meet-the-sui-name-service-db0792acb117) may be?).
 
 ## Terminologies
 
