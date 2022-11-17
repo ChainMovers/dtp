@@ -30,7 +30,7 @@ There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](h
 
 ## Terminologies
 
-<figure><img src="../.gitbook/assets/terminology_connections (1).png" alt=""><figcaption><p>Example of two connections between 3 end-users</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/bi_directional_terms.png" alt=""><figcaption><p>Example of two connections between 3 end-users</p></figcaption></figure>
 
 **Objects:** Usually refer to on-chain Sui objects ( See [Sui Docs](https://docs.sui.io/build/programming-with-objects) )\
 \
@@ -59,7 +59,7 @@ Nodes also allow to control the firewall settings.
 
 ## Firewall
 
-<figure><img src="../.gitbook/assets/Flowcharts.png" alt=""><figcaption><p>Built-in Firewall Capabilities</p></figcaption></figure>
+<figure><img src="../.gitbook/assets/Flowcharts (1).png" alt=""><figcaption><p>Built-in Firewall Capabilities</p></figcaption></figure>
 
 (1) Cost of processing incoming traffic is paid by the sender. That includes running the firewall logic in the Pipe Object. Filtering and most rate limiting can therefore be done without costing anything to the Server.
 
