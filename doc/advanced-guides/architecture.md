@@ -40,17 +40,14 @@ There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](h
 \
 **End-Point**: An off-chain process that can receive data from other end-points. An end point can handle multiple local end users, protocols and connections simultaneously (each independently encrypted).
 
-**Node Object**: Any end-user that want to receive or send data must create its own Node object. The node object is configured to allow/block the services that your app needs. Nodes allows others to find and access your services, including returning data in a bi-directional connection.\
+**Node Object**: Any end-user that want to receive or send data must create its own Node object. The node object allows to manage the services that are supported and its associated connections and end-points.\
 Nodes also allow to control the firewall settings.
 
 **Client**: End-point initiating a bi-directional connection with a Node.
 
-**Server**: End-point assigned to respond to client requests.
+**Server**: End-point intended to respond to client requests.
 
-**Pipe Object**: Exist for every direction of a connection. It is the object used to transfer data after a connection is created. End-points cannot talk to each other directly, they always need to go through a Sui network object. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Notice that even if a Pipe can have multiple end-points, they must all be for the same end-user.\
-
-
-**Transport Params Object**: Configuration and reference to objects that never changes for the lifetime of a single connection. Created and own by the DTP Node object. \
+**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All transfer have to go through a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). \
 \
 **Transport Control Object**: Variables and state machines that exists and changes for the lifetime of a single connection. Created and own by the DTP Node object.\
 \
@@ -63,13 +60,13 @@ Nodes also allow to control the firewall settings.
 
 (1) Cost of processing incoming traffic is paid by the sender. That includes running the firewall logic in the Pipe Object. Filtering and most rate limiting can therefore be done without costing anything to the Server.
 
-(2) Optionally, the DTP object can gather statistics from all its Pipe objects and potentially adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The cost of these adjustments here are handled by the Server, but it is expected to be done rarely.\
+(2) Optionally, the DTP object can gather statistics from all its Pipe objects and adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The gas cost for these likely rare adjustments are to be handled by the Server.\
 \
 (3) The server update the rules with transaction to the DTP Node object. The DTP Node forward these rules to all its Pipes. That may include filtering base on source IP address.\
 \
 (4) When a transaction has no-effect because of the firewall, there is no event emitted (and origin is inform that the transaction was executed, but blocked by the firewall). Therefore the Server is not impacted.\
 \
-The design is such that DDoS are too expensive, since excessive incoming traffic might actually be drop with no effect, yet the gaz fee when executing the Pipe object still have to be done.
+The design is such that DDoS are unlikely since the burden of gas execution is mostly on the sender.
 
 ## Uni-directional Connection
 

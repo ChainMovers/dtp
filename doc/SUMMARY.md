@@ -16,10 +16,10 @@
 
 ## Advanced Guides
 
+* [Architecture](advanced-guides/architecture.md)
 * [DTP Rust SDK](advanced-guides/dtp-built-in-services/README.md)
   * [Connection API](advanced-guides/dtp-built-in-services/connection-api.md)
   * [Ping API](advanced-guides/dtp-built-in-services/ping-api.md)
   * [DNS API](advanced-guides/dtp-built-in-services/dns-api.md)
   * [Firewall API](advanced-guides/dtp-built-in-services/firewall-api.md)
-* [Architecture](advanced-guides/architecture.md)
 * [Future Work](advanced-guides/future-work.md)
