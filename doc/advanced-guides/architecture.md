@@ -85,9 +85,9 @@ The design is such that DDoS are unlikely since the burden of gas execution is m
 
 ## Multi-Channel Connection
 
-It is not yet known the maximum size allowed for simple transaction. It is likely that to support a high-bandwidth connection that multiple "simple transaction" will need to take place in parallel.\
+It is not yet known the maximum size allowed for simple transaction. Multiple simple transaction in parallel are likely to be needed to support a high-bandwidth connection.\
 \
-This is achieve by having multiple pipe for the same connection. From the Sui network perspective, that is no different than dealing with multiple users, most of the complexity will be in the endpoints to divide and re-assemble the data stream properly:
+This is achieve by having multiple pipe for the same connection. Most of the complexity will be in the off-chain end-points to divide and re-assemble the data stream properly:
 
 <figure><img src="../.gitbook/assets/multi-channel.png" alt=""><figcaption></figcaption></figure>
 
