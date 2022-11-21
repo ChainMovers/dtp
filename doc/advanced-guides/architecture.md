@@ -10,9 +10,7 @@ Developers should start with the API documentation of the SDK, and come to this 
 
 This architecture document is intended to coordinate among developers modifying DTP itself.
 
-##
 
-##
 
 ## DTP Connection Types
 
@@ -41,7 +39,7 @@ Data Ingress: A data stream is sliced into NFT objects added to the network in o
 
 Data egress: The NFT exits the network through event stream. This allow for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
 \
-The receiving end DTP SDK re-assembles the NFT into the original data stream. This data is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
+The receiving end DTP SDK re-assembles the NFT objects into the original data stream. This data is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
 \
 Slower transactions using a mix of Sui shared object and owned objects are involve in light "control plane" synchronizations, but are mostly not used into the heavy "data plane" transfer.
 
@@ -49,7 +47,7 @@ Slower transactions using a mix of Sui shared object and owned objects are invol
 
 <figure><img src="../.gitbook/assets/bi_directional_terms.png" alt=""><figcaption><p>Example of two connections between 3 end-users</p></figcaption></figure>
 
-**Objects:** Usually refer to on-chain Sui objects ( See [Sui Docs](https://docs.sui.io/build/programming-with-objects) )\
+&#x20;            <mark style="color:red;">(Note: Image simplified. Each Pipe must have a distinct client for simple transaction)</mark>\ <mark style="color:red;"></mark>\ <mark style="color:red;"></mark>**Objects:** Usually refer to on-chain Sui objects ( See [Sui Docs](https://docs.sui.io/build/programming-with-objects) )\
 \
 **End-User**: A signature authority that can send/receive data.
 
@@ -82,7 +80,16 @@ Slower transactions using a mix of Sui shared object and owned objects are invol
 \
 (4) When a transaction has no-effect because of the firewall, there is no event emitted (and origin is inform that the transaction was executed, but blocked by the firewall). Therefore the Server is not impacted.\
 \
-The design is such that DDoS are unlikely since the burden of gas execution is mostly on the sender.
+The design is such that DDoS are unlikely since the burden of gas execution is mostly on the sender.\
+
+
+## Multi-Channel Connection
+
+It is not yet known the maximum size allowed for simple transaction. It is likely that to support a high-bandwidth connection that multiple "simple transaction" will need to take place in parallel.\
+\
+This is achieve by having multiple pipe for the same connection. From the Sui network perspective, that is no different than dealing with multiple users, most of the complexity will be in the endpoints to divide and re-assemble the data stream properly:
+
+<figure><img src="../.gitbook/assets/multi-channel.png" alt=""><figcaption></figcaption></figure>
 
 ## Uni-directional Connection
 

@@ -14,7 +14,7 @@ Allows to test data exchange between two local Rust apps on the same development
 The Sui network is a **local instance**. It comes with some prefunded accounts for convenience and automation of your tests.\
 
 
-## Setup with DTP Service Daemons (Plan for April 2023)
+## Setup with DTP Services Daemon (Plan for April 2023)
 
 Another type of deployment will run a "DTP Services Daemon". The daemon will simplify greatly many use cases.
 
