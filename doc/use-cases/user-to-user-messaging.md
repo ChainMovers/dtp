@@ -4,12 +4,14 @@ description: <<Work in progress>>
 
 # Applications Example
 
-Here are a few ideas that can be built on top of DTP. If not sure how to process, please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).\
+Here are a few ideas that can be built on top of DTP. \
+\
+If not sure how to proceed, please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).\
 \
 **Client/Server**
 
 * Rust Client/Server.
-* Rust/Typescript Web3 Client to centralized TCP Server
+* Rust/Typescript Web3 Client to centralized TCP Server ( [More info](rust-client-server.md) )
 
 \
 **Messaging**
