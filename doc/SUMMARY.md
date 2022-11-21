@@ -10,9 +10,7 @@
 ## Use Cases
 
 * [Applications Example](use-cases/user-to-user-messaging.md)
-* [Rust Client/Server](use-cases/rust-client-server.md)
-* [Anonymous Tips Line](use-cases/anonymous-tips-line.md)
-* [Audio Broadcasting](use-cases/broadcasting.md)
+* [Web3 Client / Rust Server](use-cases/rust-client-server.md)
 
 ## Advanced Guides
 
@@ -20,6 +18,5 @@
 * [DTP Rust SDK](advanced-guides/dtp-built-in-services/README.md)
   * [Connection API](advanced-guides/dtp-built-in-services/connection-api.md)
   * [Ping API](advanced-guides/dtp-built-in-services/ping-api.md)
-  * [DNS API](advanced-guides/dtp-built-in-services/dns-api.md)
   * [Firewall API](advanced-guides/dtp-built-in-services/firewall-api.md)
 * [Future Work](advanced-guides/future-work.md)
