@@ -61,7 +61,7 @@ Slower transactions using a mix of Sui shared object and owned objects are invol
 
 **Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfer have to involve a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). \
 \
-**Transport Control Object**: Variables and state machines that exists for the lifetime of a single connection. This is a Sui shared object. From time to time, it produces "Pipe Control" object that are to be transferred to the owner of a Pipe. This owner uses the "Pipe Control" object for its simple transaction sending data. This is how a slow "control plane" object get to eventually control the fast "data plane" Pipe object.\
+**Transport Control Object**: Variables and state machines that exists for the lifetime of a single connection. This is a Sui shared object. From time to time, it produces "Pipe Control" object that are to be transferred to the owner of a Pipe. This owner uses the "Pipe Control" object for its simple transaction sending data. This is how a slow "control plane" object get to eventually control the fast "data plane" Pipe object. (Side note: the change from one Pipe control to another is deterministically enforced by the Pipe object. The client data plane transactions are rejected until it follow up with the proper next in sequence Pipe Control object).\
 \
 **Outlet:** Similar to pipe object, but without an endpoint or transport object. Intended for broadcast and multicast application. \
 
