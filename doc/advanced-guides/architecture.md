@@ -19,14 +19,27 @@ There are mainly two type of DTP connections:
 * Bidirectional : Connection-oriented (like TCP)
 * Unidirectional: Also connection-oriented (e.g. for encryption), but heavy data can flow only in one direction.
 
-DTP data is originated using Sui transactions (instead of "packets").\
-The data is received through event streams.
+DTP data is originated using Sui transactions.\
+The data is received through event streams.\
+
 
 ## DTP Address
 
 The typical \<IP address>:\<Port> becomes a \<Node Sui Address>:\<Port>\
 \
 There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](https://suins.medium.com/meet-the-sui-name-service-db0792acb117) may be?).
+
+## At high level, how is the Sui Network used?
+
+Sui owned objects are used for unidirectional data transfer with sub-second latency (See Simple Transaction in Sui documentation).
+
+Data Ingress: A data stream is sliced into NFT objects added to the network in order.
+
+Data egress: The NFT exits the network through event stream. This allow for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
+\
+The receiving end DTP SDK re-assembles the NFT into the original data stream. This data is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
+\
+Slower transactions using a mix of Sui shared object and owned objects are involve in light "control plane" synchronizations, but are mostly not used into the heavy "data plane" transfer.
 
 ## Terminologies
 
@@ -40,16 +53,15 @@ There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](h
 \
 **End-Point**: An off-chain process that can receive data from other end-points. An end point can handle multiple local end users, protocols and connections simultaneously (each independently encrypted).
 
-**Node Object**: Any end-user that want to receive or send data must create its own Node object. The node object allows to manage the services that are supported and its associated connections and end-points.\
-Nodes also allow to control the firewall settings.
+**Node Object**: Any end-user that want to receive or send data must create its own Node object. This is a Sui shared object and involved in many control plane transactions (e.g. creation of a connection). The node allows to manage the services that are to be served, the lifecycle of its associated connections, the management of its end-points. Nodes also allow to control the firewall settings.
 
 **Client**: End-point initiating a bi-directional connection with a Node.
 
 **Server**: End-point intended to respond to client requests.
 
-**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All transfer have to go through a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). \
+**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfer have to involve a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). \
 \
-**Transport Control Object**: Variables and state machines that exists and changes for the lifetime of a single connection. Created and own by the DTP Node object.\
+**Transport Control Object**: Variables and state machines that exists for the lifetime of a single connection. This is a Sui shared object. From time to time, it produces "Pipe Control" object that are to be transferred to the owner of a Pipe. This owner uses the "Pipe Control" object for its simple transaction sending data. This is how a slow "control plane" object get to eventually control the fast "data plane" Pipe object.\
 \
 **Outlet:** Similar to pipe object, but without an endpoint or transport object. Intended for broadcast and multicast application. \
 
@@ -58,7 +70,7 @@ Nodes also allow to control the firewall settings.
 
 <figure><img src="../.gitbook/assets/Flowcharts (1).png" alt=""><figcaption><p>Built-in Firewall Capabilities</p></figcaption></figure>
 
-(1) Cost of processing incoming traffic is paid by the sender. That includes running the firewall logic in the Pipe Object. Filtering and most rate limiting can therefore be done without costing anything to the Server.
+(1) Cost of processing incoming traffic is paid by the sender. That includes running the firewall logic with the Pipe Object. Filtering and most rate limiting can therefore be done without costing anything to the Server.
 
 (2) Optionally, the DTP object can gather statistics from all its Pipe objects and adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The gas cost for these likely rare adjustments are to be handled by the Server.\
 \

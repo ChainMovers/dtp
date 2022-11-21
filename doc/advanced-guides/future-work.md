@@ -16,9 +16,7 @@ Data persistence might be optional (or maintain as long users are willing to acc
 \
 At high level, the L1 network would automatically and quickly dispose of encrypted data that has no further use.\
 \
-One solution would be the addition (not replacement) of a new L1 network Sui consensus with a different balance of "performance vs decentralized" quality. That is, only the "heavy" transfer of "ephemeral data" would be handled by a new Sui L1 specialized consensus.\
-\
-Since Sui L1 network design is way beyond the control of DTP, a less ideal alternative would be to side-chaining with another L1 network specialized for data streaming.\
+It is not clear yet if this will ever be possible with the Sui network and might be beyond the scope of what DTP can do (TODO: Figure this out).\
 \
 \
 \
