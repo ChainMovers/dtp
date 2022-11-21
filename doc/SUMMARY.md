@@ -9,7 +9,7 @@
 
 ## Use Cases
 
-* [User to user messaging](use-cases/user-to-user-messaging.md)
+* [Applications Example](use-cases/user-to-user-messaging.md)
 * [Rust Client/Server](use-cases/rust-client-server.md)
 * [Anonymous Tips Line](use-cases/anonymous-tips-line.md)
 * [Audio Broadcasting](use-cases/broadcasting.md)
