@@ -35,13 +35,14 @@ There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](h
 
 Sui owned objects are used for unidirectional data transfer with sub-second latency (See Simple Transaction in Sui documentation).
 
-Data Ingress: A data stream is sliced into NFTs added to the Sui network.
+Data Ingress: A data stream is sliced into NFTs and added to the Sui network. The creation of the immutable NFTs is done by the destination Pipe.
 
-Data egress: The NFTs exit the network through event streams. This allow for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
+Data egress: The NFTs exit the network through event streams (emitted by the destination Pipe on NFT creation). This allow for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
 \
 The receiving end DTP SDK re-assembles the NFTs into the original data stream. This data is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
 \
-Slower transactions using a mix of Sui shared object and owned objects are involve in light "control plane" synchronizations, but are mostly not used into the heavy "data plane" transfer.
+Slower transactions (consensus) are used for most "control plane" synchronizations. \
+
 
 ## Terminologies
 
@@ -62,7 +63,7 @@ Nodes are shared Sui object.
 
 **Server**: End-point intended to respond to client requests.
 
-**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfer have to involve a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Pipe are owned Sui objects (owner is the source of the data stream).\
+**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfer have to involve a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Pipe are owned Sui objects (owner is the sender of the data stream).\
 \
 **Transport Control Object**: Variables and state machines that exists for the lifetime of a single connection. This is a Sui shared object.\
 \
@@ -77,7 +78,7 @@ Nodes are shared Sui object.
 
 (2) Optionally, the DTP object can gather statistics from all its Pipe objects and adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The gas cost for these likely rare adjustments are to be handled by the Server.\
 \
-(3) The server update the rules with transaction to the DTP Node object. The DTP Node forward these rules to all its Pipes. That may include filtering base on source IP address.\
+(3) The server update the rules with a transaction to the shared DTP Node object. The DTP Node forward these rules to all its Pipes. <\<TODO Pipes are owned by the data stream origin... figure out if there is a trick to "communicate" a config (an immutable object?) from Node to Pipes with a simple transaction>>\
 \
 (4) When a transaction has no-effect because of the firewall, there is no event emitted (and origin is inform that the transaction was executed, but blocked by the firewall). Therefore the Server is not impacted.\
 \
