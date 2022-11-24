@@ -1,0 +1,6 @@
+{ 
+  "recommendations": [
+    "move.move-analyzer",
+    "rust-lang.rust-analyzer"
+  ]
+}
