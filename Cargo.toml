@@ -1,0 +1,9 @@
+[workspace]
+resolver="2"
+members = ["crates/dtp-core",
+           "crates/dtp-sdk",
+           "crates/dtp-dev-app"
+]
+
+[workspace.package]
+version = "0.1.0"
