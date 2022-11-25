@@ -6,8 +6,7 @@ description: '<<TODO : Incomplete. For now, just showing intended dev setups for
 
 ### Local setup for Rust-Apps only development  (Plan for early 2023)
 
-Allows to test data exchange between two local Rust apps on the same development machine.\
-
+Allows to test data exchange between two local Rust apps on the same development machine.
 
 <figure><img src="../.gitbook/assets/install_1.png" alt=""><figcaption></figcaption></figure>
 
@@ -18,7 +17,7 @@ The Sui network is a **local instance**. It comes with some prefunded accounts f
 
 Another type of deployment will run a "DTP Services Daemon". The daemon will simplify greatly many use cases.
 
-The daemon provides the bridging to various local applications. A Services Config file configure the features to be enabled and various TCP or UDP port mapping when applicable.\
+The daemon provides the bridging to various local applications. A Services Config file specify the features to enable and various TCP or UDP port mapping when applicable.\
 \
 As an example, this is a setup with only the built-in "File Server" service configured:
 
@@ -30,7 +29,7 @@ The "dtp" CLI tool is the user interface. It communicates with the local daemon 
 Example to copy a file to a remote location:\
 &#x20;   $ dtp cp \<local pathname> \<remote Sui Node address + pathname>"\
 \
-This is another example where cURL communicates with a remote server through DTP:
+This is another example with cURL reaching a remote server through DTP:
 
 <figure><img src="../.gitbook/assets/install_3.png" alt=""><figcaption></figcaption></figure>
 
