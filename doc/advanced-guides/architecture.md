@@ -16,10 +16,11 @@ This architecture document is intended to coordinate among developers modifying 
 
 At functional level, DTP is similar to TCP but differ significantly in its implementation to benefit from what is already provided by the L1 network.
 
-There are mainly two type of DTP connections:
+There are 3 types of data transfer:
 
-* Bidirectional : Connection-oriented (like TCP)
-* Unidirectional: Also connection-oriented (e.g. for encryption), but heavy data can flow only in one direction.
+* Bidirectional : Connection-oriented (like TCP) between two end-user. Always encrypted.
+* Unidirectional: Also connection-oriented between two end-user (for encryption), but heavy data flows only in one direction.
+* Public Broadcast: Anyone can receive and observe the authenticated stream of data. This is the only transfer mode without encryption. Requires a different set of object/API calls to avoid accidently broadcasting.
 
 DTP data is originated using Sui transactions.\
 The data is received through event streams.\
@@ -147,6 +148,16 @@ Configuration of the end-points and health of the DTP daemons is managed through
 \
 DTP will hide the high complexity of many race conditions (assignment to a server that died) and connection migrations among all its end-points.
 
+## Data Deletion
+
+Once the data is confirmed consumed by the receiver(s), then it can be deleted on the L1 network to recover some storage fee <\<Revisit the design needed here once Sui implements Storage fund>>.\
+\
+The sender of the data can opt-out from automated deletion and assume the full storage cost.\
+\
+Automated deletion is controlled by DTP to provide a fair time for the receiver(s) to consume the data and can be fine tuned through the sender service level agreement (SLA).\
+\
+The SLAs are publish by the server (in its Node object) and one is selected by the client at the time of the connection being established.
+
 ## Data Consumption Confirmation
 
 TCP protocol includes acknowledgment of L4 delivery to the destination, but without guarantee of being consumed by the application (requires additional protocol at layer 7). \
@@ -155,13 +166,12 @@ DTP layer supports both; a confirmation of the data being available on the L1 ne
 \
 Example of use would be to integrate in the dApps the verification that the data was persisted off-chain by the destination. There is no verification that the destination is honest, but this would be used in context where it would be in the destination best interest to act honestly.\
 \
-The meaning of "consumed" is defined by the application above DTP (the app call a function in the SDK to confirm consumption).\
+Another benefit for data confirmation is to shorten the time that the data need to be preserved on the network, therefore saving storage fee for the sender. \
 \
-This is an optional feature as there is some additional gas cost required for the confirmation.
+The "consumed state" is controlled by the receiving application above DTP (the app call a function in the SDK to confirm consumption).\
+\
+In some use case, the sender may choose to stop transferring further data until the receiver confirm consuming some of the oldest data, therefore motivating the receiver to remain honest. All this will be done under the supervision of DTP for honest handling of the connection service level agreement (SLA).
 
-## **Broadcasting Encryption**
 
-The broadcasted data can be independently consumed by anyone subscribing to the outlet event stream. Only the user with the decryption key will be able to make sense of the data. The distribution of the decryption key is a responsibility left to the dApps. More research to be done here how DTP could one day mitigate (impossible to eliminate) key sharing/piracy problems \[1]\[2]**.**\
-****\
-****\[1] Wikipedia [Broadcast Encryption](https://en.wikipedia.org/wiki/Broadcast\_encryption) \
-\[2] Wikipedia [Multicast Encryption](https://en.wikipedia.org/wiki/Multicast\_encryption)
+
+****
