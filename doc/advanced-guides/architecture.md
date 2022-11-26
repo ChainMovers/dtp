@@ -62,8 +62,6 @@ Nodes are shared Sui object.
 
 **Objects:** Usually refer to on-chain Sui objects ( See [Sui Docs](https://docs.sui.io/build/programming-with-objects) )
 
-**Outlet:** Similar to pipe object, but without an endpoint or transport object. Intended for broadcast and multicast application. This is a owned Sui object (owner is the source of the data stream).
-
 **Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfer have to involve a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Pipe are owned Sui objects (owner is the sender of the data stream).
 
 **Server**: End-point intended to respond to client requests.
@@ -171,6 +169,20 @@ Another benefit for data confirmation is to shorten the time that the data need 
 The "consumed state" is controlled by the receiving application above DTP (the app call a function in the SDK to confirm consumption).\
 \
 In some use case, the sender may choose to stop transferring further data until the receiver confirm consuming some of the oldest data, therefore motivating the receiver to remain honest. All this will be done under the supervision of DTP for honest handling of the connection service level agreement (SLA).
+
+## Public Broadcasting
+
+Similar to unidirectional, but without encryption and using Broadcast objects instead of a Pipe and Transport control.
+
+<figure><img src="../.gitbook/assets/broadcast (1).png" alt=""><figcaption><p>Broadcasting Specific Objects</p></figcaption></figure>
+
+The broadcast control implements some related crypto-economic feature. Examples:
+
+* A broadcaster has to pay for the gas fee and storage, which is wasteful if there is no one listening... one option will be to let DTP stop the writing of the stream on the network until there are enough fund from enough listeners willing to cover, say, the cost of the next 1 minute. DTP handles the automatic "on air" logic and fairly spread the cost among the contributors.
+* Listener may choose to tip and message a live talking broadcaster for a special request.
+
+There are some technical challenges particular to broadcasting (See [Future Work](future-work.md#broadcasting-challenges)).\
+
 
 
 

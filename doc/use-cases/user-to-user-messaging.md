@@ -35,4 +35,11 @@ If not sure how to proceed, please open a discussion on [Discord](https://discor
 
 * Server being additionally paid: Per byte and/or per request. DTP to provide escrow service with consideration of successful delivery. Impossible to verify quality, only quantity. Client is risking only up to what has been pre-authorized at request time.
 * Pre-paid subscription for a limited number of requests or bandwidth.
-* Various escrow service that allow to shift the transport cost completely at the origin or destination (gas always paid by sender, but escrow service handles fair refund).\
+* Various escrow service that allow to shift the transport cost completely at the origin or destination (gas always paid by sender, but escrow service handles fair refund).
+
+**Public Broadcasting**
+
+* Allow anyone listen to authenticated, censorship resistant broadcasting, with some built-in crypto-economics to pay for some (or more?) of the production fee (e.g. broadcast upon enough fund contributed).
+
+
+
