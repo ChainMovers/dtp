@@ -8,18 +8,18 @@ description: <<Work in progress. High level for now, exhaustive specs later>>
 
 Developers should first read the SDK documentations for how to use DTP.
 
-This architecture document is intended to coordinate among developers modifying DTP itself.
+The architecture document is intended for developers modifying DTP itself.
 
 
 
 ## DTP Connection Types
 
-At functional level, DTP is similar to TCP but differ significantly in its implementation to benefit from what is already provided by the L1 network.
+At functional level, DTP is similar to TCP but differs significantly in its implementation to benefit from what is already provided by the L1 network.
 
 There are 3 types of data transfer:
 
-* Bidirectional : Connection-oriented (like TCP) between two end-user. Always encrypted.
-* Unidirectional: Also connection-oriented between two end-user (for encryption), but heavy data flows only in one direction.
+* Bidirectional : Connection-oriented (like TCP) between two end-users. Always encrypted.
+* Unidirectional: Also connection-oriented between two end-users (for encryption), but heavy data flows only in one direction.
 * Public Broadcast: Anyone can receive and observe the authenticated stream of data. This is the only transfer mode without encryption. Requires a different set of object/API calls to avoid accidently broadcasting.
 
 DTP data is originated using Sui transactions.\
@@ -36,13 +36,13 @@ There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](h
 
 Sui owned objects are used for unidirectional data transfer with sub-second latency (See [Simple Transaction](https://docs.sui.io/devnet/learn/how-sui-works#simple-transactions) in Sui docs).
 
-Data Ingress: A data stream is sliced into NFTs and added to the Sui network. The creation of the immutable NFTs is done by the destination Pipe.
+Data Ingress: A data stream is sliced into NFTs and added to the Sui network. The creation of the NFTs is done by the destination Pipe.
 
-Data egress: The NFTs exit the network through event streams (emitted by the destination Pipe). This allow for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
+Data egress: The NFTs exit the network through event streams (emitted by the destination Pipe). This allows for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
 \
 The receiving end DTP SDK re-assembles the NFTs into the original data stream. This data is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
 \
-Slower transactions (consensus) are used for most "control plane" synchronizations. \
+Slower transactions (Sui consensus) are used for most "control plane" synchronizations. \
 
 
 ## DTP Glossary
@@ -51,43 +51,47 @@ Slower transactions (consensus) are used for most "control plane" synchronizatio
 
 **Client**: End-point initiating a bi-directional connection with a Node.
 
-**Connection:** One connection allows to exchange data between two end-users. Can be uni or bi-directional. An end-user create a connection by calling a function into the destination DTP Node object program (See [Connection API](dtp-built-in-services/connection-api.md)).
+**Connection:** One connection allows to exchange data between two end-users. Can be uni or bi-directional. An end-user creates a connection by calling a function into the destination DTP Node object (See [Connection API](dtp-built-in-services/connection-api.md)).
 
-**End-Point**: An off-chain process that can receive data from other end-points. An end point can handle multiple local end users, protocols and connections simultaneously (each independently encrypted).
+**End-Point**: An off-chain process that can send/receive data. An end point can handle multiple local end users, protocols and connections simultaneously (each independently encrypted).
 
 **End-User**: A signature authority that can send/receive data.
 
-**Node Object**: Any end-user that want to receive or send data must create its own Node object. This is a Sui shared object and involved in many control plane transactions (e.g. creation of a connection). The node allows to manage the services that are to be served, the lifecycle of its associated connections, the management of its end-points. Nodes also control the firewall.\
+**Node Object**: Any end-user that want to transfer data must create its own Node object. This is a Sui shared object involved in many control plane transactions (e.g. creation of a connection). The node allows to configure the services (and SLA) that are to be provided, the lifecycle of its associated connections, the management of its end-points. Nodes also control the firewall.\
 Nodes are shared Sui object.
 
 **Objects:** Usually refer to on-chain Sui objects ( See [Sui Docs](https://docs.sui.io/build/programming-with-objects) )
 
-**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfer have to involve a Pipe object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Pipe are owned Sui objects (owner is the sender of the data stream).
-
-**Server**: End-point intended to respond to client requests.
+**Pipe Object**: End-points can never directly exchange data with each other directly (their IP is not known to the peer). All data plane transfers involves an intermediate object on the Sui network. One pipe is required per direction of a connection. A pipe can from time to time change the endpoint for high-availability or load balancing (if the end-user have configured multiple end-point to its Node). Pipe are owned Sui objects (owner is the sender of the data stream).\
+\
+**Server**: End-point intended to respond to client requests.\
+\
+**Service Level Agreement (SLA)**: Specify the costs, limitations and some behaviors for a service provided by a Node object. Example would be "sent data can be deleted from network storage after 48 hours (2 epochs)". The client signify that it agrees to a SLA at the time the connection to the node is initiated. The SLA specs are such that DTP can enforce the agreement in a fair way to all parties.
 
 **Transport Control Object**: Variables and state machines that exists for the lifetime of a single connection. This is a Sui shared object.
 
 ## Firewall
 
-<figure><img src="../.gitbook/assets/firewall.png" alt=""><figcaption><p>Built-in Firewall Capabilities</p></figcaption></figure>
-
-Firewall main purposes are:
+Set of DTP built-in features protecting and enforcing fair use of the off-chain applications. \
+\
+Includes:
 
 * Protect the receiver by allowing/blocking/limiting new connections depending of the sender address.
 * Rate limiting on a per-connection basis. The control is mostly done from the off-chain server, but metering and some limiting is handled on-chain.&#x20;
 * On long term considering also on-chain escrow services for service level agreement (SLA) between client and server.
-* Protect the sender from initiating/paying for transactions while the server is offline or too busy (backpressure management). This allow the sender to potentially fallback to another server.\
+* Protect the sender from initiating/paying for transactions while the server is already known offline or too busy (backpressure management). This could allow the sender to more quickly fallback to another server.\
 
 
 DDoS are unlikely since the burden of gas execution is mostly on the sender. Still a firewall is useful in case of financial attack on the service provider (exploitation of a request cost being low versus the cost of responding).\
 
 
+<figure><img src="../.gitbook/assets/firewall.png" alt=""><figcaption><p>Built-in Firewall Capabilities</p></figcaption></figure>
+
 Details on the illustration:
 
-(1) Cost of processing incoming traffic is paid by the sender. That includes on connection creation and running the firewall at the Pipe Object. Blocking and some rate limiting can therefore be done without costing anything to the Server.
+(1) Gas cost of processing incoming traffic is paid by the sender. That includes connection creation cost and running the firewall at the Pipe Object. Most abuse can therefore be neutralized without requiring any processing/cost from the Server.
 
-(2) Optionally, the DTP object can gather statistics from all its Pipe objects and adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The gas cost for these likely rare adjustments are to be handled by the Server. (Note: This is a logical representation. More details will follow on how this is implemented such that Pipe objects are not involved with slower consensus transactions).\
+(2) Optionally, the DTP Node object can gather statistics from all its Pipe objects and adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The gas cost for these likely rare adjustments are to be handled by the Server. (Note: This is a logical representation. More details will follow on how this is implemented such that Pipe objects are not involved with slower consensus transactions).\
 \
 (3) The server configure the firewall and does a periodical heartbeat using its shared DTP Node object. The server may also do some fast detection and control on the firewall (TBD).\
 \
@@ -99,16 +103,20 @@ Details on the illustration:
 
 Data is transmitted as a stream and therefore must be divided into smaller transactions. Even with a fast finality, the bandwidth is limited by the maximum transaction size.\
 \
-Multiple simple transaction executed in parallel can provide higher bandwidth for a single connection.\
+Multiple simple transactions executed in parallel can provide higher bandwidth for a single connection.\
 \
-Most of the complexity will be in the off-chain end-points to divide and re-assemble the data stream properly:
+Most of the complexity will be in the off-chain end-points when dividing and re-assembling the data stream:
 
 <figure><img src="../.gitbook/assets/multi-channels.png" alt=""><figcaption></figcaption></figure>
 
 **Will this be practical?**\
-Keep in mind that DTP primary goal is not for heavy media streaming. Gas might be expensive and there is some potential limitation about how much Sui nodes could scale on a viral broadcast (problem likely at egress of the network, not with the network consensus performance itself).
-
-Still there is value in designing now for multi-channels as it may become useful at some point.  At worst, this will at least allow to demo/stress load on a test network.\
+There is a lot of cost/performance unknowns with both Sui network and DTP that will probably persist through 2023. DTP architecture is planning for supporting heavy media streaming, but it remains to be seen how practical it will be.\
+\
+Gas might be expensive and there is some potential limitations about how much Sui fullnodes could scale on a viral broadcast (problem at egress of the network, not with the consensus performance itself).\
+\
+Light data streaming (<20 Kbps) very likely to be supported and be useful within 2023.\
+\
+Regardless of practicality, support for multi-channel will be at least useful for demo/stress load on a test network.\
 \
 Some estimations ( See on [Google Sheet](https://docs.google.com/spreadsheets/d/1zBrB1ifhPpnLlsDr6nBN\_N55Kkw9hX06a7EVUpogyn4/edit?usp=sharing) ):
 
@@ -128,9 +136,9 @@ Although the data is intended to flow in one direction, some lightweight bi-dire
 \
 (1) When the connection is created, some bi-directional exchange happen between the source end-point and the destination DTP Node object.\
 \
-(2) Exchange between end-points through the "Transport Control Object". This relate to encryption protocols (done once or periodic) for ultimately allowing the destination to validate/decode the received data.
+(2) Exchange between end-points through the "Transport Control Object". This relates mostly to the encryption protocol and application of the Service Level Agreement.
 
-(3) Pipe are not **purely** unidirectional. Sender interactions with a Pipe are done with transactions, which means return values allows some responses in failure cases (e.g. the data was immediately dropped by the Pipe because of a receiver firewall rule).
+(3) Pipe are not **purely** unidirectional. Sender interactions with a Pipe are done with transactions, which means a return value for some immediate responses (e.g. the data was not sent because of a receiver firewall rule).
 
 ## High-Availability and Load Balancing
 
@@ -140,11 +148,11 @@ Off-chain servers can share the incoming load or be each others fallback for hig
 
 Unlike traditional network, the data is not physically pushed toward a server. Instead, the data remains on the network and an event is emitted about who should "pull it".\
 \
-It is an off-chain responsibility for the DTP daemons to subscribe to their respective event stream (with proper identifier filtering) and normally retrieve only its assigned data (this change in some recovery scenario).\
+It is an off-chain responsibility for the application to subscribe to their respective event stream (with proper identifier filtering) and normally retrieve only its assigned data (this change in some recovery scenario).\
 \
-Configuration of the end-points and health of the DTP daemons is managed through the DTP node, which in turn updates all its pipes and transport control objects.\
+Configuration of the end-points and health of the servers is managed through the DTP node, which in turn updates all its pipes and transport control objects.\
 \
-DTP will hide the high complexity of many race conditions (assignment to a server that died) and connection migrations among all its end-points.
+DTP will hide the high complexity of many race conditions (assignment to a server that died) and connection migrations among all end-points belonging to the same Node.
 
 ## Data Deletion
 
@@ -178,7 +186,7 @@ Similar to unidirectional, but without encryption and using Broadcast objects in
 
 The broadcast control implements some related crypto-economic feature. Examples:
 
-* A broadcaster has to pay for the gas fee and storage, which is wasteful if there is no one listening... one option will be to let DTP stop the writing of the stream on the network until there are enough fund from enough listeners willing to cover, say, the cost of the next 1 minute. DTP handles the automatic "on air" logic and fairly spread the cost among the contributors.
+* A live broadcaster has to pay for the gas fee and storage, which is wasteful if there is no one listening... one option will be to let DTP stop the writing of the stream on the network until there are enough fund from enough listeners willing to cover, say, the cost of the next 1 minute. DTP handles the automatic "on air" logic and fairly spread the cost among the contributors.
 * Listener may choose to tip and message a live talking broadcaster for a special request.
 
 There are some technical challenges particular to broadcasting (See [Future Work](future-work.md#broadcasting-challenges)).\

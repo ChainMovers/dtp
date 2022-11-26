@@ -6,13 +6,13 @@ description: Inspiration for the long term (no plan for  now)
 
 ## **Broadcasting Challenges**
 
-Broadcast put traffic load pressure on the fullnode RPC pub/sub services.\
+Data broadcasting will put traffic load pressure on the fullnodes RPC pub/sub services.\
 \
-Fullnode may have low economic incentive to support high bandwidth on the pub/sub.\
+Fullnodes may have low economic incentive to support high bandwidth on their RPC.\
 \
 The architecture should scale to match the audience size.\
 \
-Consequently, the solution is for the Sui network to provide only the crypto-economic services and then leave the burden of broadcasting to a public peer-to-peer network.\
+Consequently, the solution is for DTP/Sui to provide only the crypto-economic services and then leave the burden of broadcasting to a public peer-to-peer network.\
 
 
 <figure><img src="../.gitbook/assets/P2P broadcast.png" alt=""><figcaption><p>Broadcasting with P2P for data plane, and direct internet connection for control plane.</p></figcaption></figure>

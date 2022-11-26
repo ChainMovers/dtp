@@ -23,16 +23,15 @@ As an example, this is a setup with only the built-in "File Server" service conf
 
 <figure><img src="../.gitbook/assets/install_2.png" alt=""><figcaption></figcaption></figure>
 
-\
 The "dtp" CLI tool is the user interface. It communicates with the local daemon to conveniently perform file server operations. \
 \
 Example to copy a file to a remote location:\
 &#x20;   $ dtp cp \<local pathname> \<remote Sui Node address + pathname>"\
 \
-This is another example with cURL reaching a remote server through DTP:
+Another example with cURL reaching a remote server through DTP:
 
 <figure><img src="../.gitbook/assets/install_3.png" alt=""><figcaption></figcaption></figure>
 
-At first, the config port mapping will need to be manually changed in the config file, but a more flexible solution will eventually be implemented.\
+At first, the port mapping will need to be manually specified in the config file, but a more flexible solution will eventually be implemented.\
 \
 (Note: This config port mapping feature is planned for \~End of August 2023)\
