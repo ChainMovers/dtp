@@ -11,6 +11,7 @@
 
 * [Applications Example](use-cases/user-to-user-messaging.md)
 * [Web3 Client / Rust Server](use-cases/rust-client-server.md)
+* [JSON-RPC Firewall](use-cases/json-rpc-firewall.md)
 
 ## Advanced Guides
 

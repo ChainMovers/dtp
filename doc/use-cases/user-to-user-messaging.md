@@ -10,13 +10,13 @@ If not sure how to proceed, please open a discussion on [Discord](https://discor
 \
 **Client/Server**
 
-* Rust Client/Server.
+* Web3 frontends connecting to a centralized JSON-RPC backend ( [More info](json-rpc-firewall.md) )
 * Rust/Typescript Web3 Client to centralized TCP Server ( [More info](rust-client-server.md) )
 
 \
 **Messaging**
 
-* Encrypted user to user data transfer&#x20;
+* Encrypted user-to-user data transfer&#x20;
 * Anonymous Tips Line (with potential reward in return).
 
 ****\
