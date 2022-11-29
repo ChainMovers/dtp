@@ -1,0 +1,20 @@
+---
+protocol-key-pair: DF+uA0wViRGzC5QurC1UbNUz9gqcN2eejRX/hcQ8Tn+4EYYye/r1HpoRHLGz+IOBJk4LNQz4/3T93nh/PZMKglFAK2vOVPI9j4HLdcq1P/0PhKb7nH5UMtoSdie7k14YwxDKyNuanoex8e4C7KyW9qOXBkZeyKmHqlEgjxeTvjI=
+worker-key-pair: TucIOwofe+2SIWXXM3JWjW9Y1nzvPtE4EOEwX2MkRuMBWY0nHhwB0Tq4jVtSxuqn+m5zkF4TjEl4TK5zW6UVAw==
+account-key-pair: AN9oTw74el2DQFOr7s0tXAxztncH23qMeltbc1IeZPP/x4hCRQ6jysi/lbHog2MEYBaQfm22K8TLk+/jZ/Hq12o=
+network-key-pair: vpsek59IxdpAlErtKAOWJR6QuAaBFHHfOICaGf9Ib8Bl5jB53arpcK51/qoa9zH40JYDQwzBozfOSt7BKIFd1A==
+db-path: /home/olet/.sui/sui_config/authorities_db/full_node_db
+network-address: /ip4/127.0.0.1/tcp/40747/http
+json-rpc-address: "0.0.0.0:9000"
+websocket-address: "0.0.0.0:9001"
+metrics-address: "127.0.0.1:35869"
+admin-interface-port: 40157
+enable-event-processing: true
+enable-checkpoint: false
+enable-reconfig: false
+grpc-load-shed: ~
+grpc-concurrency-limit: ~
+p2p-config:
+  listen-address: "127.0.0.1:36487"
+genesis:
+  genesis-file-location: /home/olet/.sui/sui_config/genesis.blob

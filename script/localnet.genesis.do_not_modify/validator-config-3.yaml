@@ -1,0 +1,49 @@
+---
+protocol-key-pair: LxLq45pq0MATtWVewZuOhJvXZmr2Gwk2MROxRBK+LzykxE5/kHd+1FRhyBsQrbiFengeQfq591bcuKiT8vKz9OhlQzYhktAd2M4SZWGoJnMZjSugJAFbInoQMS9zRm0uvvzBGe9p+IYutpVfSFo4gMvuzLrBf8evmuhGK+SS0PY=
+worker-key-pair: 7M/sEnQnhgaMZsmb+2ocqBF952Ffmga8OfdghmVx1gUUqa8bOpQOvEpdwEOwbe4cL05K1mNnD7a2xm1pBEhW7w==
+account-key-pair: AJWklVqPx7mTLFhHK//BYOhuOF2Hdof9CxSxHCtnZPGnE/zjqY9G66y+8csgo+a6faJ2Fm0SdXMPflmbcGhwhgQ=
+network-key-pair: Wmg53PZI0rcH7KxuPYGFjjL0kA/pu7sSyeSLi5CO0ZXAJD7W8fca24irlrVsIO2A0177mAwx4RpcirYPxFkK5w==
+db-path: /home/olet/.sui/sui_config/authorities_db/a4c44e7f90777ed45461c81b10adb8857a781e41fab9f756dcb8a893f2f2b3f4e86543362192d01dd8ce126561a82673198d2ba024015b227a10312f73466d2ebefcc119ef69f8862eb6955f485a3880cbeeccbac17fc7af9ae8462be492d0f6
+network-address: /ip4/127.0.0.1/tcp/37505/http
+json-rpc-address: "127.0.0.1:44117"
+websocket-address: ~
+metrics-address: "127.0.0.1:45737"
+admin-interface-port: 38081
+consensus-config:
+  consensus-address: /ip4/127.0.0.1/tcp/41431/http
+  consensus-db-path: /home/olet/.sui/sui_config/consensus_db/a4c44e7f90777ed45461c81b10adb8857a781e41fab9f756dcb8a893f2f2b3f4e86543362192d01dd8ce126561a82673198d2ba024015b227a10312f73466d2ebefcc119ef69f8862eb6955f485a3880cbeeccbac17fc7af9ae8462be492d0f6
+  timeout-secs: 60
+  narwhal-config:
+    header_num_of_batches_threshold: 32
+    max_header_num_of_batches: 1000
+    max_header_delay: 100ms
+    gc_depth: 50
+    sync_retry_delay: 5000ms
+    sync_retry_nodes: 3
+    batch_size: 500000
+    max_batch_delay: 100ms
+    block_synchronizer:
+      range_synchronize_timeout: 30000ms
+      certificates_synchronize_timeout: 30000ms
+      payload_synchronize_timeout: 30000ms
+      payload_availability_timeout: 30000ms
+      handler_certificate_deliver_timeout: 30000ms
+    consensus_api_grpc:
+      socket_addr: /ip4/127.0.0.1/tcp/46035/http
+      get_collections_timeout: 5000ms
+      remove_collections_timeout: 5000ms
+    max_concurrent_requests: 500000
+    prometheus_metrics:
+      socket_addr: /ip4/127.0.0.1/tcp/41841/http
+    network_admin_server:
+      primary_network_admin_server_port: 32917
+      worker_network_admin_server_base_port: 36839
+enable-event-processing: false
+enable-checkpoint: false
+enable-reconfig: false
+grpc-load-shed: ~
+grpc-concurrency-limit: 20000000000
+p2p-config:
+  listen-address: "127.0.0.1:41289"
+genesis:
+  genesis-file-location: /home/olet/.sui/sui_config/genesis.blob
