@@ -8,7 +8,7 @@ description: <<Work In Progress. DTP born October 2022. Stay Tune>>
 
 ## Quick Links
 
-### &#x20;  Website: [https://dtp.dev](./#website-https-dtp.dev)
+### &#x20;  Website: [https://dtp.dev](https://dtp.dev)
 
 ### &#x20;  GitHub: [https://github.com/mario4tier/dtp](https://github.com/mario4tier/dtp)
 
