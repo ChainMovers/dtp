@@ -1,0 +1,98 @@
+#!/bin/bash
+
+# Initialize and start a Sui local network.
+#
+# Warning:
+#   If there is an existing local network, it will be deleted
+#   and replaced with a fresh installation.
+
+# Utility functions.
+setup_error() { echo "$*" 1>&2 ; exit 1; }
+version_greater_equal() { printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort; }
+
+# Verify Sui pre-requisites are installed.
+which curl &> /dev/null || setup_error "Need to install curl. See https://docs.sui.io/build/install#prerequisites";
+which git &> /dev/null || setup_error "Need to install git. See https://docs.sui.io/build/install#prerequisites";
+which cmake &> /dev/null || setup_error "Need to install cmake. See https://docs.sui.io/build/install#prerequisites";
+which rustc &> /dev/null || setup_error "Need to install rust. See https://docs.sui.io/build/install#prerequisites";
+which cargo &> /dev/null || setup_error "Need to install cargo. See https://docs.sui.io/build/install#prerequisites";
+
+# Verify Rust is recent enough.
+MIN_RUST_VERSION="rustc 1.65.0"
+version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "Upgrade rust to a more recent version";
+
+# Just find the absolute path of the "workspace" where most
+# dependencies will be downloaded and build/runtime files
+# will be located.
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+WS_DIR_REL="$SCRIPT_DIR/../workspace"
+WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
+
+echo "Workspace Location = $WS_DIR"
+
+# If not already done, get the sui devnet branch.
+if [ ! -d "$WS_DIR/sui" ]
+then
+  git clone -b devnet https://github.com/MystenLabs/sui.git "$WS_DIR/sui"  || setup_error "Failed getting Sui devnet branch from github";
+fi
+
+# Verify sui devnet local view is up to date.
+V1=$(cd $WS_DIR/sui; git rev-parse HEAD)
+V2=$(cd $WS_DIR/sui; git rev-parse '@{u}')
+if [ $V1 != $V2 ];
+then 
+  (cd $WS_DIR/sui && git pull >& /dev/null)
+fi
+
+# Verify sui built is latest.
+echo Building localnet using latest Sui devnet branch...
+(cd $WS_DIR/sui; cargo build)
+
+
+#TODO Verify sui is installed.
+#TODO Verify sui relative directory location.
+#TODO Make this conditional of detecting localnet running.
+#TODO Make this more specific to localnet instead of blind target "sui"
+sudo skill -9 pidof sui
+
+# TODO Make this conditional of detecting exists.
+echo Removing existing localnet
+mkdir -p "$WS_DIR"
+rm -rf "$WS_DIR/localnet"
+
+echo Recreating localnet
+tar -xf "$SCRIPT_DIR/data/localnet.tar.gz" -C "$WS_DIR"
+# cp -r "$SCRIPT_DIR/data/localnet.genesis.do_not_modify" "$WS_DIR/localnet"
+
+# Start the new localnet.
+echo Starting localnet process
+$WS_DIR/sui/target/debug/sui start --network.config "$WS_DIR/localnet/network.yaml" >& "$WS_DIR/localnet.log" &
+
+# TODO actively look if running instead of sleep fix amount of time.
+sleep 10
+
+# Make sure available in sui envs (ignore errors because might already exist)
+echo ========
+$WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" new-env --alias localnet --rpc http://0.0.0.0:9000 >& /dev/null
+
+# Make local the active network to use for "sui client".
+$WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" switch --env localnet
+$WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" switch --address 0xb3ae7cfadd272fa6e79f67f781fde0421e6c62ed
+
+# print sui envs to help debugging (if others report problem with this script).
+$WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" envs
+echo ========
+
+# TODO Verify that the localnet is as expected.
+echo All localnet addresses that owns a coin object:
+$WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" addresses
+WALLET_ADDR=$($WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" active-address)
+echo
+echo "Localnet sui client default address (wallet): $WALLET_ADDR"
+echo ========
+echo
+echo Remember:
+echo "  Use \"dsui\" to access devnet"
+echo "  Use \"lsui\" to access your localnet"
+echo
+echo Success. Try it by typing \"lsui client gas\"
