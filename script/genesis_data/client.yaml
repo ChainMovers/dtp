@@ -1,5 +1,6 @@
 ---
 keystore:
+  # ** Important ** Change the path below to your working-dir location.
   File: /home/olet/dtp/workspace/localnet/sui.keystore
 envs:
   - alias: localnet
