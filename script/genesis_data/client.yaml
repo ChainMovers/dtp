@@ -1,0 +1,12 @@
+---
+keystore:
+  File: /home/olet/dtp/workspace/localnet/sui.keystore
+envs:
+  - alias: localnet
+    rpc: "http://0.0.0.0:9000"
+    ws: ~
+  - alias: devnet
+    rpc: "https://fullnode.devnet.sui.io:443"
+    ws: ~
+active_env: localnet
+active_address: "0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2"

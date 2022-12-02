@@ -1,0 +1,19 @@
+---
+validator_genesis_info: ~
+committee_size: 4
+grpc_load_shed: ~
+grpc_concurrency_limit: 20000000000
+accounts:
+  - address: cfed50a652b8fce7a7917a8a736a7c2b1d646ba2
+    gas_objects:
+      - object_id: "0xdda7a05332162389586c18c4c518c9811293cb09"
+        gas_value: 100000000000000
+      - object_id: "0xb2c64298dd42e83725fe991724a27741abb3aa2f"
+        gas_value: 100000000000000
+      - object_id: "0xb49fe4af8d317d442e228d7d97896de9f7f5ef9e"
+        gas_value: 100000000000000
+      - object_id: "0x6205fc058b205227d7b7bd5b4e7802f0055157c6"
+        gas_value: 100000000000000
+      - object_id: "0xef7d5e8fe9b133c431b386f27b17d4aaaa55e58b"
+        gas_value: 100000000000000
+    gas_object_ranges: []
