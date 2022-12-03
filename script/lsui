@@ -13,4 +13,41 @@ WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
 # TODO Validate if workspace and sui binary are correct and give advises if not.
 
 # Use the proper config automatically.
-$WS_DIR/sui/target/debug/sui client --client.config "$WS_DIR/localnet/client.yaml" "$@"
+SUI_SUBCOMMAND=$1
+if [[ "$1" = "client" || "$1" == "console" ]]; then  
+  shift 1
+  $WS_DIR/sui/target/debug/sui $SUI_SUBCOMMAND --client.config "$WS_DIR/localnet/client.yaml" "$@"
+  exit
+fi
+
+if [[ "$1" == "network" ]]; then
+  shift 1
+  $WS_DIR/sui/target/debug/sui $SUI_SUBCOMMAND --network.config "$WS_DIR/localnet/network.yaml" "$@"
+  exit
+fi
+
+if [[ "$1" == "genesis" ]]; then
+  if [[ "$2" == "--help" || "$2" == "-h" ]]; then
+    $WS_DIR/sui/target/debug/sui genesis --help
+  fi
+  echo
+  setup_error "Error: Use dtp/script/init-localnet instead for re-initializing localnet"
+fi
+
+if [[ "$1" == "start" ]]; then
+  if [[ "$2" == "--help" || "$2" == "-h" ]]; then
+    $WS_DIR/sui/target/debug/sui start --help
+  fi
+  echo
+  # TODO Consider implementing a start-localnet script instead.
+  setup_error "Error: Use dtp/script/init-localnet instead for re-initializing localnet"
+fi
+
+if [[ "$1" == "keytool" ]]; then
+  shift 1
+  $WS_DIR/sui/target/debug/sui $SUI_SUBCOMMAND --keystore-path "$WS_DIR/localnet/sui.keystore" "$@"
+  exit
+fi
+
+# Default
+$WS_DIR/sui/target/debug/sui "$@"
