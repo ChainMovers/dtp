@@ -1,7 +1,13 @@
 ---
 keystore:
-  # ** Important ** Change the path below to your working-dir location.
-  File: /home/olet/dtp/workspace/localnet/sui.keystore
+  # ** Important **
+  #
+  # If you are manuualy copying this file into your environment, then
+  # the path below must match your <working-dir>/sui.keystore location.
+  #
+  # If instead your are using the dtp/script/init-localnet, then do not
+  # modify this file. The script takes care to initialize the correct path.
+  File: <PUT_WORKING_DIR_PATH_HERE>/sui.keystore
 envs:
   - alias: localnet
     rpc: "http://0.0.0.0:9000"

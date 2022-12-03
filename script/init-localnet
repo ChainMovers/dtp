@@ -12,8 +12,8 @@
 #   to modify sui itself (other than for may be throw away 
 #   debug code).
 #
-# For future reference, this is how the config.yaml was created:
-#     $SUI_BIN_DIR/sui genesis --write-config "$GENESIS_DATA_DIR/config.yaml"
+# For future reference, this is how the config.yaml was generated:
+#     sui genesis --write-config "$GENESIS_DATA_DIR/config.yaml"
 
 # Utility functions.
 setup_error() { echo "$*" 1>&2 ; exit 1; }
@@ -49,6 +49,13 @@ CLIENT_CONFIG="$WS_DIR/localnet/client.yaml"
 mkdir -p "$WS_DIR"
 
 echo "Workspace Location = $WS_DIR"
+
+# The script should not be called from a location that will get deleted.
+CWD=$(pwd -P)
+if [[ "$CWD" = "$WS_DIR/localnet"* ]]; then
+  echo "This script can't be called from a location to be deleted [$WS_DIR/localnet]."
+  setup_error "Change current directory location and try again."
+fi
 
 # Stop already executing sui (if any)
 # Get ps with "sui start", grep exclude itself from the list, head takes the first process (should not be more than one)
@@ -135,6 +142,14 @@ mkdir -p "$WS_DIR/localnet"
 $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$WS_DIR/localnet" >& /dev/null
 yes | cp -rf "$GENESIS_DATA_DIR/sui.keystore" "$WS_DIR/localnet"
 yes | cp -rf "$GENESIS_DATA_DIR/client.yaml" "$WS_DIR/localnet"
+
+# Replace placeholder string in client.yaml with an absolute path to the keystore.
+# Notice sed uses '+'' for seperator instead of '/' to avoid clash
+# with directory path. Also uses a .bak temp file because Mac (BSD) does not
+# allow in-place file change.
+SEARCH_STRING="<PUT_WORKING_DIR_PATH_HERE>"
+REPLACE_STRING="$WS_DIR/localnet"
+sed -i.bak -e "s+$SEARCH_STRING+$REPLACE_STRING+g" "$WS_DIR/localnet/client.yaml" && rm "$WS_DIR/localnet/client.yaml.bak"
 
 # Start the new localnet.
 echo "Starting new localnet process (may take up to 30 secs)"
