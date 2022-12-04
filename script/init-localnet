@@ -8,7 +8,7 @@
 #   transaction done since genesis will be purged.
 #
 #   This script will also overwrite any changes under 
-#   workspace/sui. This sui local repo should not be used
+#   dtp-dev/sui. This sui local repo should not be used
 #   to modify sui itself (other than for may be throw away 
 #   debug code).
 #
@@ -18,6 +18,29 @@
 # Utility functions.
 setup_error() { echo "$*" 1>&2 ; exit 1; }
 version_greater_equal() { printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort; }
+update_bin_path() { 
+  UBP_SRC_DIR="$HOME/.local/bin"
+  UBP_TARGET="$SCRIPT_DIR/$1"
+  if [ -d "$UBP_SRC_DIR" ]; then
+    if [ ! -L "$UBP_SRC_DIR/$1" ]; then
+      ln -s "$UBP_TARGET" "$UBP_SRC_DIR/$1"
+      echo "Symlink added: $UBP_SRC_DIR/$1 -> $UBP_TARGET"
+    else
+      # Verify link is as intended, if not replace it.
+      UBP_READLINK=$( readlink -f "$UBP_SRC_DIR/$1" )
+      if [[ "$UBP_READLINK" != "$UBP_TARGET" ]]; then
+         ln -sf "$UBP_TARGET" "$UBP_SRC_DIR/$1"
+         echo "Symlink updated: $UBP_SRC_DIR/$1 -> $UBP_TARGET"
+         # If the target is the called script, then replace
+         # it and exit (will force user to re-execute from the
+         # new link, potentially being a different script version).
+         if [[ "$1" == "$SCRIPT_NAME" ]]; then
+           setup_error "Retry $1 again (in case the new synlink point to a new version)"
+        fi
+      fi
+    fi
+  fi
+}
 
 # Verify Sui pre-requisites are installed.
 which curl &> /dev/null || setup_error "Need to install curl. See https://docs.sui.io/build/install#prerequisites";
@@ -30,12 +53,15 @@ which cargo &> /dev/null || setup_error "Need to install cargo. See https://docs
 MIN_RUST_VERSION="rustc 1.65.0"
 version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "Upgrade rust to a more recent version";
 
-# Just find the absolute path of the "workspace" where most
+# Just find the absolute path of the "dtp-dev" where most
 # dependencies will be downloaded and build/runtime files
 # will be located.
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-WS_DIR_REL="$SCRIPT_DIR/../workspace"
+SCRIPT_READLINK="$(readlink -f "$0")"
+SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
+SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
+WS_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
 WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
+LOCAL_BIN="$HOME/.local/bin"
 
 # Some other commonly used locations.
 SUI_BIN_DIR="$WS_DIR/sui/target/debug"
@@ -45,10 +71,15 @@ GENESIS_DATA_DIR="$SCRIPT_DIR/genesis_data"
 NETWORK_CONFIG="$WS_DIR/localnet/network.yaml"
 CLIENT_CONFIG="$WS_DIR/localnet/client.yaml"
 
-# Create workspace if does not exists.
+# Create/update path to dtp shell scripts.
+
+update_bin_path "init-localnet"
+update_bin_path "lsui"
+
+# Create dtp-dev if does not exists.
 mkdir -p "$WS_DIR"
 
-echo "Workspace Location = $WS_DIR"
+echo "Output location = $WS_DIR"
 
 # The script should not be called from a location that will get deleted.
 CWD=$(pwd -P)
@@ -105,7 +136,7 @@ if [ $V1 != $V2 ]
 then 
   # Does a bit more than needed, but should allow to recover
   # from most operator error...
-  echo Updating sui local repo in workspace...
+  echo Updating sui local repo in dtp-dev...
   (cd $WS_DIR/sui && git switch devnet > /dev/null)
   (cd $WS_DIR/sui && git fetch > /dev/null)
   (cd $WS_DIR/sui && git reset --hard origin/devnet > /dev/null)

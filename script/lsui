@@ -5,12 +5,12 @@
 # Utility functions.
 setup_error() { echo "$*" 1>&2 ; exit 1; }
 
-# Just find the absolute path of the "workspace"
+# Just find the absolute path of the "dtp-dev"
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-WS_DIR_REL="$SCRIPT_DIR/../workspace"
+WS_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
 WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
 
-# TODO Validate if workspace and sui binary are correct and give advises if not.
+# TODO Validate if dtp-dev and sui binary are correct and give advises if not.
 
 # Use the proper config automatically.
 SUI_SUBCOMMAND=$1
