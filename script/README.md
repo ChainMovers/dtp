@@ -1,11 +1,11 @@
 After a git clone of dtp, please use these scripts to develop with a convenient and more deterministic setup.
 
-Advantages:
-  - Keeps localnet/devnet/testnet/mainnet key stores seperated.
-  - Does not touch the user level ~/.sui and its keystore (assume might be used later when mainnet).
+**Features:**
+  - Keeps localnet/devnet/testnet/mainnet keystores seperated.
+  - Does not touch the user level ~/.sui and its keystore (assumes might be used later when mainnet).
   - Creates a self-contain and deterministic localnet that can be re-initialized with the same pre-funded address.
   - Sui CLI frontends that target specific network (e.g. "dsui client gas" will be for the live devnet).
-  - Creates Sui local repos (devnet and main branch). Makes Rust app development more efficient.
+  - Creates Sui local repos (devnet and main branches). Makes Rust app development more efficient.
 
  ```
  <your directory>
@@ -21,7 +21,7 @@ Advantages:
        └── dtp-dev/       # Created by the scripts
            ├── sui-devnet         # Complete local repo of Sui devnet branch.
            ├── sui-main           # Complete local repo of Sui main branch.
-           ├── localnet           # All localnet files, running at 127.0.0.0:9000
+           ├── localnet           # All localnet files, running at http://0.0.0.0:9000
            ├── devnet             # Keystore for live devnet network
            └── testnet            # Keystore for live tesnet network
 ```
