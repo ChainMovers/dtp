@@ -4,8 +4,16 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-# Put sui code at same level where DTP directory is located:
-# Example:
-#    /home/johndoe/someproject/sui
-#    /home/johndoe/someproject/dtp
-
+# Directory structure:
+#
+#     <Your Directory> _____ dtp ______ dtp-sdk
+#                       \
+#                        \__ dtp-dev __ sui
+#
+# dtp-dev can be manually created by you and you clone sui devnet branch into it.
+#     OR
+# Just run once the script dtp/script/init-localnet that does it all.
+#
+sui_sdk = { path = "../../../dtp-dev/sui/crates/sui-sdk/", package="sui-sdk" }
+tokio = { version = "1.22.0", features = ["full"] }
+anyhow = "1.0.64"
