@@ -59,17 +59,18 @@ version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "U
 SCRIPT_READLINK="$(readlink -f "$0")"
 SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
 SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
-WS_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
-WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
+DEV_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
+DEV_DIR="$(cd "$(dirname "$DEV_DIR_REL")"; pwd)/$(basename "$DEV_DIR_REL")"
 LOCAL_BIN="$HOME/.local/bin"
 
 # Some other commonly used locations.
-SUI_BIN_DIR="$WS_DIR/sui/target/debug"
+SUI_REPO_DIR="$DEV_DIR/sui-devnet"
+SUI_BIN_DIR="$SUI_REPO_DIR/target/debug"
 GENESIS_DATA_DIR="$SCRIPT_DIR/genesis_data"
 
 # Configuration files (often needed for sui CLI calls)
-NETWORK_CONFIG="$WS_DIR/localnet/network.yaml"
-CLIENT_CONFIG="$WS_DIR/localnet/client.yaml"
+NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
+CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
 
 # Create/update path to dtp shell scripts.
 
@@ -77,14 +78,14 @@ update_bin_path "init-localnet"
 update_bin_path "lsui"
 
 # Create dtp-dev if does not exists.
-mkdir -p "$WS_DIR"
+mkdir -p "$DEV_DIR"
 
-echo "Output location = $WS_DIR"
+echo "Output location = $DEV_DIR"
 
 # The script should not be called from a location that will get deleted.
 CWD=$(pwd -P)
-if [[ "$CWD" = "$WS_DIR/localnet"* ]]; then
-  echo "This script can't be called from a location to be deleted [$WS_DIR/localnet]."
+if [[ "$CWD" = "$DEV_DIR/localnet"* ]]; then
+  echo "This script can't be called from a location to be deleted [$DEV_DIR/localnet]."
   setup_error "Change current directory location and try again."
 fi
 
@@ -123,31 +124,31 @@ then
 fi
 
 # If not already done, get the github sui devnet branch.
-if [ ! -d "$WS_DIR/sui" ]
+if [ ! -d "$DEV_DIR/sui-devnet" ]
 then
-  git clone -b devnet https://github.com/MystenLabs/sui.git "$WS_DIR/sui"  || setup_error "Failed getting Sui devnet branch from github";
+  git clone -b devnet https://github.com/MystenLabs/sui.git "$DEV_DIR/sui-devnet"  || setup_error "Failed getting Sui devnet branch from github";
 fi
 
 # Update sui devnet local repo (if needed)
-(cd $WS_DIR/sui && git remote update >& /dev/null)
-V1=$(cd $WS_DIR/sui; git rev-parse HEAD)
-V2=$(cd $WS_DIR/sui; git rev-parse '@{u}')
+(cd $DEV_DIR/sui-devnet && git remote update >& /dev/null)
+V1=$(cd $DEV_DIR/sui-devnet; git rev-parse HEAD)
+V2=$(cd $DEV_DIR/sui-devnet; git rev-parse '@{u}')
 if [ $V1 != $V2 ]
 then 
   # Does a bit more than needed, but should allow to recover
   # from most operator error...
   echo Updating sui local repo in dtp-dev...
-  (cd $WS_DIR/sui && git switch devnet > /dev/null)
-  (cd $WS_DIR/sui && git fetch > /dev/null)
-  (cd $WS_DIR/sui && git reset --hard origin/devnet > /dev/null)
-  (cd $WS_DIR/sui && git merge '@{u}')
+  (cd $DEV_DIR/sui-devnet && git switch devnet > /dev/null)
+  (cd $DEV_DIR/sui-devnet && git fetch > /dev/null)
+  (cd $DEV_DIR/sui-devnet && git reset --hard origin/devnet > /dev/null)
+  (cd $DEV_DIR/sui-devnet && git merge '@{u}')
 fi
 
 # Verify sui built is latest.
 echo Building localnet using latest Sui devnet branch...
-(cd $WS_DIR/sui; cargo build)
+(cd $DEV_DIR/sui-devnet; cargo build)
 
-# Sanity test that the sui devnet binary works
+# Sanity test that the sui binary works
 if [ ! -f "$SUI_BIN_DIR/sui" ]; then
   setup_error "$SUI_BIN_DIR/sui binary not found"
 fi
@@ -162,29 +163,29 @@ MIN_SUI_VERSION="sui 0.17.0"
 version_greater_equal "$SUI_VERSION" "$MIN_SUI_VERSION" || setup_error "Sui binary version might be too old"
 
 # Clean-up previous localnet (if exists)
-if [ -d "$WS_DIR/localnet" ]
+if [ -d "$DEV_DIR/localnet" ]
 then
   echo Removing existing localnet directory
-  rm -rf "$WS_DIR/localnet"
+  rm -rf "$DEV_DIR/localnet"
 fi
 
 echo Creating new localnet directory
-mkdir -p "$WS_DIR/localnet"
-$SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$WS_DIR/localnet" >& /dev/null
-yes | cp -rf "$GENESIS_DATA_DIR/sui.keystore" "$WS_DIR/localnet"
-yes | cp -rf "$GENESIS_DATA_DIR/client.yaml" "$WS_DIR/localnet"
+mkdir -p "$DEV_DIR/localnet"
+$SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet" >& /dev/null
+yes | cp -rf "$GENESIS_DATA_DIR/sui.keystore" "$DEV_DIR/localnet"
+yes | cp -rf "$GENESIS_DATA_DIR/client.yaml" "$DEV_DIR/localnet"
 
 # Replace placeholder string in client.yaml with an absolute path to the keystore.
 # Notice sed uses '+'' for seperator instead of '/' to avoid clash
 # with directory path. Also uses a .bak temp file because Mac (BSD) does not
 # allow in-place file change.
 SEARCH_STRING="<PUT_WORKING_DIR_PATH_HERE>"
-REPLACE_STRING="$WS_DIR/localnet"
-sed -i.bak -e "s+$SEARCH_STRING+$REPLACE_STRING+g" "$WS_DIR/localnet/client.yaml" && rm "$WS_DIR/localnet/client.yaml.bak"
+REPLACE_STRING="$DEV_DIR/localnet"
+sed -i.bak -e "s+$SEARCH_STRING+$REPLACE_STRING+g" "$DEV_DIR/localnet/client.yaml" && rm "$DEV_DIR/localnet/client.yaml.bak"
 
 # Start the new localnet.
 echo "Starting new localnet process (may take up to 30 secs)"
-$SUI_BIN_DIR/sui start --network.config "$NETWORK_CONFIG" >& "$WS_DIR/localnet.log" &
+$SUI_BIN_DIR/sui start --network.config "$NETWORK_CONFIG" >& "$DEV_DIR/localnet.log" &
 NEW_SUI_PID=$!
 
 # Loop until "sui client" confirms to be working, or exit if that takes

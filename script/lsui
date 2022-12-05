@@ -6,9 +6,19 @@
 setup_error() { echo "$*" 1>&2 ; exit 1; }
 
 # Just find the absolute path of the "dtp-dev"
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-WS_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
-WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
+SCRIPT_READLINK="$(readlink -f "$0")"
+SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
+SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
+DEV_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
+DEV_DIR="$(cd "$(dirname "$DEV_DIR_REL")"; pwd)/$(basename "$DEV_DIR_REL")"
+
+# Some other commonly used locations.
+SUI_BIN_DIR="$DEV_DIR/sui-devnet/target/debug"
+
+# Files often needed for sui CLI calls
+NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
+CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
+KEYSTORE_FILE="$DEV_DIR/localnet/sui.keystore"
 
 # TODO Validate if dtp-dev and sui binary are correct and give advises if not.
 
@@ -16,19 +26,19 @@ WS_DIR="$(cd "$(dirname "$WS_DIR_REL")"; pwd)/$(basename "$WS_DIR_REL")"
 SUI_SUBCOMMAND=$1
 if [[ "$1" = "client" || "$1" == "console" ]]; then  
   shift 1
-  $WS_DIR/sui/target/debug/sui $SUI_SUBCOMMAND --client.config "$WS_DIR/localnet/client.yaml" "$@"
+  $SUI_BIN_DIR/sui $SUI_SUBCOMMAND --client.config "$CLIENT_CONFIG" "$@"
   exit
 fi
 
 if [[ "$1" == "network" ]]; then
   shift 1
-  $WS_DIR/sui/target/debug/sui $SUI_SUBCOMMAND --network.config "$WS_DIR/localnet/network.yaml" "$@"
+  $SUI_BIN_DIR/sui $SUI_SUBCOMMAND --network.config "$NETWORK_CONFIG" "$@"
   exit
 fi
 
 if [[ "$1" == "genesis" ]]; then
   if [[ "$2" == "--help" || "$2" == "-h" ]]; then
-    $WS_DIR/sui/target/debug/sui genesis --help
+    $SUI_BIN_DIR/sui genesis --help
   fi
   echo
   setup_error "Error: Use dtp/script/init-localnet instead for re-initializing localnet"
@@ -36,7 +46,7 @@ fi
 
 if [[ "$1" == "start" ]]; then
   if [[ "$2" == "--help" || "$2" == "-h" ]]; then
-    $WS_DIR/sui/target/debug/sui start --help
+    $SUI_BIN_DIR/sui start --help
   fi
   echo
   # TODO Consider implementing a start-localnet script instead.
@@ -45,9 +55,9 @@ fi
 
 if [[ "$1" == "keytool" ]]; then
   shift 1
-  $WS_DIR/sui/target/debug/sui $SUI_SUBCOMMAND --keystore-path "$WS_DIR/localnet/sui.keystore" "$@"
+  $SUI_BIN_DIR/sui $SUI_SUBCOMMAND --keystore-path "$KEYSTORE_FILE" "$@"
   exit
 fi
 
 # Default
-$WS_DIR/sui/target/debug/sui "$@"
+$SUI_BIN_DIR/sui "$@"
