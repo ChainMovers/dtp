@@ -1,15 +1,97 @@
 // For now, just focusing on getting the SDKs dependencies right, code is meaningless.
-use sui_sdk::types::base_types::ObjectID;
+use sui_sdk::types::base_types::{ObjectID, SuiAddress};
+use std::str::FromStr;
+
+// High-Level Design (very rough for now, likely to evolve):
+//
+//    - Create a DTPClient for every committe intended to be used.
+//
+//    - Use a DTPClient to access its various APIs e.g. dtp_client.connection_api()
+//
+//    - A Shared Object on the Sui network can have one or more local handles.
+//
+//      Example: connection_api.get_peer_node_by_address() creates a local
+//               handle of an existing Sui Node Shared Object that belongs
+//               to someone else.
+//
+//      When an handle is created it copies a subset of fields from the network object.
+//
+//      These fields can change only when the handle update() method is successfully
+//      called.
+//
+//      Since the same network object can have multiple handles, it is possible
+//      to, as an example, identify change in a field using two handles.
 
 #[derive(Debug)]
-pub struct Node {
-    pub id : ObjectID,
+pub struct PeerNodeHandle {
+  pub id : ObjectID,
 }
 
-impl Node {
-  pub fn ping() -> bool {
-    return true;
+pub struct OwnNodeHandle {
+  pub id : ObjectID,
+}
+
+// Provides all the DTP SDK APIs.
+pub struct DTP {
+  connection_api: ConnectionApi,
+}
+
+impl DTP {
+  pub fn new(
+  ) -> Result<Self, anyhow::Error> {
+    let connection_api: ConnectionApi = ConnectionApi{ v: 1 };
+
+    Ok(DTP{ connection_api })
   }
+
+  pub fn connection_api(&self) -> &ConnectionApi {
+    &self.connection_api
+  }
+}
+pub struct ConnectionApi{ v: u32 }
+
+impl ConnectionApi {
+  // Get an handle of a DTP Node own by a peer on the network.
+  //
+  // The handle is used for doing operations such as ping the node, create connections,
+  // block the node with the firewall etc...
+  //
+  pub async fn get_peer_node_by_address(
+    &self,
+    _address: SuiAddress
+  ) -> Result<PeerNodeHandle, anyhow::Error>
+  {
+    // TODO Mocking for now, but calling into Sui SDK for conversion.
+    Ok(PeerNodeHandle{ id: ObjectID::from_str("0x6205fc058b205227d7b7bd5b4e7802f0055157c6")? })
+  }
+
+  // Get an handle of a DTP Node that you own and that is expected to already
+  // be on the network.
+  pub async fn get_own_node_by_address(
+    &self,
+    _address: SuiAddress
+  ) -> Result<OwnNodeHandle, anyhow::Error>
+  {
+    // TODO Mocking for now, but calling into Sui SDK for conversion.
+    Ok(OwnNodeHandle{ id: ObjectID::from_str("0x6205fc058b205227d7b7bd5b4e7802f0055157c6")? })
+  }
+
+  // Create a new DTP Node on the network that
+  // you will own.
+  pub async fn create_node(&self) -> Result<OwnNodeHandle, anyhow::Error>
+  { // TODO Mocking for now, but calling into Sui SDK for conversion.
+    Ok(OwnNodeHandle{ id: ObjectID::from_str("0x6205fc058b205227d7b7bd5b4e7802f0055157c6")? })
+  }
+
+  pub fn ping(
+    &self,
+    _own_node: &OwnNodeHandle,
+    _peer_node: &PeerNodeHandle,
+  ) -> Result<bool, anyhow::Error>
+  {
+    Ok(true)
+  }
+
 }
 
 #[cfg(test)]

@@ -2362,6 +2362,7 @@ name = "dtp-dev-app"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "dtp-sdk",
  "sui-sdk",
  "tokio",
 ]
