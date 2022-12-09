@@ -15,6 +15,10 @@
 # For future reference, this is how the config.yaml was generated:
 #     sui genesis --write-config "$GENESIS_DATA_DIR/config.yaml"
 
+# Scripts does not work with version below these.
+MIN_SUI_VERSION="sui 0.18.0"
+MIN_RUST_VERSION="rustc 1.65.0"
+
 # Utility functions.
 setup_error() { echo "$*" 1>&2 ; exit 1; }
 version_greater_equal() { printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort; }
@@ -50,7 +54,6 @@ which rustc &> /dev/null || setup_error "Need to install rust. See https://docs.
 which cargo &> /dev/null || setup_error "Need to install cargo. See https://docs.sui.io/build/install#prerequisites";
 
 # Verify Rust is recent enough.
-MIN_RUST_VERSION="rustc 1.65.0"
 version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "Upgrade rust to a more recent version";
 
 # Just find the absolute path of the "dtp-dev" where most
@@ -73,7 +76,6 @@ NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
 CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
 
 # Create/update path to dtp shell scripts.
-
 update_bin_path "init-localnet"
 update_bin_path "lsui"
 
@@ -158,9 +160,8 @@ if [ -z "$SUI_VERSION" ]; then
   setup_error "$SUI_BIN_DIR/sui --version not running properly"
 fi
 
-# Check if sui is too old.
-MIN_SUI_VERSION="sui 0.17.0"
-version_greater_equal "$SUI_VERSION" "$MIN_SUI_VERSION" || setup_error "Sui binary version might be too old"
+# Check if sui is recent enough.
+version_greater_equal "$SUI_VERSION" "$MIN_SUI_VERSION" || setup_error "Sui binary version too old (not supported)"
 
 # Clean-up previous localnet (if exists)
 if [ -d "$DEV_DIR/localnet" ]
@@ -194,7 +195,7 @@ end=$((SECONDS+30))
 ALIVE=false
 AT_LEAST_ONE_SECOND=false
 while [ $SECONDS -lt $end ]; do
-  CHECK_ALIVE=$($SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" envs | grep localnet)
+  CHECK_ALIVE=$($SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" objects | grep -i Digest)
   if [ ! -z "$CHECK_ALIVE" ]; then
     ALIVE=true
     break
@@ -214,9 +215,9 @@ fi
 if [ "$ALIVE" = false ]; then 
   echo "Sui process not responding. Try again? (may be the host is too slow?)."
   exit;
-else
-  echo "New localnet started (sui process pid $NEW_SUI_PID)"
 fi
+
+echo "New localnet started ($SUI_VERSION, process pid $NEW_SUI_PID)"
 
 # Make sure localnet exists in sui envs (ignore errors because likely already exists)
 echo ========
