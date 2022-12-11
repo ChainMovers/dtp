@@ -33,10 +33,9 @@ module dtp::transport_control {
 
     // Control Plane of a connection.
     //
-    // Shared object accessible only by the client and server
-    // of a single connection.
-
-    struct TransportControl has key {
+    // Shared object with public entry functions allowed only 
+    // for the client and server of the related connection.
+    struct TransportControl has key, store {
         id: UID,
 
         // DTP Nodes.
@@ -102,13 +101,42 @@ module dtp::transport_control {
     }    
 
     // Read accessors
-    public fun server_address(self: &TransportControl): address {
+    public(friend) fun server_address(self: &TransportControl): address {
         self.server
     }
 
-    public fun client_address(self: &TransportControl): Option<address> {
+    public(friend) fun client_address(self: &TransportControl): Option<address> {
         self.client
     }
+
+    // TODO A public entry with a unit test to verify limited client/server access.
+
+
+    // Connection State Machine (work-in-progress):
+    //
+    //  Healthy transitions:
+    //    created -------------- connection accepted -----> starting
+    //    starting ------------ complete e2e encryption --> started
+    //    started or recovered ---- payload transfer  ----> active
+    //    any state ----- client request termination -----> terminating
+    //
+    //  Degradations:
+    //    active    ----- no payload for 1 whole epoch -----> inactive
+    //    any state -------- server requested hangup -------> server_hangup
+    //    any state -------- client requested hangup -------> client_hangup
+    //
+    //  Recovery:
+    //    inactive -------------- payload transfer ---------> active
+    //    any hangup state -- connection retry accepted ----> recovering
+    //    recovering ---------- renew e2e encryption -------> recovered
+    //
+    //  Deletion:
+    //    terminating ----- server accept termination ------> <<OBJECT DELETED>>
+    //    not active state -- persist for 30 whole epochs --> <<OBJECT DELETED>>
+    //
+    // Note: All epoch timeout may differ depending of the connection SLA.
+    //
+    // TODO
 
 }
 
