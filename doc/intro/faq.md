@@ -20,7 +20,7 @@ dApps built on top of DTP can use tokens and/or charge additional Mist, but this
 \
 DTP/Sui provides reliable and ordered data transport. That would be redundant with, say, what TCP would try to achieve within a tunnel.
 
-Instead, look into [DTP Services Daemon](installation.md#setup-with-dtp-services-daemon-plan-for-april-2023) to efficiently terminate/bridge standard IP protocol with DTP.\
+Instead, look into [DTP Services Daemon](installation.md#setup-with-dtp-services-daemon-plan-for-april-2023) to efficiently terminate/bridge standard IP protocols with DTP.\
 \
 **Any plan to support another blockchain?**\
 ****No, unless a breakthrough in performance is possible with another blockchain architecture.

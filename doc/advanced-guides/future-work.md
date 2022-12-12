@@ -6,9 +6,9 @@ description: Inspiration for the long term (no plan for  now)
 
 ## **Broadcasting Challenges**
 
-Data broadcasting will put traffic load pressure on the fullnodes RPC pub/sub services.\
+Data broadcasting will put traffic load pressure on the fullnodes WebSocket event streaming services.\
 \
-Fullnodes may have low economic incentive to support high bandwidth on their RPC.\
+Fullnodes may have low economic incentive to support high bandwidth services.\
 \
 The architecture should scale to match the audience size.\
 \

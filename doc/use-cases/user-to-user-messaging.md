@@ -13,9 +13,10 @@ If not sure how to proceed, please open a discussion on [Discord](https://discor
 * Web3 frontends connecting to a centralized JSON-RPC backend ( [More info](json-rpc-firewall.md) )
 * Rust/Typescript Web3 Client to centralized TCP Server ( [More info](rust-client-server.md) )
 
-**Messaging**
+**Encrypted Messaging**
 
-* Encrypted user-to-user data transfer&#x20;
+* Add traditional user/password login to a dApp. The goal is to allow access to the same "user account" even if done from a different wallet (client address). Implementation often requires "secret messaging" between a centralized server and the Web3 apps.
+* Any user-to-user data transfer&#x20;
 * Anonymous Tips Line (with potential reward in return).
 
 **Networking / Infrastructure**
@@ -30,7 +31,7 @@ If not sure how to proceed, please open a discussion on [Discord](https://discor
 
 **Crypto-Economics**
 
-* Any service charging for content access (in addition to DTP cost). DTP to provide per byte and/or per request escrow service (to meter pre-agreed cost, limit and quantity... not quality).
+* Any service charging for content access (in addition to gas cost). DTP provides generic per byte and/or per request escrow service (to meter pre-agreed cost, limit and quantity... not quality).
 * Pre-paid subscription per day/month (epoch driven?).
 * Various escrow service that allows to shift the transport cost completely at the origin or destination (gas always paid by sender, but escrow service handles fair refund).
 
