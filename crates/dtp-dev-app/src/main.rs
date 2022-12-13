@@ -2,11 +2,10 @@ use std::str::FromStr;
 use sui_sdk::types::base_types::SuiAddress;
 use sui_sdk::SuiClient;
 
-use dtp_sdk::{ DTP, ConnectionApi, PeerNodeHandle, OwnNodeHandle };
+use dtp_sdk::{ConnectionApi, OwnNodeHandle, PeerNodeHandle, DTP};
 
 #[tokio::main]
-async fn main() -> Result<(), anyhow::Error>  {
-    
+async fn main() -> Result<(), anyhow::Error> {
     // Test localnet with the pre-funded wallet.
     let sui = SuiClient::new("http://0.0.0.0:9000", None, None).await?;
     let address = SuiAddress::from_str("0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2")?;
@@ -24,7 +23,7 @@ async fn main() -> Result<(), anyhow::Error>  {
     let peer_node: PeerNodeHandle = con_api.get_peer_node_by_address(peer_address).await?;
     let own_node: OwnNodeHandle = con_api.get_own_node_by_address(own_address).await?;
 
-    println!("Ping result is {:?}", con_api.ping( &own_node, &peer_node ) );
+    println!("Ping result is {:?}", con_api.ping(&own_node, &peer_node));
 
     Ok(())
 }
