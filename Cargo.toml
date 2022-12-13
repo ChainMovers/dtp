@@ -7,3 +7,23 @@ members = ["crates/dtp-core",
 
 [workspace.package]
 version = "0.1.0"
+
+[workspace.dependencies]
+# By default, DTP is built using the remote Sui devnet branch.
+#
+# Optionally, un-comment the "path"" sui-sdk dependency to make sure
+# your running localnet and application use the same local Sui repo.
+#
+# Use "script/init-localnet" to create or update this local repo.
+#
+# See https://github.com/mario4tier/dtp/tree/main/script for doc
+# about DTP directories structure.
+
+#sui-sdk = { path = "../dtp-dev/sui-devnet/crates/sui-sdk/" }
+
+# Comment this sui-sdk "git" dependency if using the above "path" dependency.
+sui-sdk = { git = "https://github.com/MystenLabs/sui", branch = "devnet" }
+
+tokio = { version = "1.22.0", features = ["full"] }
+anyhow = "1.0.64"
+

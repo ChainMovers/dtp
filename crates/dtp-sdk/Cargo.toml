@@ -1,10 +1,16 @@
+# Cargo.toml documentation: https://doc.rust-lang.org/cargo/reference/manifest.html
 [package]
 name = "dtp-sdk"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-#  See https://github.com/mario4tier/dtp/tree/main/script for doc about DTP directories structure.
-sui_sdk = { path = "../../../dtp-dev/sui-devnet/crates/sui-sdk/", package="sui-sdk" }
-tokio = { version = "1.22.0", features = ["full"] }
-anyhow = "1.0.64"
+sui-sdk = { workspace=true }
+anyhow = { workspace=true }
+
+[dev-dependencies.cargo-husky]
+# Hooks of common Rust operations.
+# https://github.com/rhysd/cargo-husky#readme
+version = "=1.5.0" # Force the version to keep things safe.
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-for-all", "run-cargo-test", "run-cargo-clippy", "run-cargo-fmt"]

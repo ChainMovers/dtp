@@ -3,11 +3,9 @@ name = "dtp-dev-app"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-#  See https://github.com/mario4tier/dtp/tree/main/script for doc about DTP directories structure.
-sui_sdk = { path = "../../../dtp-dev/sui-devnet/crates/sui-sdk/", package="sui-sdk" }
-dtp_sdk = { path = "../dtp-sdk/", package="dtp-sdk" }
-tokio = { version = "1.22.0", features = ["full"] }
-anyhow = "1.0.64"
+sui-sdk = { workspace=true }
+anyhow = { workspace=true }
+tokio = { workspace=true }
+
+dtp-sdk = { path = "../dtp-sdk/" }
