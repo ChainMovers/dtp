@@ -12,7 +12,6 @@ Try this:
   - Keeps localnet/devnet/testnet/mainnet keystores seperated.
   - Does not touch the user level ~/.sui and its keystore (assumes might be used for mainnet).
   - Creates self-contain and deterministic localnet that can be re-initialized with the same pre-funded address.
-  - Localnet uses ports that should not interfere with other installations.
   - Sui CLI frontends that target specific network (e.g. "dsui client gas" will be for the live devnet).
 
 ## Initial State
@@ -73,7 +72,6 @@ async fn main() -> Result<(), anyhow::Error> {
     let address = SuiAddress::from_str("0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2")?;
     let objects = sui.read_api().get_objects_owned_by_address(address).await?;
     println!("{:?}", objects);
-...
     Ok(())
 }
 
