@@ -43,10 +43,10 @@ $ lsui client gas
        ├── dtp/           # The git cloned dtp
        |   ├── ...
        │   └── script/
-       │       ├── init-localnet # Creates dtp-dev/sui-devnet and localnet-devnet
-       │       ├── lsui          # Sui CLI for localnet (devnet branch)
-       │       ├── dsui          # Sui CLI for live devnet
-       │       └── tsui          # Sui CLI for live testnet
+       │       ├── init-localnet # Creates dtp-dev/sui-devnet and dtp-dev/localnet
+       │       ├── lsui          # Sui CLI frontend for localnet (devnet branch)
+       │       ├── dsui          # Sui CLI frontend for live devnet (TODO)
+       │       └── tsui          # Sui CLI frontend for live testnet (TODO)
        │       
        └── dtp-dev/       # Created by the scripts
            ├── sui-devnet         # Complete local repo of Sui devnet branch.
