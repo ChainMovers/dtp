@@ -142,7 +142,7 @@ module dtp::transport_control {
 
 #[test_only]
 module dtp::test_transport_control {
-    use std::debug;
+    //use std::debug;
     use std::option::{Self};
 
     use sui::transfer;
@@ -154,8 +154,8 @@ module dtp::test_transport_control {
 
     #[test]
     fun test_instantiation() {
-        let node_creator = @0x1;
-        let scenario_val = test_scenario::begin(node_creator);
+        let creator = @0x1;
+        let scenario_val = test_scenario::begin(creator);
         let scenario = &mut scenario_val;
         
         /* TODO Figure out how to call init, or is it always called by default?
@@ -165,10 +165,10 @@ module dtp::test_transport_control {
 
         let fake_client_address = @0x2;
         let fake_server_address = @0x3;
-        let fake_client_pipe_id; // object::id_from_address(@0x0); // NULL
-        let fake_server_pipe_id; // = object::id_from_address(@0x0); // NULL
+        let fake_client_pipe_id;
+        let fake_server_pipe_id;
 
-        test_scenario::next_tx(scenario, node_creator);
+        test_scenario::next_tx(scenario, creator);
         {
             let ctx = test_scenario::ctx(scenario);
 
@@ -187,7 +187,7 @@ module dtp::test_transport_control {
             // Test accessors
             assert!(transport_control::server_address(&tc) == fake_server_address, 1);
 
-            debug::print(&tc);
+            //debug::print(&tc);
 
             transfer::share_object( fake_client_pipe );
             transfer::share_object( fake_server_pipe );
