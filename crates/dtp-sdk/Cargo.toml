@@ -1,16 +1,17 @@
 # Cargo.toml documentation: https://doc.rust-lang.org/cargo/reference/manifest.html
 [package]
 name = "dtp-sdk"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+documentation.workspace = true
 
 [dependencies]
-sui-sdk = { workspace=true }
-anyhow = { workspace=true }
+tokio.workspace = true
+anyhow.workspace = true
+sui-sdk.workspace = true
 
-[dev-dependencies.cargo-husky]
-# Hooks of common Rust operations.
-# https://github.com/rhysd/cargo-husky#readme
-version = "=1.5.0" # Force the version to keep things safe.
-default-features = false # Disable features which are enabled by default
-features = ["precommit-hook", "run-for-all", "run-cargo-test", "run-cargo-clippy", "run-cargo-fmt"]
+[dev-dependencies]
+serial_test.workspace = true
+cargo-husky.workspace = true

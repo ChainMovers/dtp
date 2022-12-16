@@ -7,9 +7,13 @@ members = ["crates/dtp-core",
 
 [workspace.package]
 version = "0.1.0"
+edition = "2021"
+homepage = "https://dtp.dev"
+license = "Apache-2.0"
+documentation = "https://docs.dtp.dev"
 
 [workspace.dependencies]
-# By default, DTP is built using the remote Sui devnet branch.
+# By default, DTP is built using the remote git Sui (devnet branch).
 #
 # Optionally, un-comment the "path"" sui-sdk dependency to make sure
 # your running localnet and application use the same local Sui repo.
@@ -23,7 +27,28 @@ version = "0.1.0"
 
 # Comment this sui-sdk "git" dependency if using the above "path" dependency.
 sui-sdk = { git = "https://github.com/MystenLabs/sui", branch = "devnet" }
-
 tokio = { version = "1.22.0", features = ["full"] }
 anyhow = "1.0.64"
+
+
+[workspace.dependencies.serial_test]
+# Intended to be used as [dev-dependencies] only.
+#
+# Attribute macros to control how test can run sequentially/parallel.
+#    https://tevps.net/blog/serial_test/ 
+#
+# Imagine a RWLock, the attributes do the following:
+#   [serial]     : Equivalent to a writer lock on the "RWLock".
+#   [parallel]   : Equivalent to a reader lock on the "RWLock".
+#   No Attribute : Can run at anytime, ignore the RWLock.
+version = "=0.9.0" # Force the version to keep things safe.
+
+[workspace.dependencies.cargo-husky]
+# Intended to be used as [dev-dependencies] only.
+#
+# Git hooks of common Rust operations.
+#    https://github.com/rhysd/cargo-husky#readme
+version = "=1.5.0" # Force the version to keep things safe.
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-for-all", "run-cargo-test", "run-cargo-clippy", "run-cargo-fmt"]
 

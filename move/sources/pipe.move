@@ -1,4 +1,3 @@
-
 // A Pipes is a uni-directional data stream.
 //   
 // It is own by the endpoint transmiting data.
@@ -10,6 +9,8 @@ module dtp::pipe {
     use sui::object::{Self, UID};
     use sui::tx_context::{TxContext};    
 
+    #[test_only]
+    friend dtp::test_pipe;
     friend dtp::transport_control;
 
     #[test_only]
@@ -56,4 +57,4 @@ module dtp::pipe {
 
 }
 
-// TODO Unit testing
+module dtp::test_pipe {}

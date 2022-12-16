@@ -1,11 +1,17 @@
 [package]
 name = "dtp-dev-app"
-version = "0.1.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+homepage.workspace = true
+license.workspace = true
+documentation.workspace = true
 
 [dependencies]
-sui-sdk = { workspace=true }
-anyhow = { workspace=true }
-tokio = { workspace=true }
+tokio.workspace = true
+anyhow.workspace = true
+sui-sdk.workspace = true
 
 dtp-sdk = { path = "../dtp-sdk/" }
+
+[dev-dependencies]
+cargo-husky.workspace = true
