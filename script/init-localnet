@@ -229,10 +229,12 @@ $SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" switch --env localnet >
 # print sui envs to help debugging (if someone else is using this script).
 $SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" envs
 echo ========
+echo All addresses with coins:
+$SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" addresses
+echo ========
 
-# TODO Sanity check that the localnet is as expected.
 WALLET_ADDR=$($SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" active-address)
-echo All coin objects own by $WALLET_ADDR:
+echo "All coins owned by $WALLET_ADDR (active):"
 $SUI_BIN_DIR/sui client --client.config "$CLIENT_CONFIG" gas
 echo ========
 echo
@@ -240,4 +242,4 @@ echo Remember:
 echo "  Use \"dsui\" to access devnet"
 echo "  Use \"lsui\" to access your localnet"
 echo
-echo Success. Try it by typing \"lsui client gas\"
+echo Success. Try it by typing \"lsui client --help\"
