@@ -64,12 +64,15 @@ SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
 SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
 DEV_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
 DEV_DIR="$(cd "$(dirname "$DEV_DIR_REL")"; pwd)/$(basename "$DEV_DIR_REL")"
+MOVE_SRC_DIR_REL="$SCRIPT_DIR/../move"
+MOVE_SRC_DIR="$(cd "$(dirname "$MOVE_SRC_DIR_REL")"; pwd)/$(basename "$MOVE_SRC_DIR_REL")"
 LOCAL_BIN="$HOME/.local/bin"
 
 # Some other commonly used locations.
 SUI_REPO_DIR="$DEV_DIR/sui-devnet"
 SUI_BIN_DIR="$SUI_REPO_DIR/target/debug"
 GENESIS_DATA_DIR="$SCRIPT_DIR/genesis_data"
+PUBLISH_DATA_DIR="$DEV_DIR/publish_data/localnet"
 
 # Configuration files (often needed for sui CLI calls)
 NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
@@ -78,6 +81,7 @@ CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
 # Create/update path to dtp shell scripts.
 update_bin_path "init-localnet"
 update_bin_path "lsui"
+update_bin_path "publish-localnet"
 
 # Create dtp-dev if does not exists.
 mkdir -p "$DEV_DIR"
@@ -170,6 +174,9 @@ then
   rm -rf "$DEV_DIR/localnet"
 fi
 
+# Delete localnet publish directory (if exists) to force re-publication.
+rm -rf "$DEV_DIR/publish_output/localnet/"
+
 echo Creating new localnet directory
 mkdir -p "$DEV_DIR/localnet"
 $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet" >& /dev/null
@@ -242,4 +249,4 @@ echo Remember:
 echo "  Use \"dsui\" to access devnet"
 echo "  Use \"lsui\" to access your localnet"
 echo
-echo Success. Try it by typing \"lsui client --help\"
+echo Success. Try it by typing \"lsui client gas\"
