@@ -2301,8 +2301,13 @@ checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
 name = "dtp-core"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "cargo-husky",
+ "derivative",
+ "serial_test",
+ "sui-json-rpc-types",
  "sui-sdk",
+ "tokio",
 ]
 
 [[package]]
@@ -2318,6 +2323,19 @@ dependencies = [
 
 [[package]]
 name = "dtp-sdk"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cargo-husky",
+ "dtp-core",
+ "dtp-test-helper",
+ "serial_test",
+ "sui-sdk",
+ "tokio",
+]
+
+[[package]]
+name = "dtp-test-helper"
 version = "0.1.0"
 dependencies = [
  "anyhow",

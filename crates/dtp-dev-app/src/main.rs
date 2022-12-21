@@ -2,7 +2,7 @@ use std::str::FromStr;
 use sui_sdk::types::base_types::SuiAddress;
 use sui_sdk::SuiClient;
 
-use dtp_sdk::{ConnectionApi, Host, Localhost, DTP};
+use dtp_sdk::{Host, Localhost, DTP};
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -14,17 +14,17 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let own_address = SuiAddress::from_str("0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2")?;
 
-    let dtp: DTP = DTP::new("http://0.0.0.0:9000", None).await?;
-    let con_api: &ConnectionApi = dtp.connection_api();
+    let dtp: DTP = DTP::new(own_address, "http://0.0.0.0:9000", None).await?;
 
     let peer_address = SuiAddress::from_str("0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2")?;
 
-    let peer_node: Host = con_api.get_host_by_address(peer_address).await?;
-    let own_node: Localhost = con_api
-        .get_localhost_by_address(own_address, own_address)
-        .await?;
+    let peer_node: Host = dtp.get_host_by_address(peer_address).await?;
+    let own_node: Localhost = dtp.get_localhost_by_address(own_address).await?;
 
-    println!("Ping result is {:?}", con_api.ping(&own_node, &peer_node));
+    println!(
+        "Ping result is {:?}",
+        dtp.ping(&own_node, &peer_node).await?
+    );
 
     Ok(())
 }

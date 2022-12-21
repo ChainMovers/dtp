@@ -11,7 +11,9 @@ documentation.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
 sui-sdk.workspace = true
+dtp-core = { path = "../dtp-core/" }
 
 [dev-dependencies]
+dtp-test-helper = { path = "../dtp-test-helper/" }
 serial_test.workspace = true
 cargo-husky.workspace = true

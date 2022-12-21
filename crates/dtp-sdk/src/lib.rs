@@ -1,122 +1,186 @@
-// For now, just focusing on getting the SDKs dependencies right, code is meaningless.
-use std::str::FromStr;
+// DTP SDK API
+//
+// For most app, only one instance of DTP object will be needed.
+//
+// There is a one-to-one relationship between a Sui client address
+// and a DTP instance.
+//
+// A DTP object can create multiple child objects, e.g. Host, LocalHost...
+// Operations on these childs are enforced to be done only in context of its
+// parent.
+//
+// Multiple DTP instance can co-exist in the same app.
+//
+// Caller Responsibilities:
+//   - Do not instantiate two DTP object for the same client address.
+//     It may work, but it may also result in equivocation deadlock of
+//     the Sui network and the client might be unuseable until start
+//     of next epoch.
+//
+//   - A DTP instance (and its children) must all be access within a
+//     single thread (or be Mutex protected by the caller).
+//
+//   - Doing operations that mix children with the wrong DTP parent will
+//     be detected and result in a TBD error.
+//
+// TODO Define the error.
+
+use anyhow::bail;
+use dtp_core::network::{HostInternal, LocalhostInternal, NetworkManager};
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
-use sui_sdk::SuiClient;
 
-// High-Level Design (very rough for now, likely to evolve):
-//
-//    - Create a DTPClient for every committe intended to be used.
-//
-//    - Use a DTPClient to access its various APIs e.g. dtp_client.connection_api()
-//
-//    - A Shared Object on the Sui network can have one or more local handles.
-//
-//      Example: connection_api.get_peer_node_by_address() creates a local
-//               handle of an existing Sui Node Shared Object that belongs
-//               to someone else.
-//
-//      When an handle is created it copies a subset of fields from the network object.
-//
-//      These fields can change only when the handle update() method is successfully
-//      called.
-//
-//      Since the same network object can have multiple handles, it is possible
-//      to, as an example, identify change in a field using two handles.
-
-#[derive(Debug)]
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct Host {
     sui_id: ObjectID,
+    // Hidden implementation in dtp-core.
+    host_internal: HostInternal,
 }
 
 // Similar to Host, but with additional functionality available
-// assuming you are the administrator of the Host.
+// assuming the caller is the administrator of the Host.
 #[allow(dead_code)]
 pub struct Localhost {
     host: Host,
+    // Hidden implementation in dtp-core.
+    localhost_internal: LocalhostInternal,
 }
 
-// Provides all the DTP SDK APIs.
-#[allow(dead_code)]
 pub struct DTP {
-    connection_api: ConnectionApi,
-    sui_client: SuiClient,
+    // Implementation hidden in dtp-core.
+    netmgr: NetworkManager,
 }
 
 impl DTP {
-    pub async fn new(http_url: &str, ws_url: Option<&str>) -> Result<Self, anyhow::Error> {
-        let connection_api = ConnectionApi;
-
-        // TODO Revisit if should be done here or caller should own it...
-        let sui_client = SuiClient::new(http_url, ws_url, None).await?;
-
+    pub async fn new(
+        client_address: SuiAddress,
+        http_url: &str,
+        ws_url: Option<&str>,
+    ) -> Result<Self, anyhow::Error> {
         Ok(DTP {
-            connection_api,
-            sui_client,
+            #[allow(clippy::needless_borrow)]
+            netmgr: NetworkManager::new(client_address, &http_url, ws_url).await?,
         })
     }
 
-    pub fn connection_api(&self) -> &ConnectionApi {
-        &self.connection_api
+    // Light Mutators
+    //   JSON-RPC: No
+    //   Gas Cost: No
+    pub fn set_package_id(&mut self, package_id: ObjectID) {
+        self.netmgr.set_package_id(package_id);
     }
 
-    pub fn sui_client(&self) -> &SuiClient {
-        &self.sui_client
+    // Light Accessors
+    //   JSON-RPC: No
+    //   Gas Cost: No
+    pub fn package_id(&self) -> &ObjectID {
+        self.netmgr.get_package_id()
     }
-}
-pub struct ConnectionApi;
+    pub fn client_address(&self) -> &SuiAddress {
+        self.netmgr.get_client_address()
+    }
 
-impl ConnectionApi {
+    // get_host_by_address
+    //   JSON-RPC: Yes
+    //   Gas Cost: No
+    //
     // Get an handle of any DTP Host expected to be already on the Sui network.
     //
-    // The handle is used for doing operations such as ping the host and create connections.
+    // The handle is used for doing various operations such as pinging the host
+    // off-chain server and/or create a connection to it.
     pub async fn get_host_by_address(
         &self,
-        _host_address: SuiAddress,
+        host_address: SuiAddress,
     ) -> Result<Host, anyhow::Error> {
-        // TODO Mocking for now, but calling into Sui SDK for conversion.
+        let host_internal = self.netmgr.get_host_by_address(host_address).await?;
         Ok(Host {
-            sui_id: ObjectID::from_str("0x6205fc058b205227d7b7bd5b4e7802f0055157c6")?,
+            sui_id: *host_internal.get_sui_id(),
+            host_internal,
         })
     }
 
+    // get_localhost_by_address
+    //   JSON-RPC: Yes
+    //   Gas Cost: No
+    //
     // Get an handle of a DTP Host that your application controls.
     //
     // It is expected that the host already exist on the network, if not,
     // then see create_localhost().
     //
+    // TODO Add clear error if not own.
     pub async fn get_localhost_by_address(
         &self,
         localhost_address: SuiAddress, // Address of the targeted localhost.
-        _admin_address: SuiAddress,    // Administrator address for the localhost.
     ) -> Result<Localhost, anyhow::Error> {
-        // TODO Mocking for now, but calling into Sui SDK for conversion.
-        let host = self.get_host_by_address(localhost_address).await?;
-        Ok(Localhost { host })
+        let (host_internal, localhost_internal) = self
+            .netmgr
+            .get_localhost_by_address(localhost_address)
+            .await?;
+        let host = Host {
+            sui_id: *host_internal.get_sui_id(),
+            host_internal,
+        };
+        Ok(Localhost {
+            host,
+            localhost_internal,
+        })
     }
 
     // Create a new DTP Host on the Sui network.
     //
-    // The host object created on the network will be retreiveable
-    // as a DTP::Host handle for everyone (see get_host_XXXX).
+    // The shared object created on the network will be retreiveable
+    // as a read-only DTP::Host handle for everyone (see get_host_xxxx).
     //
     // For the administrator the same object can also be retreiveable
-    // as a DTP::Localhost handle (see get_localhost_xxxx).
+    // as a read/write DTP::Localhost handle (see get_localhost_xxxx).
     //
-    // The administrator is the only one allowed to configure the
-    // host object on the network using the Localhost handle.
+    /*
     pub async fn create_host_on_network(&self) -> Result<Localhost, anyhow::Error> {
-        // TODO Mocking for now, but calling into Sui SDK for conversion.
-        Ok(Localhost {
-            host: Host {
-                sui_id: ObjectID::from_str("0x6205fc058b205227d7b7bd5b4e7802f0055157c6")?,
-            },
-        })
+        Ok(())
+    }*/
+
+    // Ping Service
+    //   JSON-RPC: Yes
+    //   Gas Cost: Yes
+    pub async fn ping(
+        &self,
+        _localhost: &Localhost,
+        _target_host: &Host,
+    ) -> Result<(), anyhow::Error> {
+        // Verify parameters are children of this NetworkManager.
+        //
+        // Particularly useful for the Localhost for an early detection
+        // of trying to access with an incorrect client_address
+        // (early failure --> no gas wasted).
+        /*
+        let &parent_id = self.netmgr.id();
+        let &source_host = localhost.host;
+        if (source_host.get_parent_id() != parent_id) {}
+
+        if (target_host.get_parent_id() != parent_id) {}
+
+        if (source_host.get_object_id() == target_host.get_object_id()) {}
+
+        self.netmgr.ping(localhost, target_host)
+        */
+        Ok(())
     }
 
-    pub fn ping(&self, _own_node: &Localhost, _peer_node: &Host) -> Result<bool, anyhow::Error> {
-        Ok(true)
+    // Initialize Firewall Service
+    //   JSON-RPC: Yes
+    //   Gas Cost: Yes
+    //
+    // The firewall will be configureable from this point, but not yet enabled.
+
+    pub async fn init_firewall(&self, localhost: &mut Localhost) -> Result<(), anyhow::Error> {
+        // Detect API user mistakes.
+        if self.netmgr.get_client_address() != localhost.localhost_internal.get_admin_address() {
+            bail!("Localhost object unrelated to this DTP object")
+        }
+
+        self.netmgr
+            .init_firewall(&mut localhost.localhost_internal)
+            .await
     }
 }
-
-// The API requires both localnet/devnet access. See dtp-sdk/tests for API integration tests.

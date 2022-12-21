@@ -1,10 +1,28 @@
-use dtp_sdk::{ConnectionApi, DTP};
+use dtp_sdk::DTP;
+//use sui_sdk::types::base_types::{ObjectID, SuiAddress};
+//use anyhow::anyhow;
+
+use dtp_test_helper::{Client, SuiNetworkForTest};
 use serial_test::serial;
+mod common;
 
 #[tokio::test]
 #[serial]
 async fn localhost_instantiation_localnet() -> Result<(), anyhow::Error> {
-    let dtp: DTP = DTP::new("http://0.0.0.0:9000", None).await?;
-    let _con_api: &ConnectionApi = dtp.connection_api();
+    let network: SuiNetworkForTest = common::setup_localnet()?;
+
+    let owner = network.get_client_address(Client::Test1).clone();
+    let mut dtp: DTP = DTP::new(owner, "http://0.0.0.0:9000", None).await?;
+
+    dtp.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
+
+    // Test API to create a Localhost.
+    //
+    // Localhost is an handle on a Host shared object that can be
+    // administrated only by this sender.
+    //let localhost = dtp.create_host_on_network().await?;
+
+    //assert!(network.object_exists(&localhost.get_object_id()).await?);
+
     Ok(())
 }
