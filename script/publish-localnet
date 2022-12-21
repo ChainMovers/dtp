@@ -4,8 +4,8 @@
 #
 # Do nothing if no change to source code since last publication.
 #
-# On success, the file dtp/move/localnet/package_id.txt will exist.
-# The content is the package id in hexadecimal.
+# On success, the file dtp/move/localnet/package_id.txt and client_addresses.txt
+# will be created. The content are addresses in hexadecimal, starting with 0x.
 #
 # On failures, more info can be found in dtp/move/localnet/publish_output.txt
 
@@ -47,8 +47,9 @@ PACKAGE_ID_OUTPUT="$PUBLISH_DATA_DIR/package_id.txt"
 # Remove some output from previous runs to minimize confusion.
 rm -rf "$SCRIPT_OUTPUT"
 
-# Following file created only on confirmed success of publication.
+# Following files created only on confirmed success of publication.
 rm -rf "$PUBLISH_DATA_DIR/package_id.txt"
+rm -rf "$PUBLISH_DATA_DIR/client_addresses.txt"
 
 # Sanity check init-localnet was done.
 if [ ! -d "$DEV_DIR" ]; then
@@ -157,12 +158,16 @@ fi
 # TODO Validate the package ID is all hexadecimal
 
 # Test the publication by retreiving object information from the network
-# for that new package id.
+# using that parsed package id.
 script_cmd "lsui client object $ID"
 validation=$(lsui client object $ID | grep "Move Package")
 if [ -z "$validation" ]; then
   setup_error "Unexpected object type (Not a Move Package)"
 fi
+
+# Write in client_addresses.txt the addresses created by config.yaml on genesis.
+# sed remove all the spaces and replace "address:" with "0x"
+$(cat "$GENESIS_DATA_DIR/config.yaml" | grep address | sed 's/ //g' | sed 's/\(^.*address:\)/0x/g' > "$PUBLISH_DATA_DIR/client_addresses.txt")
 
 # Create the package_id.txt file to confirm to caller successful publication.
 echo "$ID" > "$PUBLISH_DATA_DIR/package_id.txt"
