@@ -27,10 +27,14 @@ documentation = "https://docs.dtp.dev"
 
 #sui-sdk = { path = "../dtp-dev/sui-devnet/crates/sui-sdk/" }
 #sui-json-rpc-types = { path = "../dtp-dev/sui-devnet/crates/sui-json-rpc-types/" }
+#sui-keys = { path = "../dtp-dev/sui-devnet/crates/sui-keys/" }
+#sui-types = { path = "../dtp-dev/sui-devnet/crates/sui-types/" }
 
 # Comment these sui-XXXXX "git" dependencies if using the above "path" dependencies.
 sui-sdk = { git = "https://github.com/MystenLabs/sui", branch = "devnet" }
 sui-json-rpc-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-json-rpc-types" }
+sui-keys = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-keys" }
+sui-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-types" }
 
 tokio = { version = "1.22.0", features = ["full"] }
 anyhow = "1.0.64"

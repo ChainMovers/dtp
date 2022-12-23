@@ -89,8 +89,8 @@ impl SuiNetworkForTest {
                     .push(SuiAddress::from_str(line.as_str())?);
             }
         }
-        dbg!(ret.client_addresses.len());
-        assert!(ret.client_addresses.len() == 5);
+
+        assert_eq!(ret.client_addresses.len(), 5);
         Ok(ret)
     }
 

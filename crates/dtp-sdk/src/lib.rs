@@ -28,6 +28,7 @@
 use anyhow::bail;
 use dtp_core::network::{HostInternal, LocalhostInternal, NetworkManager};
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
+use tokio::time::Duration;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -54,12 +55,11 @@ pub struct DTP {
 impl DTP {
     pub async fn new(
         client_address: SuiAddress,
-        http_url: &str,
-        ws_url: Option<&str>,
+        keystore_pathname: Option<&str>,
     ) -> Result<Self, anyhow::Error> {
         Ok(DTP {
             #[allow(clippy::needless_borrow)]
-            netmgr: NetworkManager::new(client_address, &http_url, ws_url).await?,
+            netmgr: NetworkManager::new(client_address, keystore_pathname).await?,
         })
     }
 
@@ -78,6 +78,15 @@ impl DTP {
     }
     pub fn client_address(&self) -> &SuiAddress {
         self.netmgr.get_client_address()
+    }
+
+    pub async fn add_rpc(
+        &mut self,
+        http_url: &str,
+        ws_url: Option<&str>,
+        request_timeout: Option<Duration>,
+    ) -> Result<(), anyhow::Error> {
+        self.netmgr.add_rpc(http_url, ws_url, request_timeout).await
     }
 
     // get_host_by_address
@@ -127,6 +136,11 @@ impl DTP {
         })
     }
 
+    // create_localhost_on_network
+    //
+    //   JSON-RPC: Yes
+    //   Gas Cost: Yes
+    //
     // Create a new DTP Host on the Sui network.
     //
     // The shared object created on the network will be retreiveable
@@ -135,10 +149,21 @@ impl DTP {
     // For the administrator the same object can also be retreiveable
     // as a read/write DTP::Localhost handle (see get_localhost_xxxx).
     //
-    /*
-    pub async fn create_host_on_network(&self) -> Result<Localhost, anyhow::Error> {
-        Ok(())
-    }*/
+    pub async fn create_localhost_on_network(&self) -> Result<Localhost, anyhow::Error> {
+        let (host_internal, localhost_internal) = self.netmgr.create_localhost_on_network().await?;
+
+        // TODO Do a RPC to confirm existence? May be not, have to look into sui_sdk.
+
+        let host = Host {
+            sui_id: *host_internal.get_sui_id(),
+            host_internal,
+        };
+
+        Ok(Localhost {
+            host,
+            localhost_internal,
+        })
+    }
 
     // Ping Service
     //   JSON-RPC: Yes

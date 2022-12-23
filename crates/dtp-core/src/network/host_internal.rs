@@ -1,6 +1,7 @@
+use super::common_internal::*;
 use anyhow::bail;
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
-use sui_sdk::SuiClient;
+
 /*
 use sui_json_rpc_types::{
     EventPage, MoveCallParams, OwnedObjectRef, RPCTransactionRequestParams,
@@ -17,11 +18,12 @@ pub struct HostInternal {
 }
 
 pub(crate) async fn get_host_by_address(
-    sui_client: &SuiClient,
+    rpc: &SuiSDKParamsRPC,
     host_address: SuiAddress,
 ) -> Result<HostInternal, anyhow::Error> {
     let sui_id = ObjectID::from(host_address);
 
+    let sui_client = rpc.sui_client.as_ref().expect("Could not create SuiClient");
     let net_resp = sui_client
         .read_api()
         .get_parsed_object(sui_id)
@@ -43,6 +45,9 @@ pub(crate) async fn get_host_by_address(
 }
 
 impl HostInternal {
+    pub(crate) fn new(sui_id: ObjectID) -> HostInternal {
+        HostInternal { sui_id }
+    }
     pub fn get_sui_id(&self) -> &ObjectID {
         &self.sui_id
     }

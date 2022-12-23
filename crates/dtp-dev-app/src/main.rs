@@ -14,7 +14,8 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let own_address = SuiAddress::from_str("0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2")?;
 
-    let dtp: DTP = DTP::new(own_address, "http://0.0.0.0:9000", None).await?;
+    let mut dtp: DTP = DTP::new(own_address, None).await?;
+    dtp.add_rpc("http://0.0.0.0:9000", None, None).await?;
 
     let peer_address = SuiAddress::from_str("0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2")?;
 

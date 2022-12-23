@@ -12,15 +12,15 @@ async fn localhost_instantiation_localnet() -> Result<(), anyhow::Error> {
     let network: SuiNetworkForTest = common::setup_localnet()?;
 
     let owner = network.get_client_address(Client::Test1).clone();
-    let mut dtp: DTP = DTP::new(owner, "http://0.0.0.0:9000", None).await?;
-
+    let mut dtp: DTP = DTP::new(owner, None).await?;
+    dtp.add_rpc("http://0.0.0.0:9000", None, None).await?;
     dtp.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
 
     // Test API to create a Localhost.
     //
-    // Localhost is an handle on a Host shared object that can be
+    // Localhost is an handle on a Sui shared object that can be
     // administrated only by this sender.
-    //let localhost = dtp.create_host_on_network().await?;
+    let _localhost = dtp.create_localhost_on_network().await?;
 
     //assert!(network.object_exists(&localhost.get_object_id()).await?);
 
