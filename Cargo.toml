@@ -3,7 +3,7 @@ resolver = "2"
 members = [
     "crates/dtp-core",
     "crates/dtp-sdk",
-    "crates/dtp-dev-app",
+    "crates/dtp-server",
     "crates/dtp-test-helper",
 ]
 
@@ -13,6 +13,7 @@ edition = "2021"
 homepage = "https://dtp.dev"
 license = "Apache-2.0"
 documentation = "https://docs.dtp.dev"
+default-run = "dtp-server"
 
 [workspace.dependencies]
 # By default, DTP is built using the remote git Sui (devnet branch).
@@ -36,8 +37,15 @@ sui-json-rpc-types = { git = "https://github.com/MystenLabs/sui", branch = "devn
 sui-keys = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-keys" }
 sui-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-types" }
 
+
 tokio = { version = "1.22.0", features = ["full"] }
-anyhow = "1.0.64"
+telemetry-subscribers = { version = "0.2.0" }
+
+anyhow = "1.0.68"
+clap = { version = "3.2.22", features = [
+    "derive",
+] } # No upgrade to v4 until color are back.
+colored = { version = "2.0.0" }
 
 [workspace.dependencies.serial_test]
 # Intended to be used as [dev-dependencies] only.

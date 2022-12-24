@@ -2319,17 +2319,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dtp-dev-app"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "cargo-husky",
- "dtp-sdk",
- "sui-sdk",
- "tokio",
-]
-
-[[package]]
 name = "dtp-sdk"
 version = "0.1.0"
 dependencies = [
@@ -2339,6 +2328,20 @@ dependencies = [
  "dtp-test-helper",
  "serial_test",
  "sui-sdk",
+ "tokio",
+]
+
+[[package]]
+name = "dtp-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "cargo-husky",
+ "clap 3.2.23",
+ "colored",
+ "dtp-sdk",
+ "sui-sdk",
+ "telemetry-subscribers 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio",
 ]
 
@@ -5226,7 +5229,7 @@ dependencies = [
  "prometheus",
  "rand 0.8.5",
  "serde 1.0.151",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "thiserror",
  "tokio",
  "tracing",
@@ -5300,7 +5303,7 @@ dependencies = [
  "prometheus",
  "rand 0.8.5",
  "serde 1.0.151",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "thiserror",
  "tokio",
  "tokio-util 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -5377,7 +5380,7 @@ dependencies = [
  "prometheus",
  "rand 0.8.5",
  "reqwest",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "thiserror",
  "tokio",
  "tokio-stream",
@@ -5427,7 +5430,7 @@ dependencies = [
  "roaring",
  "serde 1.0.151",
  "tap",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "thiserror",
  "tokio",
  "tokio-util 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -5532,7 +5535,7 @@ dependencies = [
  "rand 0.8.5",
  "serde 1.0.151",
  "tap",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "tokio",
  "tokio-stream",
  "tokio-util 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -8430,7 +8433,7 @@ dependencies = [
  "sui-storage",
  "sui-types",
  "tap",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "tempfile",
  "thiserror",
  "tokio",
@@ -8737,7 +8740,7 @@ dependencies = [
  "msim",
  "sui-framework",
  "sui-types",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "tracing",
  "workspace-hack",
 ]
@@ -8767,7 +8770,7 @@ dependencies = [
  "sui-json-rpc-types",
  "sui-types",
  "tap",
- "telemetry-subscribers",
+ "telemetry-subscribers 0.2.0 (git+https://github.com/MystenLabs/sui?branch=devnet)",
  "tempfile",
  "tokio",
  "tokio-stream",
@@ -8952,6 +8955,26 @@ dependencies = [
  "guppy-workspace-hack",
  "serde 1.0.151",
  "target-lexicon",
+]
+
+[[package]]
+name = "telemetry-subscribers"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2a01f8161eb6d52700ec8f82a9432b425db5d1729ac747b52d34dfc9f4f0902"
+dependencies = [
+ "crossterm 0.25.0",
+ "once_cell",
+ "opentelemetry 0.18.0",
+ "opentelemetry-jaeger",
+ "prometheus",
+ "tokio",
+ "tracing",
+ "tracing-appender",
+ "tracing-bunyan-formatter",
+ "tracing-chrome",
+ "tracing-opentelemetry",
+ "tracing-subscriber 0.3.15",
 ]
 
 [[package]]
