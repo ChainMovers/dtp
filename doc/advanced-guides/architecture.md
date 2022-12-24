@@ -28,19 +28,19 @@ The data is received through event streams.\
 
 ## DTP Address
 
-The typical \<IP address>:\<Port> becomes a \<Node Sui Address>:\<Port>\
+The typical \<IP address>:\<Port> becomes a \<Host Sui Address>:\<Port>\
 \
-There is no DNS as there is no global storage in the Sui network (TODO [SuiNS](https://suins.medium.com/meet-the-sui-name-service-db0792acb117) may be?).
+SuiNS will be evaluated for DNS.
 
 ## At high level, how is the Sui Network used?
 
 Sui owned objects are used for unidirectional data transfer with sub-second latency (See [Simple Transaction](https://docs.sui.io/devnet/learn/how-sui-works#simple-transactions) in Sui docs).
 
-Data Ingress: A data stream is sliced into NFTs and added to the Sui network. The creation of the NFTs is done by the destination Pipe.
+Data Ingress: A data stream is sliced into transactions (txns) and added to the Sui network. The txns are targeted to a destination Pipe.
 
-Data egress: The NFTs exit the network through event streams (emitted by the destination Pipe). This allows for the same NFT to be "observed" by any users, but decoded only by the ones having the decryption key.\
+Data egress: The data "exit" the network through event streams (emitted by the txns being received at the destination Pipe). The transmitted data can be "observed" by any users, but decoded only by the ones having the decryption key.\
 \
-The receiving end DTP SDK re-assembles the NFTs into the original data stream. This data is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
+The receiving end DTP SDK re-assembles the txns into the original data stream. The stream is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).\
 \
 Slower transactions (Sui consensus) are used for most "control plane" synchronizations. \
 
