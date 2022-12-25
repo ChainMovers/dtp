@@ -15,29 +15,25 @@ use anyhow::Result;
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 
 #[allow(dead_code)]
-pub enum Client {
-    DevApp = 0,
-    Demo1 = 1,
-    Demo2 = 2,
-    Test1 = 3,
-    Test2 = 4,
+
+// localnet provides 5 sender addresses with funds.
+//
+// These addresses are "reserved" in a way that various process
+// won't interfere with each other.
+//
+// Use get_sender_address() for access.
+pub enum Sender {
+    Test = 0,        // Local client for dtp-sdk integration tests.
+    LocalClient = 1, // Local client for development.
+    LocalServer = 2, // Local dtp-server for development.
+    PeerClient = 3,  // Simulated remote client (peer).
+    PeerServer = 4,  // Simulated remote dtp-server (peer).
 }
 
 pub struct SuiNetworkForTest {
     pub dtp_package_id: ObjectID, // Last package that was published.
 
-    // localnet provides 5 owner addresses with funds.
-    //
-    // These addresses are "reserved" in a way that various process
-    // won't interfere with each other.
-    //
-    //        0: Reserved for dtp-dev-app.
-    //   [1..2]: Reserved for demo with DTP daemon.
-    //   [3..4]: Reserved for dtp-sdk integration tests.
-    //
-
-    // Use get_client_address() for access.
-    client_addresses: Vec<SuiAddress>,
+    sender_addresses: Vec<SuiAddress>,
 }
 
 impl SuiNetworkForTest {
@@ -75,7 +71,7 @@ impl SuiNetworkForTest {
 
         let mut ret = SuiNetworkForTest {
             dtp_package_id,
-            client_addresses: vec![],
+            sender_addresses: vec![],
         };
 
         // Get the client addresses.
@@ -85,26 +81,26 @@ impl SuiNetworkForTest {
         );
         if let Ok(lines) = SuiNetworkForTest::read_lines(pathname) {
             for line in lines.flatten() {
-                ret.client_addresses
+                ret.sender_addresses
                     .push(SuiAddress::from_str(line.as_str())?);
             }
         }
 
-        assert_eq!(ret.client_addresses.len(), 5);
+        assert_eq!(ret.sender_addresses.len(), 5);
         Ok(ret)
     }
 
-    pub fn get_client_address(&self, client: Client) -> &SuiAddress {
-        // Sui localnet should always have 5 clients.
+    pub fn get_sender_address(&self, client: Sender) -> &SuiAddress {
+        // Sui localnet should always have 5 senders.
         //
         // If bailing out here (out of bound), then check if something
         // is not right when client_addresses.txt was loaded.
         match client {
-            Client::DevApp => &self.client_addresses[0],
-            Client::Demo1 => &self.client_addresses[1],
-            Client::Demo2 => &self.client_addresses[2],
-            Client::Test1 => &self.client_addresses[3],
-            Client::Test2 => &self.client_addresses[4],
+            Sender::Test => &self.sender_addresses[0],
+            Sender::LocalClient => &self.sender_addresses[1],
+            Sender::LocalServer => &self.sender_addresses[2],
+            Sender::PeerClient => &self.sender_addresses[3],
+            Sender::PeerServer => &self.sender_addresses[4],
         }
     }
 

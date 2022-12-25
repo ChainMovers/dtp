@@ -2,7 +2,7 @@ use dtp_sdk::DTP;
 //use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 //use anyhow::anyhow;
 
-use dtp_test_helper::{Client, SuiNetworkForTest};
+use dtp_test_helper::{Sender, SuiNetworkForTest};
 use serial_test::serial;
 mod common;
 
@@ -11,7 +11,7 @@ mod common;
 async fn localhost_instantiation_localnet() -> Result<(), anyhow::Error> {
     let network: SuiNetworkForTest = common::setup_localnet()?;
 
-    let owner = network.get_client_address(Client::Test1).clone();
+    let owner = network.get_sender_address(Sender::Test).clone();
     let mut dtp: DTP = DTP::new(owner, None).await?;
     dtp.add_rpc("http://0.0.0.0:9000", None, None).await?;
     dtp.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.

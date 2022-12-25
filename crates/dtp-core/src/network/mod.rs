@@ -1,8 +1,8 @@
 use std::path::PathBuf;
+use std::time::Duration;
 use sui_keys::keystore::{FileBasedKeystore, Keystore};
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use sui_sdk::SuiClient;
-use tokio::time::Duration;
 
 // Flatten many sub modules/files under the same dtp_core::network module.
 //
