@@ -2340,6 +2340,7 @@ dependencies = [
  "clap 3.2.23",
  "colored",
  "dtp-sdk",
+ "futures",
  "sui-sdk",
  "telemetry-subscribers 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio",

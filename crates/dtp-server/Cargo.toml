@@ -12,6 +12,7 @@ anyhow.workspace = true
 sui-sdk.workspace = true
 clap.workspace = true
 colored.workspace = true
+futures = "0.3.23"
 telemetry-subscribers.workspace = true
 
 # tracing.workspace = true
