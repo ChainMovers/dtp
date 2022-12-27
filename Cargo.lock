@@ -2315,6 +2315,7 @@ dependencies = [
  "sui-keys",
  "sui-sdk",
  "sui-types",
+ "thiserror",
  "tokio",
 ]
 
@@ -2352,6 +2353,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "cargo-husky",
+ "dtp-core",
  "serial_test",
  "sui-sdk",
  "tokio",
