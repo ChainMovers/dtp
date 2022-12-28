@@ -1,9 +1,11 @@
+use super::super::types::error::*;
 use super::common_internal::*;
 use super::host_internal::*;
+
 //use std::str::FromStr;
 use sui_keys::keystore::AccountKeystore;
 //use sui_sdk::json::SuiJsonValue;
-use sui_sdk::types::base_types::SuiAddress;
+use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use sui_sdk::types::messages::Transaction;
 use sui_types::intent::Intent;
 use sui_types::messages::ExecuteTransactionRequestType;
@@ -24,15 +26,15 @@ pub struct LocalhostInternal {
     firewall_initialized: bool,
 }
 
-pub(crate) async fn get_localhost_by_address(
+pub(crate) async fn get_localhost_by_id(
     rpc: &SuiSDKParamsRPC,
-    host_address: SuiAddress,
+    host_id: ObjectID,
 ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
-    // Do the equivalent of get_host_by_address, but
+    // Do the equivalent of get_host_by_id, but
     // create a handle that will allow for administrator
     // capabilities.
     #[allow(clippy::needless_borrow)]
-    let host_internal = super::host_internal::get_host_by_address(rpc, host_address).await?;
+    let host_internal = super::host_internal::get_host_by_id(rpc, host_id).await?;
 
     let localhost_internal = LocalhostInternal {
         admin_address: rpc.client_address,
@@ -49,6 +51,7 @@ pub(crate) async fn create_localhost_on_network(
     // Do not allow to create a new one if one already exists
     // for this user.
 
+    // TODO: Remove panic.
     let sui_client = rpc.sui_client.as_ref().expect("Could not create SuiClient");
 
     let create_host_call = sui_client
@@ -63,7 +66,11 @@ pub(crate) async fn create_localhost_on_network(
             None, // The node will pick a gas object belong to the signer if not provided.
             1000,
         )
-        .await?;
+        .await
+        .map_err(|e| DTPError::FailedMoveHostCreate {
+            client: rpc.client_address.to_string(),
+            inner: e.to_string(),
+        })?;
 
     // Sign transaction.
     let signature =

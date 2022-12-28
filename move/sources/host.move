@@ -71,7 +71,7 @@ module dtp::host {
       // The Flags bitmap interpretation mostly depends of the context of the reference,
       // except for the value 0x00 being reserved to mean the ID is undefined/invalid.
       flags: u8,
-      id: ID,
+      wid: ID,
     }
 
     struct HostGroup has key, store {

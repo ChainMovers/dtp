@@ -1,3 +1,4 @@
+use super::types::error::*;
 use std::path::PathBuf;
 use std::time::Duration;
 use sui_keys::keystore::{FileBasedKeystore, Keystore};
@@ -50,6 +51,7 @@ const DEFAULT_LOCALNET_KEYSTORE_PATHNAME: &str = "../../../dtp-dev/localnet/sui.
 #[allow(dead_code)]
 pub struct NetworkManager {
     sui_sdk_params: SuiSDKParams,
+    client_registry_id: Option<ObjectID>,
     localhost_id: Option<ObjectID>,
     volunteers_id: Vec<ObjectID>,
 }
@@ -80,6 +82,7 @@ impl NetworkManager {
                     keystore,
                 },
             },
+            client_registry_id: None,
             localhost_id: None,
             volunteers_id: Vec::new(),
         })
@@ -104,6 +107,9 @@ impl NetworkManager {
     pub fn get_package_id(&self) -> &ObjectID {
         &self.sui_sdk_params.txn.package_id
     }
+    pub fn get_localhost_id(&self) -> &Option<ObjectID> {
+        &self.localhost_id
+    }
 
     pub fn get_sui_client(&self) -> Result<&SuiClient, anyhow::Error> {
         Ok(self
@@ -120,18 +126,53 @@ impl NetworkManager {
     }
 
     // Accessors that do a JSON-RPC call.
-    pub async fn get_host_by_address(
-        &self,
-        host_address: SuiAddress,
-    ) -> Result<HostInternal, anyhow::Error> {
-        get_host_by_address(&self.sui_sdk_params.rpc, host_address).await
+    pub async fn get_host(&self, host_id: ObjectID) -> Result<HostInternal, anyhow::Error> {
+        get_host_by_id(&self.sui_sdk_params.rpc, host_id).await
     }
 
-    pub async fn get_localhost_by_address(
-        &self,
-        host_address: SuiAddress,
+    /*
+    async fn get_objects_owned(&mut self) -> Result<(), anyhow::Error> {
+        let sui_client = self.get_sui_client()?;
+
+        let net_resp = sui_client
+            .read_api()
+            .get_objects_owned_by_address(*self.get_client_address())
+            .await
+            .map_err(|e| DTPError::FailedRPCGetObjectsOwnedByClientAddress {
+                client: self.get_client_address().to_string(),
+                inner: e.to_string(),
+            })?;
+        /*
+        for v in net_resp.iter() {
+
+        }*/
+
+        Ok(())
+    }*/
+
+    async fn get_localhost_id_from_registry(&mut self) -> Result<ObjectID, anyhow::Error> {
+        Err(DTPError::NotImplemented.into())
+    }
+
+    pub async fn get_localhost(
+        &mut self,
     ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
-        get_localhost_by_address(&self.sui_sdk_params.rpc, host_address).await
+        // Get the id if already local.
+        //
+        // If not local, retreive all objects and select the
+        // valid localhost.
+        //
+        let localhost_id = match self.localhost_id {
+            Some(x) => x,
+            None => self.get_localhost_id_from_registry().await?,
+        };
+        get_localhost_by_id(&self.sui_sdk_params.rpc, localhost_id).await
+    }
+
+    pub async fn load_local_client_registry(
+        &mut self,
+    ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
+        Err(DTPError::NotImplemented.into())
     }
 
     // Mutators that do a JSON-RPC call and transaction.
@@ -147,13 +188,45 @@ impl NetworkManager {
     }
 
     pub async fn create_localhost_on_network(
-        &self,
+        &mut self,
     ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
+        // This function clear all local state and check if a
+        // Localhost instance already exists on the network.
+        //
+        // If there is already one, then it will be reflected in the
+        // local state and Err(DTPAlreadyExist) will be returned.
+        //
+        // If None are found on the network, a new Localhost will
+        // tentatively be created.
+        self.localhost_id = None;
+        self.client_registry_id = None;
+
+        // Do a RPC call to get the on-chain state of the registry.
+        // If there is no registry, then assume there is no localhost.
+        // Both will be created in a single transaction later (to
+        // minimize cost and race conditions possibility).
+        let _ = self.load_local_client_registry().await;
+
+        // A Localhost is already on the network.
+        if let Some(x) = self.localhost_id {
+            return Err((DTPError::DTPLocalhostAlreadyExists {
+                localhost: x.to_string(),
+                client: self.get_client_address().to_string(),
+            })
+            .into());
+        }
+
+        // Proceed with the creation.
+        // TODO Retry once in a controlled manner?
         let (host, localhost) =
             create_localhost_on_network(&self.sui_sdk_params.rpc, &self.sui_sdk_params.txn).await?;
 
-        // To minimise caller having to deal with "race condition", do a RPC to the fullnode
-        // to verify if it reflects the creation. Keep trying for up to 5 seconds.
+        self.localhost_id = Some(*host.get_sui_id());
+
+        // Creation succeeded.
+        //
+        // Double check to minimise caller having to deal with "race condition". Do a RPC to
+        // the fullnode to verify if it reflects the creation. Keep trying for up to 5 seconds.
         //
         // Do not fail this call if the fullnode is somehow too slow. The creation has already
         // succeeded from the point of view of the transaction effects.

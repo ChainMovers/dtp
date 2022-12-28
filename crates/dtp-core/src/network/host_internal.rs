@@ -1,6 +1,6 @@
 use super::common_internal::*;
 use anyhow::bail;
-use sui_sdk::types::base_types::{ObjectID, SuiAddress};
+use sui_sdk::types::base_types::ObjectID;
 
 /*
 use sui_json_rpc_types::{
@@ -17,30 +17,31 @@ pub struct HostInternal {
     sui_id: ObjectID,
 }
 
-pub(crate) async fn get_host_by_address(
+pub(crate) async fn get_host_by_id(
     rpc: &SuiSDKParamsRPC,
-    host_address: SuiAddress,
+    host_id: ObjectID,
 ) -> Result<HostInternal, anyhow::Error> {
-    let sui_id = ObjectID::from(host_address);
+    // let sui_id = ObjectID::from(host_address);
 
     let sui_client = rpc.sui_client.as_ref().expect("Could not create SuiClient");
     let net_resp = sui_client
         .read_api()
-        .get_parsed_object(sui_id)
+        .get_parsed_object(host_id)
         .await
         .unwrap();
 
     let object = net_resp.object()?;
 
     // Sanity test that the id is as expected.
-    if object.id() != sui_id {
-        bail!("Bad object id {} != {}", object.id(), sui_id);
+    // TODO Remove panic.
+    if object.id() != host_id {
+        bail!("Bad object id {} != {}", object.id(), host_id);
     }
 
     // TODO Validate the object type, get the services provided etc...
 
     // Success. Host Move object transformed into a convenient local Host handle.
-    let ret = HostInternal { sui_id };
+    let ret = HostInternal { sui_id: host_id };
     Ok(ret)
 }
 

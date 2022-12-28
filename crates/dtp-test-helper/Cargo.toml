@@ -8,6 +8,8 @@ license.workspace = true
 documentation.workspace = true
 
 [dependencies]
+dtp-core = { path = "../dtp-core/" }
+
 tokio.workspace = true
 anyhow.workspace = true
 sui-sdk.workspace = true

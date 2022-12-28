@@ -13,6 +13,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
+use sui_sdk::SuiClient;
 
 #[allow(dead_code)]
 
@@ -74,7 +75,7 @@ impl SuiNetworkForTest {
             sender_addresses: vec![],
         };
 
-        // Get the client addresses.
+        // Get the Sui client addresses (which we will call sender addresses from this point).
         let pathname = format!(
             "{}{}",
             path, "/../../../dtp-dev/publish_data/localnet/client_addresses.txt"
@@ -104,17 +105,45 @@ impl SuiNetworkForTest {
         }
     }
 
+    pub async fn package_exists(
+        self: &SuiNetworkForTest,
+        _name: &str,
+    ) -> Result<bool, anyhow::Error> {
+        // Verification using self-contain code (its own SuiClient and all).
+        //let sui = SuiClient::new("http://0.0.0.0:9000", None, None).await
+        /*
+                let objects = sui.read_api().get_objects_owned_by_address(address).await?;
+                println!("{:?}", objects);
+        */
+        Ok(true)
+    }
+
     pub async fn object_exists(
         self: &SuiNetworkForTest,
-        _id: &ObjectID,
+        object_id: ObjectID,
     ) -> Result<bool, anyhow::Error> {
-        Ok(true)
+        // Note: Object not existing not considered an error.
+
+        // Verification using self-contain code (its own SuiClient and all).
+        let sui = SuiClient::new("http://0.0.0.0:9000", None, None)
+            .await
+            .map_err(|e| e.context("Is localnet sui process running?"))?;
+
+        // TODO: Check the different error code to differentiate inexistence from call failure. This is very incomplete.
+        let result = sui.read_api().get_parsed_object(object_id).await;
+
+        match result {
+            Ok(_) => Ok(true),
+            Err(_) => Ok(false),
+        }
     }
 
     pub async fn address_exists(
         self: &SuiNetworkForTest,
         _address: &SuiAddress,
     ) -> Result<bool, anyhow::Error> {
+        // Note: Address not existing not considered an error.
+
         Ok(true)
     }
 }

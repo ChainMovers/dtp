@@ -7,3 +7,4 @@
 // dtp-sdk is a thin layer providing a simplified view to the user (facade pattern).
 //
 pub mod network;
+pub mod types;

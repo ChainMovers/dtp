@@ -8,7 +8,10 @@ use thiserror;
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::large_enum_variant)]
 pub enum DTPError {
-    #[error("Object ID not found")]
+    #[error("DTP Localhost {localhost:?} already exists for client {client:?}")]
+    DTPLocalhostAlreadyExists { localhost: String, client: String },
+
+    #[error("DTP Object ID not found")]
     ObjectIDNotFound,
 
     #[error("DTP Failed Move host create({client:?}). Info from sui_sdk-> {inner:?}")]
@@ -20,13 +23,13 @@ pub enum DTPError {
     FailedRPCGetObjectsOwnedByClientAddress { client: String, inner: String },
 
     // Terminated. Will need to re-create/re-open.
-    #[error("Package ID not found")]
+    #[error("DTP Package ID not found")]
     PackageIDNotFound,
 
-    #[error("Object ID not found")]
+    #[error("DTP Object ID not found")]
     TestHelperObjectNotFound,
 
-    #[error("Not yet implemented. Need it? Ask for it on DTP Discord (Not Sui Discord).")]
+    #[error("DTP Not yet implemented. Need it? Ask for it on DTP Discord (Not Sui Discord).")]
     NotImplemented,
 
     #[error("DTP inner SuiError {0:?}")]

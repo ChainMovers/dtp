@@ -33,9 +33,14 @@ use tokio::time::Duration;
 #[allow(dead_code)]
 #[derive(Debug)]
 pub struct Host {
-    sui_id: ObjectID,
+    id: ObjectID,
     // Hidden implementation in dtp-core.
     host_internal: HostInternal,
+}
+impl Host {
+    pub fn id(&self) -> &ObjectID {
+        &self.id
+    }
 }
 
 // Similar to Host, but with additional functionality available
@@ -45,6 +50,12 @@ pub struct Localhost {
     host: Host,
     // Hidden implementation in dtp-core.
     localhost_internal: LocalhostInternal,
+}
+
+impl Localhost {
+    pub fn id(&self) -> &ObjectID {
+        self.host.id()
+    }
 }
 
 pub struct DTP {
@@ -79,6 +90,9 @@ impl DTP {
     pub fn client_address(&self) -> &SuiAddress {
         self.netmgr.get_client_address()
     }
+    pub fn localhost_id(&self) -> &Option<ObjectID> {
+        self.netmgr.get_localhost_id()
+    }
 
     pub async fn add_rpc(
         &mut self,
@@ -89,7 +103,7 @@ impl DTP {
         self.netmgr.add_rpc(http_url, ws_url, request_timeout).await
     }
 
-    // get_host_by_address
+    // get_host
     //   JSON-RPC: Yes
     //   Gas Cost: No
     //
@@ -97,37 +111,30 @@ impl DTP {
     //
     // The handle is used for doing various operations such as pinging the host
     // off-chain server and/or create a connection to it.
-    pub async fn get_host_by_address(
-        &self,
-        host_address: SuiAddress,
-    ) -> Result<Host, anyhow::Error> {
-        let host_internal = self.netmgr.get_host_by_address(host_address).await?;
+    pub async fn get_host(&self, host_id: ObjectID) -> Result<Host, anyhow::Error> {
+        let host_internal = self.netmgr.get_host(host_id).await?;
         Ok(Host {
-            sui_id: *host_internal.get_sui_id(),
+            id: *host_internal.get_sui_id(),
             host_internal,
         })
     }
 
-    // get_localhost_by_address
+    // get_localhost
     //   JSON-RPC: Yes
     //   Gas Cost: No
     //
-    // Get an handle of a DTP Host that your application controls.
+    // Get an handle of the DTP Localhost that your client address control.
     //
-    // It is expected that the host already exist on the network, if not,
-    // then see create_localhost().
+    // DTP supports only one Localhost per client address.
     //
-    // TODO Add clear error if not own.
-    pub async fn get_localhost_by_address(
-        &self,
-        localhost_address: SuiAddress, // Address of the targeted localhost.
-    ) -> Result<Localhost, anyhow::Error> {
-        let (host_internal, localhost_internal) = self
-            .netmgr
-            .get_localhost_by_address(localhost_address)
-            .await?;
+    // Can return DTPError::DoesNotExist
+    //
+    // See create_localhost().
+    //
+    pub async fn get_localhost(&mut self) -> Result<Localhost, anyhow::Error> {
+        let (host_internal, localhost_internal) = self.netmgr.get_localhost().await?;
         let host = Host {
-            sui_id: *host_internal.get_sui_id(),
+            id: *host_internal.get_sui_id(),
             host_internal,
         };
         Ok(Localhost {
@@ -144,21 +151,17 @@ impl DTP {
     // Create a new DTP Host on the Sui network.
     //
     // The shared object created on the network will be retreiveable
-    // as a read-only DTP::Host handle for everyone (see get_host_xxxx).
+    // as a read-only DTP::Host handle for everyone (see get_host).
     //
     // For the administrator the same object can also be retreiveable
-    // as a read/write DTP::Localhost handle (see get_localhost_xxxx).
+    // as a read/write DTP::Localhost handle (see get_localhost).
     //
-    pub async fn create_localhost_on_network(&self) -> Result<Localhost, anyhow::Error> {
+    pub async fn create_localhost_on_network(&mut self) -> Result<Localhost, anyhow::Error> {
         let (host_internal, localhost_internal) = self.netmgr.create_localhost_on_network().await?;
-
-        // TODO Do a RPC to confirm existence? May be not, have to look into sui_sdk.
-
         let host = Host {
-            sui_id: *host_internal.get_sui_id(),
+            id: *host_internal.get_sui_id(),
             host_internal,
         };
-
         Ok(Localhost {
             host,
             localhost_internal,

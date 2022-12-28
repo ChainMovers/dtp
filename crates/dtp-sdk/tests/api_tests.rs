@@ -16,13 +16,37 @@ async fn localhost_instantiation_localnet() -> Result<(), anyhow::Error> {
     dtp.add_rpc("http://0.0.0.0:9000", None, None).await?;
     dtp.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
 
-    // Test API to create a Localhost.
-    //
-    // Localhost is an handle on a Sui shared object that can be
-    // administrated only by this sender.
-    let _localhost = dtp.create_localhost_on_network().await?;
+    // Check if localhost already exists, if yes, will skip first instantion test.
+    let mut result = dtp.get_localhost().await.ok();
 
-    //assert!(network.object_exists(&localhost.get_object_id()).await?);
+    if result.is_none() {
+        // Check the API is consistent.
+        assert_eq!(*dtp.localhost_id(), None);
+
+        let new_localhost = dtp
+            .create_localhost_on_network()
+            .await
+            .map_err(|e| e.context("Is the sui localnet process running on your machine?"))?;
+        result = Some(new_localhost);
+    }
+
+    // Ownership from the creation that was just done.
+    let localhost = result.expect("Creation of Localhost failed");
+    let localhost_id = localhost.id();
+
+    // The ids should all be visible and consistent through the API at this point.
+    let api_dtp_localhost_id = dtp
+        .localhost_id()
+        .expect("Missing Localhost id at DTP level");
+
+    let api_localhost = dtp
+        .get_localhost()
+        .await
+        .expect("Localhost should exist at this point");
+
+    let api_localhost_id = api_localhost.id();
+    assert_eq!(*localhost_id, api_dtp_localhost_id);
+    assert_eq!(api_localhost_id, localhost_id);
 
     Ok(())
 }
