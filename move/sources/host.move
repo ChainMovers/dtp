@@ -28,6 +28,8 @@ module dtp::host {
 
     #[test_only]
     friend dtp::test_host;
+    #[test_only]
+    friend dtp::test_transport_control;
 
     // Put a limit on number of connection that a single host
     // can handle.
