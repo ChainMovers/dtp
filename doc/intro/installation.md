@@ -1,36 +1,40 @@
 ---
-description: '<<TODO : Incomplete. For now, just showing intended dev setups for 2023>>'
+description: '<<Work-In-Progress: Showing intended dev setups for 2023>>'
 ---
 
 # Installation
 
-### Local setup for Rust-Apps only development  (Plan for early 2023)
+### Localnet setup for Rust-Apps only development  (Plan for early 2023)
 
 Allows to test data exchange between two local Rust apps on the same development machine.
 
 <figure><img src="../.gitbook/assets/install_1.png" alt=""><figcaption></figcaption></figure>
 
-The Sui network is a **local instance**. It comes with some prefunded accounts for convenience and automation of your tests.\
-
-
-## Setup with DTP Services Daemon (Plan for April 2023)
-
-Another type of deployment will run a "DTP Services Daemon". The daemon will simplify greatly many use cases.
-
-The daemon provides the bridging to various local applications. A Services Config file specify the features to enable and various TCP or UDP port mapping when applicable.\
+The Sui network is a **localnet instance**. It comes with prefunded client accounts for convenience and automation of your tests.\
 \
-As an example, this is a setup with only the built-in "File Server" service configured:
+You can have the localnet running minutes after cloning the DTP repo. \
+\
+See the 'init-localnet' script:\
+&#x20;            [https://github.com/mario4tier/dtp/tree/main/script](https://github.com/mario4tier/dtp/tree/main/script)
 
-<figure><img src="../.gitbook/assets/install_2.png" alt=""><figcaption></figcaption></figure>
+## Setup with the DTP Services Daemon (Plan for April 2023)
 
-The "dtp" CLI tool is the user interface. It communicates with the local daemon to conveniently perform file server operations. \
+A common type of deployment will run the "DTP Services Daemon". This setup simplifies many use cases.
+
+The daemon provides the bridging to various local applications. A Services Config file specify the enabled features and various port mapping (when applicable).\
+\
+As an example, this is the built-in "File Server":
+
+<figure><img src="../.gitbook/assets/FTP_Daemon_012023.png" alt=""><figcaption></figcaption></figure>
+
+The "dtp" CLI tool is the user interface. It communicates with the local daemon to perform file server operations. \
 \
 Example to copy a file to a remote location:\
-&#x20;   $ dtp cp \<local pathname> \<remote Sui Node address + pathname>"\
+&#x20;   $ dtp cp \<local pathname> \<remote Sui Host Object ID + pathname>"\
 \
-Another example with cURL reaching a remote server through DTP:
+Another example with cURL reaching a remote object ID through DTP:
 
-<figure><img src="../.gitbook/assets/install_3.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../.gitbook/assets/RPC_Daemon_012023.png" alt=""><figcaption></figcaption></figure>
 
 At first, the port mapping will need to be manually specified in the config file, but a more flexible solution will eventually be implemented.\
 \
