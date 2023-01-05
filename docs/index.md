@@ -4,9 +4,9 @@ hide:
   - toc
 ---
 <figure markdown>
-  ![Home](assets/images/home_top_capy.png)
+  ![](assets/images/home_top_capy.png)
 </figure>
-<h1 align="center">For when you need some <b>web2</b> on the <b>web3</b> playground</h1>
+<h1 align="center">For when you still need some <b>web2</b> on the <b>web3</b> playground</h1>
 <div class="grid cards" markdown>
 
 -   :material-circle-opacity:{ .lg .middle } __Create hybrid dApps__
@@ -14,9 +14,8 @@ hide:
     ---
 
     Decentralized connection control, metering and crypto-economics<br>
-    <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</b>
+    <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</b>
     <br>Your existing off-chain service and data.
-
 
 -   :shield:{ .lg .middle } __Security & DDoS Protection__
 
@@ -25,7 +24,7 @@ hide:
     * Scalable firewall built-in! Stop DDoS attacks even before it reaches your servers.
     * Keep your Web2 server IP hidden (visible only to Sui node operator).
 
-    [:octicons-arrow-right-24: More Info...](#)
+    [:octicons-arrow-right-24: See firewall example...](example/rpc_firewall.md)
 
 -   :simple-letsencrypt:{ .lg .middle } __Privacy & Authenticity__
 
@@ -42,7 +41,7 @@ hide:
     * From developers for developers. No Token, middlemen, commission or dev fee.
     * Only costs is the minimal Sui gas required for smart contracts execution.
   
-    [:octicons-arrow-right-24: Check the FAQ...](#)
+    [:octicons-arrow-right-24: Check the FAQ...](faq.md)
 
 -   :fontawesome-solid-network-wired:{ .lg .middle } __High Availability__
 

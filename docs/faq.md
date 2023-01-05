@@ -1,12 +1,22 @@
 # FAQ
 
+**In one sentence... What can DTP do?**
+
+Allows traditional web2 TCP/UDP server become safely accessible to web3 Sui decentralized apps by connecting and exchanging data under the control of a "smart contract" (DTP).
+
+**What sort of data can DTP transport?**
+
+Any protocol, any data stream (think TCP-like capability).
+
+Data can be just a few bytes for a one time secret exchange for authentication/login. At another extreme the bandwidth can be an encrypted video stream (through the innovative combination of DTP Multi-channels and Sui network simple transactions). Although technically feasible, the economic of HD video streaming is an open question...
+
 **Can DTP be used with commercial application?**
 
 Yes. DTP is open-source and can freely be used in commercial application ([Apache 2.0 License](../../LICENSE)).
 
 **How much does it cost to use DTP?**
 
-Only the Sui gas needed to run it.
+Only the Sui gas needed to run it, expect the execution cost to be mostly driven by the number of bytes transferred.
 
 There is no developer fee or commission collected for using DTP.
 
@@ -18,9 +28,9 @@ dApps built on top of DTP can use tokens or charge additional Mist, but this is 
 
 **Can DTP simply tunnel standard TCP, UDP, IP packets?**
 
-Packets tunneling can be done, but is not recommended.
+Transparent packets tunneling could be done, but is not recommended.
 
-DTP/Sui provides reliable and ordered data transport. That would be redundant with say, what TCP would try to achieve within a tunnel.
+DTP/Sui provides already reliable and ordered data transport. That would be redundant with say, what TCP would try to achieve within a tunnel.
 
 Instead, look into [DTP Services Daemon](installation.md#setup-with-dtp-services-daemon-plan-for-april-2023) to efficiently terminate/bridge standard IP protocols. That eliminates protocol redundancy and better leverage what the Sui network already provide.
 

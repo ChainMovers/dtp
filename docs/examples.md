@@ -1,17 +1,25 @@
----
-description: <<Work in progress>>
----
-
 # Applications Example
 
-Here are a few ideas that can be built on top of DTP. \
-\
-If not sure how to proceed, please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).\
-\
+DTP provides networking building blocks with a large scope of applications. You will find on this page a few inspiring ideas.
+
+Its applications can be divided roughly in 3 functional groups (in increasing level of difficulty):
+
+- <b>DTP Service Daemon</b> Similar to NGINX/Cloudflare/HAProxy. These are for proxy/forward/firewall services. You will simply be *configuring* how your data flows between your apps and hosts.
+
+- <b>DTP Protocols</b> Think "TCP". The DTP/Sui SDKs allows developers to create connections between web2 and web3 apps. You will need to write Rust and/or Typescript apps.
+  
+- <b>DTP Sui Move Packages</b> Innovations particular to Sui, such as RPC escrows, data streaming, metering etc... you will likely be deeply involve into web3 development at this point.
+
+For most users, you will have to deal only with the "easiest" level, the "DTP Service Daemon".
+
+If not sure how to proceed with your specific need, then please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).
+
+When ready, move to the next section for choosing an installation setup.
+
 **Client/Server**
 
-* Web3 frontends connecting to a centralized JSON-RPC backend ( [More info](json-rpc-firewall.md) )
-* Rust/Typescript Web3 Client to centralized TCP Server ( [More info](rust-client-server.md) )
+* Web3 frontends connecting to a centralized JSON-RPC backend ([More info](example/rpc_firewall.md))
+* Rust/Typescript Web3 Client to centralized TCP Server ([More info](example/web3_rust.md))
 
 **Encrypted Messaging**
 
@@ -37,6 +45,6 @@ If not sure how to proceed, please open a discussion on [Discord](https://discor
 
 **Public Broadcasting**
 
-* Allow anyone listen to authenticated, censorship resistant broadcasting, with some built-in crypto economics to pay for some (or more?) of the production fee (e.g., broadcast upon enough fund contributed).
-
-
+* Allow live broadcasting to automatically turn on/off upon enough fund contributed (thus saving the producer from any expense when no-one is listening).
+* Public broadcast performed upon enough ticket sold.
+* Tip/Request/Message/Audience participation line attach to a public event channel.
