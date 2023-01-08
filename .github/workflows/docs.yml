@@ -32,3 +32,18 @@ jobs:
       uses: crate-ci/typos@master
       with:
         files: ./doc ./*.md
+
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.repository.fork == false
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - run: pip install git+https://${GH_TOKEN}@github.com/squidfunk/mkdocs-material-insiders.git
+      - run: pip install mkdocs-git-revision-date-localized-plugin
+      - run: pip install mkdocs-minify-plugin      
+      - run: mkdocs gh-deploy --force
+env:
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
