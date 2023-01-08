@@ -6,8 +6,11 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
 
+permissions:
+  contents: write
 
 jobs:
+
   diff:
     runs-on: [ubuntu-latest]
     outputs:
@@ -29,3 +32,15 @@ jobs:
       uses: crate-ci/typos@master
       with:
         files: ./doc ./*.md
+
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
+      - run: pip install mkdocs-material-insiders
+      - run: pip install mkdocs-git-revision-date-localized-plugin
+      - run: pip install mkdocs-minify-plugin
+      - run: mkdocs gh-deploy --force
