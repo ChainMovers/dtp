@@ -1,10 +1,11 @@
 ![GitHub](https://img.shields.io/github/license/mario4tier/dtp)
 
 # DTP/Sui - Decentralized Transport Protocol over Sui Network
+Website: **https://dtp.dev**
 
 Transfer your off-chain data through a decentralized network
 
-Make your existing TCP/UDP backend servers be accessible to any web3 frontend.
+Make your existing TCP/IP backend servers be accessible to any web3 frontend.
 
 Protect or enhance your off-chain backends with:
   - Crypto-economics (charge per byte/request)
@@ -17,7 +18,4 @@ Protect or enhance your off-chain backends with:
 
 DTP/Sui is well suited for most hybrid dApps.
 
-## Quick Links
-- Website: https://dtp.dev
-- Documentation: https://docs.dtp.dev
-- Discord: https://discord.gg/Erb6SwsVbH
+More info:  https://dtp.dev
