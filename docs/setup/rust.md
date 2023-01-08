@@ -1,3 +1,6 @@
+
+!!! tip "This page need some serious clean-up... see github for the next few days..."
+
 DTP provides many scripts to make Sui hybrid app development easy.
 
 Example includes re-starting your localnet with one command with always the same fund in the same accounts, automate your Move package integration test etc...
@@ -11,9 +14,6 @@ Typescript and Rust Setup
      |-- ...        <-- Your code can be anywhere *outside* the DTP directories
      |-- dtp        <-- The single cloned DTP Repositories
      |-- dtp-dev    <-- The working directory created and used by DTP
-
-
-
 
 # Installation
 

@@ -105,20 +105,20 @@ nav:
     - Web3 Rust Server: example/web3_rust.md
     - JSON-RPC Firewall: example/rpc_firewall.md
   - Getting started:
-    # - Which setup?: setup/intro.md
-    # - Web2 Server Setup: setup/server.md
-    - Developers Setup: setup/dev.md
+    - Which setup?: setup/help.md
+    # - DTP Service: setup/service.md
+    - Rust Setup: setup/rust.md
     - FAQ: faq.md
   - Reference:
-    - Architecture: 
-      - Basic Concepts: ref/architecture.md
-      - Firewall: ref/firewall.md
-      - Multi-Channels: ref/channels.md
-      - Broadcasting: ref/broadcast.md
-      - Data Lifecycle: ref/data_life.md
+    - Read Me First:  ref/readme.md
+    - How it works inside?:
+      - Sui Move Objects: ref/design.md
       - Future works: ref/future_work.md
-    - API:
-      - Rust API: ref/rust_api.md
-      - Typescript API: ref/ts_api.md
+    - API (TODO):
+      - Overview:  ref/api.md
+      - Rust API:  ref/api_rust.md
+      - Typescript API: ref/api_typescript.md
+    - Tools:
       - DTP Scripts: ref/scripts.md
+
   - Community: community.md

@@ -4,7 +4,7 @@ DTP provides networking building blocks with a large scope of applications. You 
 
 Its applications can be divided roughly in 3 functional groups (in increasing level of difficulty):
 
-- <b>DTP Service Daemon</b> Similar to NGINX/Cloudflare/HAProxy. These are for proxy/forward/firewall services. You will simply be *configuring* how your data flows between your apps and hosts.
+- <b>DTP Services Daemon</b> Similar to NGINX/Cloudflare/HAProxy. These are for proxy/forward/firewall services. You will simply be *configuring* how your data flows between your apps and hosts.
 
 - <b>DTP Protocols</b> Think "TCP". The DTP/Sui SDKs allows developers to create connections between web2 and web3 apps. You will need to write Rust and/or Typescript apps.
   
@@ -14,7 +14,7 @@ For most users, you will have to deal only with the "easiest" level, the "DTP Se
 
 If not sure how to proceed with your specific need, then please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).
 
-When ready, move to the next section for choosing an installation setup.
+When ready [:octicons-arrow-right-24: Go to choose your installation setup ...](setup/help.md).
 
 **Client/Server**
 
@@ -30,7 +30,7 @@ When ready, move to the next section for choosing an installation setup.
 **Networking / Infrastructure**
 
 * Zookeeper, Consul, Serf-like services for discovery and consensus among off-chain servers.
-* UDP, TCP, QUIC/UDP Tunneling: Transport IP protocols packets within a DTP connection for point-to-point applications (See [DTP Services Daemon](../intro/installation.md#setup-with-dtp-services-daemon-plan-for-april-2023) for an alternative)
+* UDP, TCP, QUIC/UDP Tunneling: Transport IP protocols packets within a DTP connection for point-to-point applications (See [DTP Services Daemon](setup/help.md#choice-1-of-3-simplified-dtp-services-deployment) for an alternative)
 
 **Firewall**
 

@@ -10,7 +10,7 @@
 
 <figure markdown>![](../assets/images/setup_help_services.png)</figure>
 
-!!! tip "Work-in-progress. Simplified deployment not yet available. For now, the functionality is available as part of the more complex Rust development setup"
+!!! tip "Work-in-progress. Simplified deployment not yet available. For now, these functionalities are parts of the more complex Rust development setup"
 
 
 ## Choice 2 of 3: DTP Rust Development Setup

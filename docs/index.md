@@ -60,7 +60,6 @@ hide:
     
     * DTP has built-in "Response Fee Escrow" to prevent query requesters to perform financial attacks against a company/server.
 
-    [:octicons-arrow-right-24: See Ping example...](#)
 </div>
 
 <figure markdown>
