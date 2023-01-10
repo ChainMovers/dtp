@@ -1,54 +1,66 @@
 
-!!! tip "This page need some serious clean-up... see github for the next few days..."
+# Rust Development Setup Installation
 
-DTP provides many scripts to make Sui hybrid app development easy.
+### Follow the Sui installation
+<https://docs.sui.io/build/install#prerequisites>
 
-Example includes re-starting your localnet with one command with always the same fund in the same accounts, automate your Move package integration test etc...
-
-SUI and DTP SDK co-exists independently in same application, consequently, this installation still works well for Sui development even when not using DTP.
-
-Typescript and Rust Setup
+### Clone DTP
+<https://github.com/mario4tier/dtp>
 
 
-<some directory>
-     |-- ...        <-- Your code can be anywhere *outside* the DTP directories
-     |-- dtp        <-- The single cloned DTP Repositories
-     |-- dtp-dev    <-- The working directory created and used by DTP
+### Initialize localnet 
 
-# Installation
+Just run the DTP "init-localnet" and it will initialize the whole DTP setup and (re)start the "sui" localnet process as needed. 
 
-### Localnet setup for Rust-Apps only development  (Plan for early 2023)
+The localnet will be re-initialized with always the same configuration, address and funding.
+(it uses its own configuration file at genesis for a deterministice setup).
 
-Allows to test data exchange between two local Rust apps on the same development machine.
+From this point use "lsui" and "dsui" shell scripts (as a direct replacement of "sui") to access localnet and devnet respectively.
 
-<figure><img src="../.gitbook/assets/install_1.png" alt=""><figcaption></figcaption></figure>
+Output example:
+``` text
+~/dtp$ ./dtp/script/init-localnet
+Output location = /home/user/dtp-dev
+Stopping running localnet (sui process pid 1317)
+Building localnet using latest Sui devnet branch...
+    Finished dev [unoptimized + debuginfo] target(s) in 1.29s
+Removing existing /home/user/dtp-dev/localnet directory
+Starting new localnet process (may take up to 30 secs)
+.........
+New localnet started (sui 0.20.0, process pid 6798)
+========
+localnet => http://0.0.0.0:9000 (active)
+devnet => https://fullnode.devnet.sui.io:443
+========
+All addresses with coins:
+Showing 5 results.
+0x267d4904898cbc15f165a18541154ec8c5732fcb
+0x68db58b41d97e4cf1ea7d9327036ebd306a7930a
+0x99d821380348ee02dd685a3af6d7123d92db0d3c
+0xbbd8d0695c369b04e9207fca4ef9f5f15b2c0de7
+0xe7f134729591f52cf0638c2500a7ed228033a9e7
+========
+All coins owned by 0xe7f134729591f52cf0638c2500a7ed228033a9e7 (active):
+                 Object ID                  |  Gas Value
+----------------------------------------------------------------------
+ 0x0b162ef4f83118cc0ad811de35ed330ec3441d7b | 100000000000000
+ 0x2d43245a6af1f65847f7c18d5f6aabbd8e11299b | 100000000000000
+ 0x9811c29f1dadb67aadcd59c75693b4a91b347fbb | 100000000000000
+ 0xc8381677d3c213f9b0e9ef3d2d14051458b6af8a | 100000000000000
+ 0xd0b2b2227244707bce233d13bf537af7a6710c01 | 100000000000000
+========
 
-The Sui network is a **localnet instance**. It comes with prefunded client accounts for convenience and automation of your tests.\
-\
-You can have the localnet running minutes after cloning the DTP repo. \
-\
-See the 'init-localnet' script:\
-&#x20;            [https://github.com/mario4tier/dtp/tree/main/script](https://github.com/mario4tier/dtp/tree/main/script)
+Remember:
+  Use "dsui" to access devnet
+  Use "lsui" to access your localnet
 
-## Setup with the DTP Services Daemon (Plan for April 2023)
+Success. Try it by typing "lsui client gas"
+host:~/$
+```
 
-A common type of deployment will run the "DTP Services Daemon". This setup simplifies many use cases.
+### Publish DTP Package (localnet)
+~/dtp$ publish-localnet
 
-The daemon provides the bridging to various local applications. A Services Config file specify the enabled features and various port mapping (when applicable).\
-\
-As an example, this is the built-in "File Server":
 
-<figure><img src="../.gitbook/assets/FTP_Daemon_012023.png" alt=""><figcaption></figcaption></figure>
-
-The "dtp" CLI tool is the user interface. It communicates with the local daemon to perform file server operations. \
-\
-Example to copy a file to a remote location:\
-&#x20;   $ dtp cp \<local pathname> \<remote Sui Host Object ID + pathname>"\
-\
-Another example with cURL reaching a remote object ID through DTP:
-
-<figure><img src="../.gitbook/assets/RPC_Daemon_012023.png" alt=""><figcaption></figcaption></figure>
-
-At first, the port mapping will need to be manually specified in the config file, but a more flexible solution will eventually be implemented.\
-\
-(Note: This config port mapping feature is planned for \~End of August 2023)\
+### Run DTP Integration Test (localnet)
+~/dtp$ cargo test

@@ -1,18 +1,20 @@
 # Applications Example
 
-DTP provides networking building blocks with a large scope of applications. You will find on this page a few inspiring ideas.
+DTP provides networking building blocks that can be applied in many ways.
 
-Its applications can be divided roughly in 3 functional groups (in increasing level of difficulty):
+You will find on this page a few inspiring ideas.
+
+DTP features are made available in roughly 3 layers (in increasing level of difficulty):
 
 - <b>DTP Services Daemon</b> Similar to NGINX/Cloudflare/HAProxy. These are for proxy/forward/firewall services. You will simply be *configuring* how your data flows between your apps and hosts.
 
 - <b>DTP Protocols</b> Think "TCP". The DTP/Sui SDKs allows developers to create connections between web2 and web3 apps. You will need to write Rust and/or Typescript apps.
   
-- <b>DTP Sui Move Packages</b> Innovations particular to Sui, such as RPC escrows, data streaming, metering etc... you will likely be deeply involve into web3 development at this point.
+- <b>DTP Sui Move Packages</b> Innovations particular to Sui, such as RPC escrows, data streaming, coins&call equivocation mitigation, metering etc... you will likely be deeply involve into web3 development at this point.
 
-For most users, you will have to deal only with the "easiest" level, the "DTP Service Daemon".
+For most users, you will deal only with the "easiest" layer, the "DTP Services Daemon".
 
-If not sure how to proceed with your specific need, then please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).
+If not sure how to proceed for your specific need, then please open a discussion on [Discord](https://discord.gg/Erb6SwsVbH).
 
 When ready [:octicons-arrow-right-24: Go to choose your installation setup ...](setup/help.md).
 

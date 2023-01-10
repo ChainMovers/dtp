@@ -6,7 +6,7 @@ hide:
 <figure markdown>
   ![](assets/images/home_top_capy.png)
 </figure>
-<h1 align="center">For when you still need some <b>web2</b> on the <b>web3</b> playground</h1>
+<h1 align="center">For when you want some <b>web2</b> on the <b>web3</b> playground</h1>
 <div class="grid cards" markdown>
 
 -   :material-circle-opacity:{ .lg .middle } __Create hybrid dApps__
@@ -21,8 +21,9 @@ hide:
 
     ---
 
-    * Scalable firewall built-in! Stop DDoS attacks even before it reaches your servers.
-    * Keep your Web2 server IP hidden (visible only to Sui node operator).
+    * Scalable firewall built-in the Sui network!
+    * Stop DDoS attacks even before it reaches your servers.
+    * Keep your Web2 servers IP hidden (visible only to Sui node operators).
 
     [:octicons-arrow-right-24: See firewall example...](example/rpc_firewall.md)
 
@@ -31,15 +32,16 @@ hide:
     ---
 
     * On-chain secret exchanges. DTP always encrypt end-to-end. 
-    * key/certificate installation on web3 apps from centralized servers.
+    * Secured key/certificate installation on web3 apps from centralized servers.
     * Authenticity with signed data transfer.
 
 -   :free:{ .lg .middle } __Open-Source__
 
     ---
 
-    * From developers for developers. No Token, middlemen, commission or dev fee.
-    * Only costs is the minimal Sui gas required for smart contracts execution.
+    * Only code from developers for developers. No gimmick.
+    * No Token, middlemen, commission or dev fee.
+    * Only requires the smart contracts execution costs (the gas for the Sui Move calls).
   
     [:octicons-arrow-right-24: Check the FAQ...](faq.md)
 
@@ -47,16 +49,18 @@ hide:
 
     ---
     
-    * You can configure DTP to automate failover and/or load balancing among your backend servers, then let the L1 network itself maintain access to the service 24/7!
+    * Automatic failover and/or load balancing among your backend servers.
 
-    * Your web2 service might benefit of the censorship resistance quality of a decentralized L1 network.
+    * Maybe your service would benefit from the censorship resistance of the Sui network?
+  
+    * Develop Serf-like coordination with a group of other loosely coupled web2 servers.
 
 
 -   :material-bank-check:{ .lg .middle } __Safe and Fair Hybrid Escrow__
 
     ---
     
-    * Develop new fair Tokenomics on top of Web2: Pay per request, per byte, per RPC call etc...
+    * Add fair Tokenomics to Web2: Pay per request, per byte, per RPC call etc...
     
     * DTP has built-in "Response Fee Escrow" to prevent query requesters to perform financial attacks against a company/server.
 
