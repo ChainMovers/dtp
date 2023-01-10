@@ -1,6 +1,0 @@
----
-description: <<TODO>>
----
-
-# Ping API
-

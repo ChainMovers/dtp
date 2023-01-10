@@ -1,6 +1,0 @@
----
-description: <<TODO>>
----
-
-# Connection API
-
