@@ -16,4 +16,4 @@ envs:
     rpc: "https://fullnode.devnet.sui.io:443"
     ws: ~
 active_env: localnet
-active_address: "0xe7f134729591f52cf0638c2500a7ed228033a9e7"
+active_address: "0xc7148f0c0086adf172eb4c2076c7d888337789a7"

@@ -64,3 +64,8 @@ host:~/$
 
 ### Run DTP Integration Test (localnet)
 ~/dtp$ cargo test
+
+When running integration tests, the test setup makes sure a localnet (sui process) and a peer DTP service Daemon (dtp process) simulate interacting with a remote peer.
+
+This allows to automate your own client/server integration test of your own application on a single machine (Just need to make sure to use a different set of object coin, client address and localhost:port. More on this later).
+  

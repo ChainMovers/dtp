@@ -6,7 +6,7 @@ committee_size: 4
 grpc_load_shed: ~
 grpc_concurrency_limit: 20000000000
 accounts:
-  - address: 267d4904898cbc15f165a18541154ec8c5732fcb
+  - address: 4e8b8c06d7aed3c11195794fa7b0469855c57b30
     gas_objects:
       - object_id: "0xd79b45b89580f92986a9d92b57feb96e6766fbab"
         gas_value: 100000000000000
@@ -19,7 +19,7 @@ accounts:
       - object_id: "0x3a713341f43998b53c20de40d9e67116049b37a6"
         gas_value: 100000000000000
     gas_object_ranges: []
-  - address: 68db58b41d97e4cf1ea7d9327036ebd306a7930a
+  - address: 5f11df8d90fef7a642d561aed0f2ee64de5c373c
     gas_objects:
       - object_id: "0x9463a9d0f5caee14ec695af6552339ab76f62fc5"
         gas_value: 100000000000000
@@ -32,7 +32,7 @@ accounts:
       - object_id: "0x7edba2f308678b0c606fcc6cd1546928ddb3dda1"
         gas_value: 100000000000000
     gas_object_ranges: []
-  - address: 99d821380348ee02dd685a3af6d7123d92db0d3c
+  - address: 8638a4d6438b399a77659463a25fdf2bdf0b229b
     gas_objects:
       - object_id: "0xc7c2cc2d8a52ab722d3fff5f023d92d3e6c83bf7"
         gas_value: 100000000000000
@@ -45,7 +45,7 @@ accounts:
       - object_id: "0x5138c6830ea4aa8cb765e0c43fd6b21ebb815abf"
         gas_value: 100000000000000
     gas_object_ranges: []
-  - address: bbd8d0695c369b04e9207fca4ef9f5f15b2c0de7
+  - address: 86f066b23d7e60ec4dbb280a4c265772c186693b
     gas_objects:
       - object_id: "0xd0fb870ac78a2388ceab2b6ce09429c049058804"
         gas_value: 100000000000000
@@ -58,7 +58,7 @@ accounts:
       - object_id: "0x750e819834b39ae10198ca4a6a586ebe0392e5a3"
         gas_value: 100000000000000
     gas_object_ranges: []
-  - address: e7f134729591f52cf0638c2500a7ed228033a9e7
+  - address: c7148f0c0086adf172eb4c2076c7d888337789a7
     gas_objects:
       - object_id: "0x2d43245a6af1f65847f7c18d5f6aabbd8e11299b"
         gas_value: 100000000000000
