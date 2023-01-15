@@ -5,6 +5,7 @@ use super::host_internal::*;
 //use std::str::FromStr;
 use sui_keys::keystore::AccountKeystore;
 //use sui_sdk::json::SuiJsonValue;
+use sui_adapter::execution_mode;
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use sui_sdk::types::messages::Transaction;
 use sui_types::intent::Intent;
@@ -56,7 +57,7 @@ pub(crate) async fn create_localhost_on_network(
 
     let create_host_call = sui_client
         .transaction_builder()
-        .move_call(
+        .move_call::<execution_mode::Normal>(
             rpc.client_address,
             txn.package_id,
             "host",

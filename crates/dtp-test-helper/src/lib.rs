@@ -125,9 +125,7 @@ impl SuiNetworkForTest {
         // Note: Object not existing not considered an error.
 
         // Verification using self-contain code (its own SuiClient and all).
-        let sui = SuiClient::new("http://0.0.0.0:9000", None, None)
-            .await
-            .map_err(|e| e.context("Is localnet sui process running?"))?;
+        let sui = SuiClient::new("http://0.0.0.0:9000", None, None).await?;
 
         // TODO: Check the different error code to differentiate inexistence from call failure. This is very incomplete.
         let result = sui.read_api().get_parsed_object(object_id).await;

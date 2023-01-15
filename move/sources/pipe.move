@@ -7,7 +7,7 @@
 module dtp::pipe {
     use std::vector::{Self};
     use sui::object::{Self, UID, ID, uid_to_address, id_from_address};
-    use sui::tx_context::{Self, TxContext};
+    use sui::tx_context::{TxContext};
     use sui::transfer;
 
     #[test_only]
@@ -25,7 +25,7 @@ module dtp::pipe {
         send_call_completed: u64,
     }
 
-    public(friend) fun create_internal( ctx: &mut TxContext ): ID {
+    public(friend) fun create_internal( ctx: &mut TxContext, recipient: address ): ID {
         let pipe = Pipe {
             id: object::new(ctx),
             byte_payload_sent: 0,
@@ -33,7 +33,7 @@ module dtp::pipe {
             send_call_completed: 0 
         };
         let id_copy = id_from_address(uid_to_address(&pipe.id));
-        transfer::transfer(pipe, tx_context::sender(ctx));
+        transfer::transfer(pipe, recipient );
         id_copy
     }
 

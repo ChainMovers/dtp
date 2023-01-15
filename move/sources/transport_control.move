@@ -42,7 +42,7 @@ module dtp::transport_control {
     //
     // Shared object with public entry functions allowed only 
     // for the client and server of the related connection.
-    struct TransportControl has key, store {
+    struct TransportControl has key {
         id: UID,
 
         client_host: Option<ID>, // Not set on broadcast.
@@ -146,13 +146,13 @@ module dtp::transport_control {
         self.client_authority
     }
 
-    // The TransportController is the shared object for the
+    // The TransportControl is the shared object for the
     // connection between two hosts.
     //
     // It is created by the client and provides also unique capabilities
     // to the server.
     //
-    // There are two ways of creating a TransportController:
+    // There are two ways of creating a TransportControl:
     //
     //    best_effort:
     //        Created without checking for approval with the server Host
@@ -187,12 +187,12 @@ module dtp::transport_control {
                                          return_port: Option<u16>,
                                          ctx: &mut TxContext )    
     {
-        // Create the client tx pipe and the TransportController itself.
+        // Create the tx pipes and the TransportControl itself.
         //
         // A "Connection Request" event is emited. The server may choose to 
         // accept the connection, ignore the request or pro-actively
         // refuse the request (which is relatively nice since it save the 
-        // client some storage fee by allowing to delete the TransportController).
+        // client some storage fee by allowing to delete the object created).
         //         
         let tc = dtp::transport_control::new(
             client_host, server_host,
@@ -200,15 +200,16 @@ module dtp::transport_control {
             option::none(), option::none(),
             protocol, port, return_port, ctx );
 
-        // Weak reference between Pipe and TC using ID (for recovery scenario).
-        tc.client_tx_pipe = option::some(dtp::pipe::create_internal(ctx));
+        let sender = tx_context::sender(ctx);
+        // Weak references between Pipes and TC using ID (for recovery scenario).
+        tc.client_tx_pipe = option::some(dtp::pipe::create_internal(ctx, sender));
+        tc.server_tx_pipe = option::some(dtp::pipe::create_internal(ctx, server_admin));
 
         // Emit the "Connection Request" Move event.
+        // The server will see the sender object therefore will know the TC and plenty of info!
         event::emit(BEConReq { 
                 sender: tx_context::sender(ctx), // Allows to filter out early spammers.
-                // tc_id: new::ID(tc.UID), The server will see the sender object therefor will know the TC!
             } );
-
         transfer::share_object(tc);
     }
 
@@ -242,7 +243,7 @@ module dtp::transport_control {
     //
     // Note: All epoch timeout may differ depending of the connection SLA.
     //
-    // TODO
+    // TODO State machine is for storage+fund management (to be done eventually)
 
 }
 
@@ -279,8 +280,8 @@ module dtp::test_transport_control {
         {
             let ctx = test_scenario::ctx(scenario);
 
-            fake_client_pipe_id = pipe::create_internal(ctx);
-            fake_server_pipe_id = pipe::create_internal(ctx);
+            fake_client_pipe_id = pipe::create_internal(ctx, fake_client_address);
+            fake_server_pipe_id = pipe::create_internal(ctx, fake_client_address);
 
             let fake_client_host = host::new(ctx);
             let fake_client_host_id = object::id<Host>(&fake_client_host);

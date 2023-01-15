@@ -26,7 +26,10 @@
 // TODO Define the error.
 
 use anyhow::bail;
-use dtp_core::network::{HostInternal, LocalhostInternal, NetworkManager};
+use dtp_core::{
+    network::{HostInternal, LocalhostInternal, NetworkManager},
+    types::PingStats,
+};
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use tokio::time::Duration;
 
@@ -175,7 +178,7 @@ impl DTP {
         &self,
         _localhost: &Localhost,
         _target_host: &Host,
-    ) -> Result<(), anyhow::Error> {
+    ) -> Result<PingStats, anyhow::Error> {
         // Verify parameters are children of this NetworkManager.
         //
         // Particularly useful for the Localhost for an early detection
@@ -192,7 +195,13 @@ impl DTP {
 
         self.netmgr.ping(localhost, target_host)
         */
-        Ok(())
+        // TODO WIP Obviously...
+        let stats = PingStats {
+            ping_count_attempted: 1,
+            ..Default::default()
+        };
+
+        Ok(stats)
     }
 
     // Initialize Firewall Service
