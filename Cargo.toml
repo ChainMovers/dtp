@@ -16,27 +16,41 @@ documentation = "https://docs.dtp.dev"
 default-run = "dtp-server"
 
 [workspace.dependencies]
-# By default, DTP is built using the remote git Sui (devnet branch).
+# By default, DTP is built using a local repo of Sui (devnet branch).
 #
-# Optionally, un-comment the "path"" sui-sdk dependency to make sure
-# your running localnet and application use the same local Sui repo.
+# This make sure that your localnet, DTP and your app are all 
+# built and tested using the *same* binaries, saving you from chasing
+# unecessary problems of unmatching versions.
 #
-# Use "script/init-localnet" to create or update this local repo.
+# The local version is initialized by the script:
+#   dtp/script/init-localnet
 #
-# See https://github.com/mario4tier/dtp/tree/main/script for doc
-# about DTP directories structure.
-
-#sui-sdk = { path = "../dtp-dev/sui-devnet/crates/sui-sdk/" }
-#sui-json-rpc-types = { path = "../dtp-dev/sui-devnet/crates/sui-json-rpc-types/" }
-#sui-keys = { path = "../dtp-dev/sui-devnet/crates/sui-keys/" }
-#sui-types = { path = "../dtp-dev/sui-devnet/crates/sui-types/" }
+# The development environment is further explained here:
+#
+#  https://github.com/mario4tier/dtp/tree/main/script
+#
+# This is all initialized by a single bash script:
+#    dtp/script/init-localnet
+#
+# A re-initialization and a single local copy of everything local is a
+# bit "old-school", but it works *SOLID* and keeps your edit/debug cycles
+# fast.
+#
+# If you are not comfortable with this way of doing and
+# prefer to have the "typical" rust way then comment out
+# the "path" dependencies and un-comment out the "git" ones.
+sui-sdk = { path = "../dtp-dev/sui-devnet/crates/sui-sdk/" }
+sui-json-rpc-types = { path = "../dtp-dev/sui-devnet/crates/sui-json-rpc-types/" }
+sui-keys = { path = "../dtp-dev/sui-devnet/crates/sui-keys/" }
+sui-types = { path = "../dtp-dev/sui-devnet/crates/sui-types/" }
+sui-adapter = { path = "../dtp-dev/sui-devnet/crates/sui-adapter/" }
 
 # Comment these sui-XXXXX "git" dependencies if using the above "path" dependencies.
-sui-sdk = { git = "https://github.com/MystenLabs/sui", branch = "devnet" }
-sui-json-rpc-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-json-rpc-types" }
-sui-keys = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-keys" }
-sui-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-types" }
-
+#sui-sdk = { git = "https://github.com/MystenLabs/sui", branch = "devnet" }
+#sui-json-rpc-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-json-rpc-types" }
+#sui-keys = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-keys" }
+#sui-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-types" }
+#sui-adapter = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-adapter" }
 
 tokio = { version = "1.22.0", features = ["full"] }
 telemetry-subscribers = { version = "0.2.0" }
@@ -47,7 +61,6 @@ clap = { version = "3.2.22", features = [
     "derive",
 ] } # No upgrade to v4 until color are back.
 colored = { version = "2.0.0" }
-
 
 [workspace.dependencies.serial_test]
 # Intended to be used as [dev-dependencies] only.
