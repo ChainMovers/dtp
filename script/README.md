@@ -14,26 +14,39 @@ Try this:
   - Creates self-contain and deterministic localnet that can be re-initialized with the same pre-funded address.
   - Sui CLI frontends that target specific network (e.g. "dsui client gas" will be for the live devnet).
 
+## Verify the Sui localnet is running on your machine
+Do the following
+```
+$ pgrep sui
+1773
+```
+This is the PID. If a number is shown, the sui process is running, meaning the localnet is running.
+
+TODO Add a simple cURL to confirm port open.
+
 ## Initial State
-Always same 3 client addresses. The 0xcfed~46ba2 is the default active client and will be funded with 5 object coins.
+Always same 5 client addresses. The 0xc7148~89a7 is the default active client and will be funded with 5 object coins.
+
 ```
 $ lsui client addresses
-Showing 3 results.
-0x109f6827f048f19d0b7e75a63066543d82a1ae6b
-0x9ae6d40296ddb5c97ed0b095270b1ff6f72c2ef9
-0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2
+Showing 5 results.
+0x4e8b8c06d7aed3c11195794fa7b0469855c57b30
+0x5f11df8d90fef7a642d561aed0f2ee64de5c373c
+0x8638a4d6438b399a77659463a25fdf2bdf0b229b
+0x86f066b23d7e60ec4dbb280a4c265772c186693b
+0xc7148f0c0086adf172eb4c2076c7d888337789a7
 
 $ lsui client active-address
-0xcfed50a652b8fce7a7917a8a736a7c2b1d646ba2
+0xc7148f0c0086adf172eb4c2076c7d888337789a7
 
 $ lsui client gas
                  Object ID                  |  Gas Value
 ----------------------------------------------------------------------
- 0x6205fc058b205227d7b7bd5b4e7802f0055157c6 | 100000000000000
- 0xb2c64298dd42e83725fe991724a27741abb3aa2f | 100000000000000
- 0xb49fe4af8d317d442e228d7d97896de9f7f5ef9e | 100000000000000
- 0xdda7a05332162389586c18c4c518c9811293cb09 | 100000000000000
- 0xef7d5e8fe9b133c431b386f27b17d4aaaa55e58b | 100000000000000
+ 0x0b162ef4f83118cc0ad811de35ed330ec3441d7b | 100000000000000
+ 0x2d43245a6af1f65847f7c18d5f6aabbd8e11299b | 100000000000000
+ 0x9811c29f1dadb67aadcd59c75693b4a91b347fbb | 100000000000000
+ 0xc8381677d3c213f9b0e9ef3d2d14051458b6af8a | 100000000000000
+ 0xd0b2b2227244707bce233d13bf537af7a6710c01 | 100000000000000
 ```
 
 ## Development Setup
