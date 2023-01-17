@@ -8,14 +8,14 @@ It is a TCP-Like protocol facilitating data streaming between web3 applications 
 
 Yes.
 
-You can use it as an example to efficiently let gamers stream data (P2P) among themselves.
+As an example, you can use it to efficiently let gamers stream data among themselves (P2P).
 
 
 **What sort of data can DTP transport?**
 
 Any protocol, any data stream.
 
-Data can be just a few bytes for a one time secret exchange for authentication/login. At another extreme the bandwidth can cover as much as an encrypted video stream (through the innovative combination of DTP Multi-channels and Sui network simple transactions). The economic feasibility of HD video streaming on blockchain is an open question...
+Data can be a few bytes for a one time secret exchange for authentication/login. At another extreme, the bandwidth can be for as much as an encrypted video stream (through the innovative combination of [DTP Multi-channels](ref/design.md#multi-channel-connection) and Sui network simple transactions). The economic feasibility of HD video streaming on blockchain is an open question...
 
 **Can DTP be used with commercial application?**
 
