@@ -30,11 +30,6 @@ module dtp::transport_control {
     use sui::event;
     use sui::transfer;
 
-    //use sui::transfer;    
-    //use dtp::pipe::{Self};
-
-    // friend dtp::node;
-
     #[test_only]
     friend dtp::test_transport_control;
 
@@ -45,18 +40,18 @@ module dtp::transport_control {
     struct TransportControl has key {
         id: UID,
 
+        flags: u8, // DTP version+esc flags always after UID.
+
         client_host: Option<ID>, // Not set on broadcast.
         server_host: ID,
 
         // Do not change for the lifetime of this object.
-        client_authority: Option<address>, // Not set on broadcast.
-        server_admin: address,
-
+        client_adm: Option<address>, // Not set on broadcast.
+        server_adm: address,
 
         // Connection Type.
         //
         // TODO Bi-directional, uni-directional or broadcast. Always bi-directional for now.
-        
 
         // Keep track of the related Pipes.
         //
@@ -88,15 +83,15 @@ module dtp::transport_control {
 
     public(friend) fun new(
         client_host: Option<ID>, server_host: ID,
-        client_authority: Option<address>, server_admin: address,
+        client_adm: Option<address>, server_adm: address,
         client_tx_pipe: Option<ID>, server_tx_pipe: Option<ID>,
         protocol: u16, port: Option<u16>, return_port: Option<u16>,
         ctx: &mut TxContext): TransportControl
     {
         TransportControl {
-            id: object::new(ctx),
+            id: object::new(ctx), flags: 0,
             client_host, server_host,
-            client_authority, server_admin,
+            client_adm, server_adm,
             client_tx_pipe, server_tx_pipe,
             protocol, port, return_port
         }
@@ -104,9 +99,9 @@ module dtp::transport_control {
 
 
     public(friend) fun delete( self: TransportControl ) {
-        let TransportControl { id,
+        let TransportControl { id, flags: _,
           client_host, server_host: _,
-          client_authority, server_admin: _,
+          client_adm, server_adm: _,
           client_tx_pipe, server_tx_pipe,
           protocol: _, port: _, return_port: _
         } = self;
@@ -116,10 +111,10 @@ module dtp::transport_control {
             option::destroy_none(client_host);
         };
 
-        if (option::is_some(&client_authority)) {
-            option::destroy_some(client_authority);
+        if (option::is_some(&client_adm)) {
+            option::destroy_some(client_adm);
         } else {
-            option::destroy_none(client_authority);
+            option::destroy_none(client_adm);
         };
 
         if (option::is_some(&client_tx_pipe)) {
@@ -138,12 +133,12 @@ module dtp::transport_control {
     }    
 
     // Read accessors
-    public(friend) fun server_admin(self: &TransportControl): address {
-        self.server_admin
+    public(friend) fun server_adm(self: &TransportControl): address {
+        self.server_adm
     }
 
-    public(friend) fun client_authority(self: &TransportControl): Option<address> {
-        self.client_authority
+    public(friend) fun client_adm(self: &TransportControl): Option<address> {
+        self.client_adm
     }
 
     // The TransportControl is the shared object for the
@@ -180,11 +175,12 @@ module dtp::transport_control {
     // and business relationship). Firewall and controlled access is possible,
     // the server ressources is reserved for their intended users.
     //
-    public entry fun create_best_effort( client_host: Option<ID>, server_host: ID,
-                                         server_admin: address,
+    public entry fun create_best_effort( client_host: ID,
+                                         server_host: ID,
+                                         server_adm: address,
                                          protocol: u16,
-                                         port: Option<u16>,
-                                         return_port: Option<u16>,
+                                         port: u16,
+                                         return_port: u16,
                                          ctx: &mut TxContext )    
     {
         // Create the tx pipes and the TransportControl itself.
@@ -194,21 +190,24 @@ module dtp::transport_control {
         // refuse the request (which is relatively nice since it save the 
         // client some storage fee by allowing to delete the object created).
         //         
+        let sender = tx_context::sender(ctx);  
         let tc = dtp::transport_control::new(
-            client_host, server_host,
-            option::some(tx_context::sender(ctx)), server_admin, // client_authority, server_admin             
-            option::none(), option::none(),
-            protocol, port, return_port, ctx );
-
-        let sender = tx_context::sender(ctx);
+            option::some(client_host),
+            server_host,
+            option::some(sender),
+            server_adm,
+            option::none(), 
+            option::none(),
+            protocol, option::some(port), option::some(return_port), ctx );
+        
         // Weak references between Pipes and TC using ID (for recovery scenario).
         tc.client_tx_pipe = option::some(dtp::pipe::create_internal(ctx, sender));
-        tc.server_tx_pipe = option::some(dtp::pipe::create_internal(ctx, server_admin));
+        tc.server_tx_pipe = option::some(dtp::pipe::create_internal(ctx, server_adm));
 
         // Emit the "Connection Request" Move event.
         // The server will see the sender object therefore will know the TC and plenty of info!
         event::emit(BEConReq { 
-                sender: tx_context::sender(ctx), // Allows to filter out early spammers.
+                sender: sender, // Allows to filter out early spammers.
             } );
         transfer::share_object(tc);
     }
@@ -300,7 +299,7 @@ module dtp::test_transport_control {
                 ctx );
 
             // Test accessors
-            assert!(transport_control::server_admin(&tc) == fake_server_address, 1);
+            assert!(transport_control::server_adm(&tc) == fake_server_address, 1);
 
             //debug::print(&tc);
 

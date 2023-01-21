@@ -8,11 +8,23 @@ use thiserror;
 #[derive(Debug, thiserror::Error)]
 #[allow(clippy::large_enum_variant)]
 pub enum DTPError {
+    #[error("DTP Must create a Localhost first")]
+    DTPLocalhostDoesNotExists,
+
     #[error("DTP Localhost {localhost:?} already exists for client {client:?}")]
     DTPLocalhostAlreadyExists { localhost: String, client: String },
 
+    #[error("DTP Localhost data missing. Network accessible?")]
+    DTPLocalhostDataMissing,
+
+    #[error("DTP Missing Server Admin Address")]
+    DTPMissingServerAdminAddress,
+
     #[error("DTP Object ID not found")]
     ObjectIDNotFound,
+
+    #[error("DTP Internal Error. Sui Client Should Exist.")]
+    DTPMissingSuiClient,
 
     #[error("DTP Failed Move host create({client:?}). Info from sui_sdk-> {inner:?}")]
     FailedMoveHostCreate { client: String, inner: String },
@@ -66,6 +78,10 @@ impl DTPError {
         match self {
             DTPError::ObjectIDNotFound => Some(MoreInfo {
                 fix_caller_into_dtp_api: false,
+                internal_err_report_to_devs: false,
+            }),
+            DTPError::DTPLocalhostDoesNotExists => Some(MoreInfo {
+                fix_caller_into_dtp_api: true,
                 internal_err_report_to_devs: false,
             }),
             _ => None,

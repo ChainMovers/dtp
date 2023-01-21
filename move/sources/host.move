@@ -1,26 +1,12 @@
 // This is the most "visible" DTP shared object.
 //
 // The address of the Host object is the one used when
-// targeting an "address:port" service.
+// targeting an "<Host Object ID>:port" service.
 //
-// Typical next step with the DTP API will be:
+// Typical next step with the DTP API will be ping or
+// create a connection with that Host object.
 //
-// send_datagram():
-//     Simplified one-time encrypted uni-directional datagram transfer
-//     to this Host. No delivery confirmation (fire and forget protocol).
-//     On success, just confirm the data is persisted 
-//
-// create_connection():
-//     Establish a bi-directional data streaming connection
-//     with this Host. On success, return a TransportControl
-//     object for further operations.
-//
-// ... more to come ...
-//
-
 module dtp::host {
-    //use std::option::{Self, Option};
-    //use std::vector::{Self};
 
     use sui::object::{Self, UID, ID};
     use sui::transfer;
@@ -89,24 +75,26 @@ module dtp::host {
     struct Host has key, store {
         id: UID,
 
+        flgs: u8, // DTP version+esc flags always after UID.
+
         // The administrator has more control through transactions.
-        admin: address, 
+        adm: address, 
 
         // Real-Time statistics.
         // 
         // rejected connection can be calculated as (requested - created).
         // created always >= deleted
-        connection_requested: u64, 
-        connection_created: u64,
-        connection_deleted: u64,
-        connection_recycled: u64,
+        con_req: u64, 
+        con_add: u64,
+        con_del: u64,
+        con_rcy: u64,
 
         // Settings that may change from time to time.
         //
         // If after a change the connections_active > max_connections_active, then no
         // new connection will be allowed. Existing connections are not forced to terminate
         // butwill be closed if becoming inactive.
-        max_connection: u16,
+        max_con: u16,
 
         // Aggregated connections statistic (updated periodically).
         // TODO
@@ -130,26 +118,24 @@ module dtp::host {
     public(friend) fun new(ctx: &mut TxContext) : Host {
         Host {
             id: object::new(ctx),
-            admin: tx_context::sender(ctx),
-            connection_requested: 0, 
-            connection_created: 0,
-            connection_deleted: 0,
-            connection_recycled: 0,
-            max_connection: MAX_CONNECTION_PER_HOST_DEFAULT,
+            flgs: 0,
+            adm: tx_context::sender(ctx),
+            con_req: 0, 
+            con_add: 0,
+            con_del: 0,
+            con_rcy: 0,
+            max_con: MAX_CONNECTION_PER_HOST_DEFAULT,
         }
     }
 
     public entry fun create( ctx: &mut TxContext ) { transfer::share_object<Host>(new(ctx)); }
 
     // Accessors
-    public(friend) fun admin(self: &Host) : address { self.admin }
+    public(friend) fun adm(self: &Host) : address { self.adm }
 }
 
 #[test_only]
 module dtp::test_host {
-    //use std::debug;
-    //use std::option::{Self};
-    //use sui::object;
 
     use sui::transfer;
     use sui::test_scenario::{Self};
@@ -168,8 +154,8 @@ module dtp::test_host {
 
             let new_host = host::new( ctx );
 
-            // admin address must be the creator.
-            assert!(host::admin(&new_host) == creator, 1);
+            // admnistrator address must be the creator.
+            assert!(host::adm(&new_host) == creator, 1);
 
             transfer::share_object( new_host );
         };
