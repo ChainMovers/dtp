@@ -8,6 +8,7 @@ use std::path::PathBuf;
 use telemetry_subscribers::TelemetryConfig;
 
 use futures::StreamExt;
+use sui_json_rpc_types::SuiEvent;
 use sui_sdk::rpc_types::SuiEventFilter;
 use sui_sdk::SuiClient;
 
@@ -41,9 +42,37 @@ impl Command {
                         .subscribe_event(SuiEventFilter::All(vec![]))
                         .await?;
                     loop {
-                        println!("{:?}", subscribe_all.next().await);
+                        // Receive Sui Network event loop goal:
+                        //     Filter, parse, and forward a message to another thread to react.
+                        //
+                        let nxt = subscribe_all.next().await;
+                        if nxt.is_none() {
+                            continue;
+                        }
+                        if let Ok(env) = nxt.unwrap() {
+                            match env.event {
+                                SuiEvent::Publish { package_id, .. } => {
+                                    println!("Publish package{}", package_id.to_hex())
+                                }
+                                SuiEvent::MoveEvent { package_id, .. } => {
+                                    println!("Received event from package{}", package_id.to_hex())
+                                }
+                                SuiEvent::NewObject {
+                                    package_id,
+                                    object_id,
+                                    ..
+                                } => {
+                                    println!(
+                                        "NewObject package ID {} object ID {}",
+                                        package_id.to_hex(),
+                                        object_id.to_hex()
+                                    )
+                                }
+
+                                _ => {}
+                            }
+                        }
                     }
-                    //println!("{}", x.into_os_string().into_string().unwrap());
                 } else {
                     println!("Path not provided");
                 }

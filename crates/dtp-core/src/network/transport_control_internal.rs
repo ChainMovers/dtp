@@ -1,8 +1,9 @@
 use super::super::types::error::*;
-use super::common_internal::*;
+use super::host_internal::HostInternal;
+use super::{common_internal::*, LocalhostInternal};
 
-// Stuff needed typically for for a Move Call
-use sui_adapter::execution_mode;
+// Stuff needed typically for a Move Call
+use std::str::FromStr;
 use sui_keys::keystore::AccountKeystore;
 use sui_sdk::json::SuiJsonValue;
 use sui_sdk::types::base_types::ObjectID;
@@ -10,45 +11,60 @@ use sui_sdk::types::messages::Transaction;
 use sui_types::intent::Intent;
 use sui_types::messages::ExecuteTransactionRequestType;
 
+use anyhow::bail;
+
 // The "internal" object is a private implementation (not intended to be
 // directly exposed throught the DTP SDK).
 pub struct TransportControlInternal {
     // Set when TC confirmed exists.
-    #[allow(dead_code)]
     package_id: Option<ObjectID>,
-    #[allow(dead_code)]
     object_id: Option<ObjectID>,
 
     // Parameters used when the object was built (only set
     // if was part of a recent operation).
-    #[allow(dead_code)]
     call_args: Option<Vec<SuiJsonValue>>,
 }
 
-#[allow(dead_code)]
 pub(crate) async fn create_best_effort_transport_control_on_network(
     rpc: &SuiSDKParamsRPC,
     txn: &SuiSDKParamsTxn,
+    localhost: &LocalhostInternal,
+    server_host: &HostInternal,
+    _server_protocol: u16,
+    _server_port: Option<u16>,
+    _return_port: Option<u16>,
 ) -> Result<TransportControlInternal, anyhow::Error> {
-    // TODO: Remove panic.
-    let sui_client = rpc.sui_client.as_ref().expect("Could not create SuiClient");
+    let sui_client = match rpc.sui_client.as_ref() {
+        Some(x) => x,
+        None => bail!(DTPError::DTPMissingSuiClient),
+    };
+
+    let server_adm = match server_host.admin_address() {
+        Some(x) => x,
+        None => bail!(DTPError::DTPMissingServerAdminAddress),
+    };
 
     /* Params must match. See tranport_control.move
-        client_host: Option<ID>,
-        server_host: ID,
-        client_authority: Option<address>,
-        server_admin: address,
-        client_tx_pipe: Option<ID>,
-        server_tx_pipe: Option<ID>,
-        protocol: u16,
-        port: Option<u16>,
-        return_port: Option<u16>
+       client_host: ID,
+       server_host: ID,
+       server_adm: address,
+       protocol: u16,
+       port: u16,
+       return_port: u16,
     */
-    let call_args = vec![];
+
+    let call_args = vec![
+        SuiJsonValue::from_object_id(localhost.object_id()),
+        SuiJsonValue::from_object_id(server_host.object_id()),
+        SuiJsonValue::from_str(&server_adm.to_string()).unwrap(),
+        SuiJsonValue::from_str("0").unwrap(),
+        SuiJsonValue::from_str("0").unwrap(),
+        SuiJsonValue::from_str("0").unwrap(),
+    ];
 
     let move_call = sui_client
         .transaction_builder()
-        .move_call::<execution_mode::Normal>(
+        .move_call(
             rpc.client_address,
             txn.package_id,
             "transport_control",

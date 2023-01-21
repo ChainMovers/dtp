@@ -63,6 +63,10 @@ impl SuiNetworkForTest {
             path, "/../../../dtp-dev/publish_data/localnet/package_id.txt"
         );
 
+        // Make sure the localnet is running.
+
+        // Make sure the peer DTP server is running (and responding to test requests).
+
         // Get the DTP package id from when it was last published.
         let mut package_id_hex = fs::read_to_string(&pathname)?;
         SuiNetworkForTest::trim_newline(&mut package_id_hex);

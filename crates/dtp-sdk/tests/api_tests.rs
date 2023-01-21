@@ -1,4 +1,4 @@
-use dtp_sdk::{Host, Localhost, DTP};
+use dtp_sdk::{Host, DTP};
 //use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use anyhow::Result;
 
@@ -14,7 +14,7 @@ struct TwoHostsSetup {
     #[allow(dead_code)]
     pub dtp_peer: DTP,
     #[allow(dead_code)]
-    pub localhost: Localhost,
+    pub localhost: Host,
     #[allow(dead_code)]
     pub host: Host,
 }
@@ -24,20 +24,20 @@ struct TwoHostsSetup {
 async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
     let network: SuiNetworkForTest = common::setup_localnet()?;
 
-    let owner = network.get_sender_address(Sender::Test).clone();
+    let owner = network.get_sender_address(Sender::LocalClient).clone();
     let mut dtp: DTP = DTP::new(owner, None).await?;
     dtp.add_rpc("http://0.0.0.0:9000", None, None).await?;
     dtp.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
 
     // Create and test a localhost.
-    let mut result = dtp.get_localhost().await.ok();
+    let mut result = dtp.get_host().await.ok();
 
     if result.is_none() {
         // Check the API is consistent.
         assert_eq!(*dtp.localhost_id(), None);
 
         let new_localhost = dtp
-            .create_localhost_on_network()
+            .create_host_on_network()
             .await
             .map_err(|e| e.context("Is the sui localnet process running on your machine?"))?;
         result = Some(new_localhost);
@@ -53,7 +53,7 @@ async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
         .expect("Missing Localhost id at DTP level");
 
     let api_localhost = dtp
-        .get_localhost()
+        .get_host()
         .await
         .expect("Localhost should exist at this point");
 
@@ -67,14 +67,14 @@ async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
     dtp2.add_rpc("http://0.0.0.0:9000", None, None).await?;
     dtp2.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
 
-    let mut result2 = dtp2.get_localhost().await.ok();
+    let mut result2 = dtp2.get_host().await.ok();
 
     if result2.is_none() {
         // Check the API is consistent.
         assert_eq!(*dtp2.localhost_id(), None);
 
         let new_localhost2 = dtp2
-            .create_localhost_on_network()
+            .create_host_on_network()
             .await
             .map_err(|e| e.context("Is the sui localnet process running on your machine?"))?;
         result2 = Some(new_localhost2);
@@ -84,7 +84,7 @@ async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
     let host2_id = localhost2.id();
 
     // Now test doing a get_Host of these host ids using both clients.
-    let host = dtp.get_host(*host2_id).await?;
+    let host = dtp.get_host_by_id(*host2_id).await?;
 
     Ok(TwoHostsSetup {
         network,
@@ -99,12 +99,9 @@ async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
 #[serial]
 async fn integration_localnet() -> Result<(), anyhow::Error> {
     #[allow(dead_code)]
-    let two_hosts = create_two_hosts_setup().await?;
+    let mut two_hosts = create_two_hosts_setup().await?;
     #[allow(dead_code)]
-    let _ping_result = two_hosts
-        .dtp
-        .ping(&two_hosts.localhost, &two_hosts.host)
-        .await?;
+    let _ping_result = two_hosts.dtp.ping_on_network(&two_hosts.host).await?;
 
     Ok(())
 }

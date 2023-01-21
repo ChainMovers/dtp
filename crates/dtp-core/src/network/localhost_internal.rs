@@ -2,35 +2,27 @@ use super::super::types::error::*;
 use super::common_internal::*;
 use super::host_internal::*;
 
-//use std::str::FromStr;
 use sui_keys::keystore::AccountKeystore;
-//use sui_sdk::json::SuiJsonValue;
-use sui_adapter::execution_mode;
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use sui_sdk::types::messages::Transaction;
 use sui_types::intent::Intent;
 use sui_types::messages::ExecuteTransactionRequestType;
 
-/*
-use sui_json_rpc_types::{
-    EventPage, MoveCallParams, OwnedObjectRef, RPCTransactionRequestParams,
-    SuiCertifiedTransaction, SuiData, SuiEvent, SuiEventEnvelope, SuiExecutionStatus,
-    SuiGasCostSummary, SuiObject, SuiObjectInfo, SuiObjectRead, SuiObjectRef, SuiParsedData,
-    SuiPastObjectRead, SuiRawData, SuiRawMoveObject, SuiTransactionAuthSignersResponse,
-    SuiTransactionData, SuiTransactionEffects, SuiTransactionResponse, TransactionBytes,
-    TransactionsPage, TransferObjectParams,
-};*/
-
 #[derive(Debug)]
 pub struct LocalhostInternal {
+    #[allow(dead_code)]
+    object_id: ObjectID,
     admin_address: SuiAddress,
+    #[allow(dead_code)]
     firewall_initialized: bool,
+    #[allow(dead_code)]
+    host_internal: HostInternal,
 }
 
 pub(crate) async fn get_localhost_by_id(
     rpc: &SuiSDKParamsRPC,
     host_id: ObjectID,
-) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
+) -> Result<LocalhostInternal, anyhow::Error> {
     // Do the equivalent of get_host_by_id, but
     // create a handle that will allow for administrator
     // capabilities.
@@ -38,17 +30,19 @@ pub(crate) async fn get_localhost_by_id(
     let host_internal = super::host_internal::get_host_by_id(rpc, host_id).await?;
 
     let localhost_internal = LocalhostInternal {
+        object_id: host_id,
         admin_address: rpc.client_address,
         firewall_initialized: false,
+        host_internal,
     };
 
-    Ok((host_internal, localhost_internal))
+    Ok(localhost_internal)
 }
 
 pub(crate) async fn create_localhost_on_network(
     rpc: &SuiSDKParamsRPC,
     txn: &SuiSDKParamsTxn,
-) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
+) -> Result<LocalhostInternal, anyhow::Error> {
     // Do not allow to create a new one if one already exists
     // for this user.
 
@@ -57,7 +51,7 @@ pub(crate) async fn create_localhost_on_network(
 
     let create_host_call = sui_client
         .transaction_builder()
-        .move_call::<execution_mode::Normal>(
+        .move_call(
             rpc.client_address,
             txn.package_id,
             "host",
@@ -87,7 +81,7 @@ pub(crate) async fn create_localhost_on_network(
         .await?;
 
     // Get the id from the newly created Sui object.
-    let sui_id = response
+    let object_id = response
         .effects
         .unwrap()
         .created
@@ -98,14 +92,13 @@ pub(crate) async fn create_localhost_on_network(
 
     assert!(response.confirmed_local_execution);
 
-    // All good. Build the DTP handles.
-    Ok((
-        HostInternal::new(sui_id),
-        LocalhostInternal {
-            admin_address: rpc.client_address,
-            firewall_initialized: false,
-        },
-    ))
+    // Success.
+    Ok(LocalhostInternal {
+        object_id,
+        admin_address: rpc.client_address,
+        firewall_initialized: false,
+        host_internal: HostInternal::new(object_id),
+    })
 }
 
 impl LocalhostInternal {
@@ -122,5 +115,9 @@ impl LocalhostInternal {
         // with a mut.
         self.firewall_initialized = true;
         Ok(())
+    }
+
+    pub fn object_id(&self) -> ObjectID {
+        self.object_id
     }
 }

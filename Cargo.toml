@@ -57,6 +57,9 @@ telemetry-subscribers = { version = "0.2.0" }
 
 anyhow = { version = "1.0.68", features = ["backtrace"] }
 thiserror = "1.0.34"
+
+serde = { version = "1.0.144", features = ["derive"] }
+
 clap = { version = "3.2.22", features = [
     "derive",
 ] } # No upgrade to v4 until color are back.

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // dtp-core crate is "internal" to DTP.
 //
 // See instead the dtp-sdk crate for the public API of DTP.

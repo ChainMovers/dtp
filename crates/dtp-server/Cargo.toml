@@ -10,6 +10,7 @@ documentation.workspace = true
 tokio.workspace = true
 anyhow.workspace = true
 sui-sdk.workspace = true
+sui-json-rpc-types.workspace = true
 clap.workspace = true
 colored.workspace = true
 futures = "0.3.23"

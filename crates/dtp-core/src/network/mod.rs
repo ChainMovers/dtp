@@ -1,9 +1,13 @@
 use super::types::error::*;
+use super::types::stats::*;
+
 use std::path::PathBuf;
 use std::time::Duration;
 use sui_keys::keystore::{FileBasedKeystore, Keystore};
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
 use sui_sdk::SuiClient;
+
+use anyhow::bail;
 
 // Flatten many sub modules/files under the same dtp_core::network module.
 //
@@ -16,11 +20,17 @@ use sui_sdk::SuiClient;
 //    use dtp_core::network::localhost_internal::LocalhostInternal;
 pub use self::common_internal::*;
 pub use self::host_internal::*;
+
 pub use self::localhost_internal::*;
+
+pub use self::transport_control_internal::*;
 
 mod common_internal;
 mod host_internal;
+
 mod localhost_internal;
+
+mod transport_control_internal;
 
 // The default location for localnet is relative to
 // this module Cargo.toml location.
@@ -51,9 +61,14 @@ const DEFAULT_LOCALNET_KEYSTORE_PATHNAME: &str = "../../../dtp-dev/localnet/sui.
 #[allow(dead_code)]
 pub struct NetworkManager {
     sui_sdk_params: SuiSDKParams,
+
+    // Set once loaded from network (Registry)
     client_registry_id: Option<ObjectID>,
     localhost_id: Option<ObjectID>,
     volunteers_id: Vec<ObjectID>,
+
+    // Set once loaded from network (Host object).
+    localhost: Option<LocalhostInternal>,
 }
 
 impl NetworkManager {
@@ -85,6 +100,7 @@ impl NetworkManager {
             client_registry_id: None,
             localhost_id: None,
             volunteers_id: Vec::new(),
+            localhost: None,
         })
     }
 
@@ -154,9 +170,7 @@ impl NetworkManager {
         Err(DTPError::NotImplemented.into())
     }
 
-    pub async fn get_localhost(
-        &mut self,
-    ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
+    pub async fn get_localhost(&mut self) -> Result<LocalhostInternal, anyhow::Error> {
         // Get the id if already local.
         //
         // If not local, retreive all objects and select the
@@ -166,6 +180,8 @@ impl NetworkManager {
             Some(x) => x,
             None => self.get_localhost_id_from_registry().await?,
         };
+        //get_localhost_by_id(&self.sui_sdk_params.rpc, localhost_id).await;
+        // Update localhost object
         get_localhost_by_id(&self.sui_sdk_params.rpc, localhost_id).await
     }
 
@@ -176,20 +192,13 @@ impl NetworkManager {
     }
 
     // Mutators that do a JSON-RPC call and transaction.
-    pub async fn init_firewall(
-        &self,
-        localhost: &mut LocalhostInternal,
-    ) -> Result<(), anyhow::Error> {
+    pub async fn init_firewall(&self) -> Result<(), anyhow::Error> {
         // TODO Verify here client_address == localhost.admin_address
         // Detect user error.
-        localhost
-            .init_firewall(&self.sui_sdk_params.rpc, &self.sui_sdk_params.txn)
-            .await
+        Ok(())
     }
 
-    pub async fn create_localhost_on_network(
-        &mut self,
-    ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
+    pub async fn create_localhost_on_network(&mut self) -> Result<HostInternal, anyhow::Error> {
         // This function clear all local state and check if a
         // Localhost instance already exists on the network.
         //
@@ -218,20 +227,93 @@ impl NetworkManager {
 
         // Proceed with the creation.
         // TODO Retry once in a controlled manner?
-        let (host, localhost) =
+        let localhost =
             create_localhost_on_network(&self.sui_sdk_params.rpc, &self.sui_sdk_params.txn).await?;
 
-        self.localhost_id = Some(*host.get_sui_id());
+        let localhost_id = localhost.object_id(); // Copy for later
+
+        self.localhost_id = Some(localhost.object_id());
+        self.localhost = Some(localhost);
 
         // Creation succeeded.
         //
         // Double check to minimise caller having to deal with "race condition". Do a RPC to
-        // the fullnode to verify if it reflects the creation. Keep trying for up to 5 seconds.
+        // the fullnode to verify if it reflects the creation. Keep trying for up to 10 seconds.
         //
-        // Do not fail this call if the fullnode is somehow too slow. The creation has already
-        // succeeded from the point of view of the transaction effects.
+        // Holding the end-user is not ideal, but will minimize a lot of "user complain" of
+        // temporary error that are not really error. Have to give the slowest fullnodes a chance
+        // to reflect the network changes.
+
+        // TODO Must be a more robust retry ... no bail on network failure here...
+        // self.ensure_localhost_ready().await?;
+
+        // Create a Host for the API user with only the ObjectID set.
+        // The API can "catch it" as the localhost and give it special handling.
+        Ok(HostInternal {
+            object_id: localhost_id,
+            admin_address: None,
+            raw: None,
+        })
+    }
+
+    pub async fn ensure_localhost_ready(&mut self) -> Result<(), anyhow::Error> {
+        // Most of the time this function will not detect any problem and quickly return Ok.
         //
-        Ok((host, localhost))
+        // In rare occasion, may detect that a corner case or network disruption may have left
+        // things in an unusual state, and some additional RPC might be attempted to recover
+        // or return an error for allowing the caller to take action.
+        //
+        // This function will never cause additional Sui gas expense.
+        if self.get_localhost_id().is_none() {
+            bail!(DTPError::DTPLocalhostDoesNotExists)
+        }
+
+        // Verify that the localhost (Host object) is known, if not, then
+        // try to recover by retreiving it now.
+        //
+        // This might have happen if this is the very first time the user
+        // is using DTP and have just created the Localhost object on the Sui
+        // network (so its object id is known upon creation) but have never
+        // use it yet (so the object fields were never retreived!).
+        if self.localhost.is_none() {
+            // Load the Move Host object corresponding to the Localhost.
+            self.get_localhost().await?;
+            // Test again. Must work this time.
+            if self.localhost.is_none() {
+                bail!(DTPError::DTPLocalhostDataMissing)
+            }
+        }
+
+        Ok(())
+    }
+
+    pub async fn ping_on_network(
+        &mut self,
+        target_host: &HostInternal,
+    ) -> Result<PingStats, anyhow::Error> {
+        self.ensure_localhost_ready().await?;
+
+        // unwrap() will not fail because ensure_localhost_ready()
+        let localhost = self.localhost.as_ref().unwrap();
+
+        // Create connection.
+        let mut _tci = create_best_effort_transport_control_on_network(
+            &self.sui_sdk_params.rpc,
+            &self.sui_sdk_params.txn,
+            localhost,
+            target_host,
+            0,
+            Some(0),
+            Some(0),
+        )
+        .await?;
+
+        let stats = PingStats {
+            ping_count_attempted: 1,
+            ..Default::default()
+        };
+
+        Ok(stats)
     }
 }
 

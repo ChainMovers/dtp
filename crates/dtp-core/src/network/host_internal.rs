@@ -1,55 +1,84 @@
+// What is the type naming convention?
+//
+// "Object"         --> Name of the object in the move package
+//
+// "ObjectInternal" --> Local memory representation, may have additional
+//                      fields not found on the network.
+//
+// "ObjectMoveRaw" --> Serialized fields as intended to be for the network
+//                     *MUST* match the Move Sui definition of a given version.
+//
+// Example:
+//   "Host"
+//   "HostInternal"
+//   "HostMoveRaw"
+//
 use super::common_internal::*;
-use anyhow::bail;
-use sui_sdk::types::base_types::ObjectID;
 
-/*
-use sui_json_rpc_types::{
-    EventPage, MoveCallParams, OwnedObjectRef, RPCTransactionRequestParams,
-    SuiCertifiedTransaction, SuiData, SuiEvent, SuiEventEnvelope, SuiExecutionStatus,
-    SuiGasCostSummary, SuiObject, SuiObjectInfo, SuiObjectRead, SuiObjectRef, SuiParsedData,
-    SuiPastObjectRead, SuiRawData, SuiRawMoveObject, SuiTransactionAuthSignersResponse,
-    SuiTransactionData, SuiTransactionEffects, SuiTransactionResponse, TransactionBytes,
-    TransactionsPage, TransferObjectParams,
-};*/
+use serde::Deserialize;
+use sui_json_rpc_types::SuiData;
+use sui_sdk::types::base_types::{ObjectID, SuiAddress};
+use sui_types::id::UID;
+
+// Data structure that **must** match the Move Host object
+#[derive(Deserialize, Debug)]
+pub struct HostMoveRaw {
+    id: UID,
+    flgs: u8,
+    adm: SuiAddress,
+    con_req: u64,
+    con_sdd: u64,
+    con_del: u64,
+    con_rcy: u64,
+    max_con: u16,
+}
 
 #[derive(Debug)]
 pub struct HostInternal {
-    sui_id: ObjectID,
+    pub(crate) object_id: ObjectID,
+    pub(crate) admin_address: Option<SuiAddress>,
+    pub(crate) raw: Option<HostMoveRaw>, // Data from network (as-is)
+}
+
+pub(crate) async fn fetch_move_host_object(
+    rpc: &SuiSDKParamsRPC,
+    host_object_id: ObjectID,
+) -> Result<HostMoveRaw, anyhow::Error> {
+    // TODO Revisit that for robustness
+    let sui_client = rpc.sui_client.as_ref().expect("Could not create SuiClient");
+    let raw_obj = sui_client.read_api().get_object(host_object_id).await?;
+    raw_obj.object()?.data.try_as_move().unwrap().deserialize()
 }
 
 pub(crate) async fn get_host_by_id(
     rpc: &SuiSDKParamsRPC,
-    host_id: ObjectID,
+    host_object_id: ObjectID,
 ) -> Result<HostInternal, anyhow::Error> {
-    // let sui_id = ObjectID::from(host_address);
+    let raw = fetch_move_host_object(rpc, host_object_id).await?;
 
-    let sui_client = rpc.sui_client.as_ref().expect("Could not create SuiClient");
-    let net_resp = sui_client
-        .read_api()
-        .get_parsed_object(host_id)
-        .await
-        .unwrap();
-
-    let object = net_resp.object()?;
-
-    // Sanity test that the id is as expected.
-    // TODO Remove panic.
-    if object.id() != host_id {
-        bail!("Bad object id {} != {}", object.id(), host_id);
-    }
-
-    // TODO Validate the object type, get the services provided etc...
-
-    // Success. Host Move object transformed into a convenient local Host handle.
-    let ret = HostInternal { sui_id: host_id };
+    // Map the Host Move object into the local memory representation.
+    let ret = HostInternal {
+        object_id: host_object_id,
+        admin_address: Some(raw.adm),
+        raw: Some(raw),
+    };
     Ok(ret)
 }
 
 impl HostInternal {
-    pub(crate) fn new(sui_id: ObjectID) -> HostInternal {
-        HostInternal { sui_id }
+    pub(crate) fn new(object_id: ObjectID) -> HostInternal {
+        HostInternal {
+            object_id,
+            admin_address: None,
+            raw: None,
+        }
     }
-    pub fn get_sui_id(&self) -> &ObjectID {
-        &self.sui_id
+
+    pub fn object_id(&self) -> ObjectID {
+        self.object_id
+    }
+
+    pub fn admin_address(&self) -> Option<SuiAddress> {
+        self.admin_address
     }
 }
