@@ -54,16 +54,16 @@ Firewall functionality also includes back pressure management to minimize initia
 
 ## Multi-Channel Connection
 
-Data is transmitted as a stream and therefore must be divided into smaller transactions. Even with a fast finality, the bandwidth is limited by the maximum transaction size.
+Media byte streams are ineviteably divided into transaction "block" at some point. Even with a fast finality, the bandwidth is limited by the maximum transaction size and their serialization as allowed by the L1 network (e.g. one simple transaction per object and gas coin at the time).
 
-Multiple simple transactions executed in parallel can provide higher bandwidth for a single connection.
+Therefore, to support high bandwidth, it might be needed to perform multiple transaction in parallel for a single connection transfer. These transaction flows through independent DTP channels.
 
-Most of the complexity will be in the off-chain end-points when dividing and re-assembling the data stream:
+Most of the complexity is handled off-chain by DTP when dividing and re-assembling the transactions into a data stream:
 
 <figure markdown>![](../assets/images/multi_channels.png)</figure>
 
 **Will this be practical?**
-There is a lot of cost/performance unknowns with both Sui network and DTP that will probably persist through 2023. DTP architecture is planning for supporting heavy media streaming, but it remains to be seen how practical it will be.
+There is a lot of cost/performance unknowns with both Sui network and DTP that will probably persist through 2023. DTP architecture supports media streaming, but it remains to be seen how practical it will be.
 
 Gas might be expensive and there is some potential limitations about how much Sui fullnodes could scale on a viral broadcast (problem at egress of the network, not with the consensus performance itself).
 
@@ -99,13 +99,13 @@ Similar to bi-directionals, but with a single Pipe object for data plane to mini
 
 ## Public Broadcasting
 
-Similar to unidirectional, but without encryption and using Broadcast objects instead of a Pipe and Transport control.
+Similar to unidirectional, but without encryption and using Broadcast objects instead of a Pipe&Transport control.
 
 <figure markdown>![](../assets/images/ref_broadcast.png)<p>Broadcasting Specific Objects</p></figure>
 
-The broadcast control implements some related crypto-economic feature. Examples:
+Broadcasters may require some different crypto-economic capability. Examples:
 
-* A live broadcaster has to pay for the gas fee and storage, which is wasteful if there is no one listening... one option will be to let DTP stop writing the stream until there are enough fund from listeners to cover, say, the production cost of the next 1 minute. DTP would handle the automatic "on air" logic and fairly spread the cost among the contributors.
-* Listener may choose to tip and message a live talking broadcaster (special requests).
+* A live broadcast is wasteful if there is no one listening... one option will be to let DTP stop stream until there are enough fund from listeners to cover, say, the production cost of the next 1 minute. DTP would handle the automatic "on air" logic and fairly spread the cost among the contributors.
+* Listener may choose to tip a live broadcaster (for special requests?).
 
-There are some technical challenges particular to broadcasting (See [Future Work](future_work.md#broadcasting-challenges)).
+There are also some technical challenges particular to broadcasting (See [Future Work](future_work.md#broadcasting-challenges)).
