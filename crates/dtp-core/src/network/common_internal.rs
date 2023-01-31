@@ -25,9 +25,3 @@ pub struct SuiSDKParamsTxn {
     #[derivative(Debug = "ignore")]
     pub keystore: Keystore,
 }
-
-#[derive(Debug)]
-pub struct SuiSDKParams {
-    pub rpc: SuiSDKParamsRPC,
-    pub txn: SuiSDKParamsTxn,
-}
