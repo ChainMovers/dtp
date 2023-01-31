@@ -221,7 +221,12 @@ fi
 
 echo Creating new localnet directory
 mkdir -p "$DEV_DIR/localnet"
-$SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet" >& /dev/null
+if [ "$DEBUG_RUN" = true ]; then
+  $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet"
+else
+  $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet" >& /dev/null
+fi
+
 yes | cp -rf "$GENESIS_DATA_DIR/sui.keystore" "$DEV_DIR/localnet"
 yes | cp -rf "$GENESIS_DATA_DIR/client.yaml" "$DEV_DIR/localnet"
 
