@@ -9,12 +9,9 @@
 #
 # On failures, more info can be found in dtp/move/localnet/publish_output.txt
 
-
-# Utility functions.
-setup_error() { echo "$*" 1>&2 ; exit 1; }
-version_greater_equal() { printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort; }
-script_cmd() { script -efqa "$SCRIPT_OUTPUT" -c "$*"; }
-beginswith() { case $2 in "$1"*) true;; *) false;; esac; }
+NETNAME="localnet"
+SUI_REPO_BRANCH="devnet"
+SUI_SCRIPT="lsui"
 
 # Just find the absolute path of the "dtp-dev" where most
 # dependencies will be downloaded and build/runtime files
@@ -22,27 +19,7 @@ beginswith() { case $2 in "$1"*) true;; *) false;; esac; }
 SCRIPT_READLINK="$(readlink -f "$0")"
 SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
 SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
-DEV_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
-DEV_DIR="$(cd "$(dirname "$DEV_DIR_REL")"; pwd)/$(basename "$DEV_DIR_REL")"
-MOVE_SRC_DIR_REL="$SCRIPT_DIR/../move"
-MOVE_SRC_DIR="$(cd "$(dirname "$MOVE_SRC_DIR_REL")"; pwd)/$(basename "$MOVE_SRC_DIR_REL")"
-LOCAL_BIN="$HOME/.local/bin"
-
-# Some other commonly used locations.
-SUI_REPO_DIR="$DEV_DIR/sui-devnet"
-SUI_BIN_DIR="$SUI_REPO_DIR/target/debug"
-GENESIS_DATA_DIR="$SCRIPT_DIR/genesis_data"
-PUBLISH_DATA_DIR="$DEV_DIR/publish_data/localnet"
-
-# Configuration files (often needed for sui CLI calls)
-NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
-CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
-
-# Output of some external commands are "tee" into a file.
-# Using script instead of tee to preserve color and also have timestamp
-# as delimiter between output appended. See script_cmd()
-SCRIPT_OUTPUT="$PUBLISH_DATA_DIR/publish_output.txt"
-PACKAGE_ID_OUTPUT="$PUBLISH_DATA_DIR/package_id.txt"
+source "$SCRIPT_DIR/script_common" "$SCRIPT_DIR" "$SCRIPT_NAME" "$NETNAME" "$SUI_REPO_BRANCH"
 
 # Remove some output from previous runs to minimize confusion.
 rm -rf "$SCRIPT_OUTPUT"
@@ -133,7 +110,7 @@ script_cmd "lsui move test --install-dir \"$PUBLISH_DATA_DIR\" -p \"$MOVE_SRC_DI
 
 # Build the Move package for publication.
 echo Publishing...
-script_cmd "lsui client publish --verify-dependencies --gas-budget 30000 --install-dir \"$PUBLISH_DATA_DIR\" \"$MOVE_SRC_DIR\""
+script_cmd "lsui client publish --gas-budget 30000 --install-dir \"$PUBLISH_DATA_DIR\" \"$MOVE_SRC_DIR\""
 
 # Grab the first line with an immutable "ID" after the "Created Objects" string.
 id_line=$(cat "$SCRIPT_OUTPUT" | sed '1,/Created Objects/d' | grep 'ID' | grep 'Immutable')

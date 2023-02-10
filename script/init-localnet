@@ -15,6 +15,10 @@
 # For future reference, this is how the config.yaml was generated:
 #     sui genesis --write-config "$GENESIS_DATA_DIR/config.yaml"
 
+NETNAME="localnet"
+SUI_REPO_BRANCH="devnet"
+SUI_SCRIPT="lsui"
+
 # Param
 DEBUG_RUN=false
 GENESIS=false
@@ -29,7 +33,6 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-
 if [ "$GENESIS" = true ]; then
   echo "Genesis flag set. Will regenerate the default client addresses and coin objects for localnet."
 fi
@@ -38,36 +41,11 @@ if [ "$DEBUG_RUN" = true ]; then
   echo "Debug flag set. Will run Localnet in foreground Ctrl-C to Exit"
 fi
 
-# Scripts does not work with version below these.
-MIN_SUI_VERSION="sui 0.21.0"
-MIN_RUST_VERSION="rustc 1.65.0"
-
-# Utility functions.
-setup_error() { echo "$*" 1>&2 ; exit 1; }
-version_greater_equal() { printf '%s\n%s\n' "$2" "$1" | sort --check=quiet --version-sort; }
-update_bin_path() { 
-  UBP_SRC_DIR="$HOME/.local/bin"
-  UBP_TARGET="$SCRIPT_DIR/$1"
-  if [ -d "$UBP_SRC_DIR" ]; then
-    if [ ! -L "$UBP_SRC_DIR/$1" ]; then
-      ln -s "$UBP_TARGET" "$UBP_SRC_DIR/$1"
-      echo "Symlink added: $UBP_SRC_DIR/$1 -> $UBP_TARGET"
-    else
-      # Verify link is as intended, if not replace it.
-      UBP_READLINK=$( readlink -f "$UBP_SRC_DIR/$1" )
-      if [[ "$UBP_READLINK" != "$UBP_TARGET" ]]; then
-         ln -sf "$UBP_TARGET" "$UBP_SRC_DIR/$1"
-         echo "Symlink updated: $UBP_SRC_DIR/$1 -> $UBP_TARGET"
-         # If the target is the called script, then replace
-         # it and exit (will force user to re-execute from the
-         # new link, potentially being a different script version).
-         if [[ "$1" == "$SCRIPT_NAME" ]]; then
-           setup_error "Retry $1 again (in case the new synlink point to a new version)"
-        fi
-      fi
-    fi
-  fi
-}
+# Call the initialization code common to all script.
+SCRIPT_READLINK="$(readlink -f "$0")"
+SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
+SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
+source "$SCRIPT_DIR/script_common" "$SCRIPT_DIR" "$SCRIPT_NAME" "$NETNAME" "$SUI_REPO_BRANCH"
 
 # Verify Sui pre-requisites are installed.
 which curl &> /dev/null || setup_error "Need to install curl. See https://docs.sui.io/build/install#prerequisites";
@@ -78,33 +56,6 @@ which cargo &> /dev/null || setup_error "Need to install cargo. See https://docs
 
 # Verify Rust is recent enough.
 version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "Upgrade rust to a more recent version";
-
-# Just find the absolute path of the "dtp-dev" where most
-# dependencies will be downloaded and build/runtime files
-# will be located.
-SCRIPT_READLINK="$(readlink -f "$0")"
-SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
-SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
-DEV_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
-DEV_DIR="$(cd "$(dirname "$DEV_DIR_REL")"; pwd)/$(basename "$DEV_DIR_REL")"
-MOVE_SRC_DIR_REL="$SCRIPT_DIR/../move"
-MOVE_SRC_DIR="$(cd "$(dirname "$MOVE_SRC_DIR_REL")"; pwd)/$(basename "$MOVE_SRC_DIR_REL")"
-LOCAL_BIN="$HOME/.local/bin"
-
-# Some other commonly used locations.
-SUI_REPO_DIR="$DEV_DIR/sui-devnet"
-SUI_BIN_DIR="$SUI_REPO_DIR/target/debug"
-GENESIS_DATA_DIR="$SCRIPT_DIR/genesis_data"
-PUBLISH_DATA_DIR="$DEV_DIR/publish_data/localnet"
-
-# Configuration files (often needed for sui CLI calls)
-NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
-CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
-
-# Create/update path to dtp shell scripts.
-update_bin_path "init-localnet"
-update_bin_path "lsui"
-update_bin_path "publish-localnet"
 
 # Create dtp-dev if does not exists.
 mkdir -p "$DEV_DIR"
