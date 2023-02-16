@@ -2,10 +2,9 @@ use super::types::error::*;
 use super::types::stats::*;
 
 use std::path::PathBuf;
-use std::time::Duration;
 use sui_keys::keystore::{FileBasedKeystore, Keystore};
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
-use sui_sdk::SuiClient;
+use sui_sdk::{SuiClient, SuiClientBuilder};
 
 use anyhow::bail;
 
@@ -58,9 +57,15 @@ const DEFAULT_LOCALNET_KEYSTORE_PATHNAME: &str = "../../../dtp-dev/localnet/sui.
 //     An API dtp-sdk::Locahost  --- owns a ----> dtp-core::LocalhostInternal
 //
 
+pub struct SuiNode {
+    rpc: SuiSDKParamsRPC,
+}
+
 #[allow(dead_code)]
 pub struct NetworkManager {
-    sui_sdk_params: SuiSDKParams,
+    sui_nodes: Vec<SuiNode>,
+
+    sui_txn: SuiSDKParamsTxn,
 
     // Set once loaded from network (Registry)
     client_registry_id: Option<ObjectID>,
@@ -76,7 +81,10 @@ impl NetworkManager {
         client_address: SuiAddress,
         keystore_pathname: Option<&str>,
     ) -> Result<Self, anyhow::Error> {
+        // TODO Extra validatation that keystore and client_address are valid.
+
         // TODO Rewrite the building of the PathBuf for devnet/testnet... mainnet.
+
         let pathbuf = if let Some(x) = keystore_pathname {
             PathBuf::from(x)
         } else {
@@ -86,17 +94,20 @@ impl NetworkManager {
         };
 
         let keystore = Keystore::File(FileBasedKeystore::new(&pathbuf)?);
+
+        let rpc = SuiSDKParamsRPC {
+            client_address,
+            sui_client: None,
+        };
+
+        let txn = SuiSDKParamsTxn {
+            package_id: ObjectID::ZERO, // TODO Revisit this when mainnet.
+            keystore,
+        };
+
         Ok(NetworkManager {
-            sui_sdk_params: SuiSDKParams {
-                rpc: SuiSDKParamsRPC {
-                    client_address,
-                    sui_client: None,
-                },
-                txn: SuiSDKParamsTxn {
-                    package_id: ObjectID::ZERO, // TODO Revisit this when mainnet.
-                    keystore,
-                },
-            },
+            sui_nodes: vec![SuiNode { rpc }],
+            sui_txn: txn,
             client_registry_id: None,
             localhost_id: None,
             volunteers_id: Vec::new(),
@@ -104,32 +115,38 @@ impl NetworkManager {
         })
     }
 
-    // Add RPC details. For now, allow only one to be added.
-    pub async fn add_rpc(
-        &mut self,
-        http_url: &str,
-        ws_url: Option<&str>,
-        request_timeout: Option<Duration>,
-    ) -> Result<(), anyhow::Error> {
-        let sui_client = SuiClient::new(http_url, ws_url, request_timeout).await?;
-        self.sui_sdk_params.rpc.sui_client = Some(sui_client);
+    // Add RPC details to a Sui node.
+    pub async fn add_rpc_url(&mut self, http_url: &str) -> Result<(), anyhow::Error> {
+        if self.sui_nodes.is_empty() {
+            bail!(DTPError::DTPInternalError)
+        }
+
+        if !self.sui_nodes.is_empty() && self.sui_nodes[0].rpc.sui_client.is_some() {
+            bail!(DTPError::DTPMultipleRPCNotImplemented)
+        }
+
+        let sui_client = SuiClientBuilder::default().build(http_url).await?;
+        self.sui_nodes[0].rpc.sui_client = Some(sui_client);
+
+        // Add event loop handling. For now, simply subscribe to
+        // all events touching this client.
+
         Ok(())
     }
 
     // Accessors
     pub fn get_client_address(&self) -> &SuiAddress {
-        &self.sui_sdk_params.rpc.client_address
+        &self.sui_nodes[0].rpc.client_address
     }
     pub fn get_package_id(&self) -> &ObjectID {
-        &self.sui_sdk_params.txn.package_id
+        &self.sui_txn.package_id
     }
     pub fn get_localhost_id(&self) -> &Option<ObjectID> {
         &self.localhost_id
     }
 
     pub fn get_sui_client(&self) -> Result<&SuiClient, anyhow::Error> {
-        Ok(self
-            .sui_sdk_params
+        Ok(self.sui_nodes[0]
             .rpc
             .sui_client
             .as_ref()
@@ -138,12 +155,12 @@ impl NetworkManager {
 
     // Mutators
     pub fn set_package_id(&mut self, package_id: ObjectID) {
-        self.sui_sdk_params.txn.package_id = package_id;
+        self.sui_txn.package_id = package_id;
     }
 
     // Accessors that do a JSON-RPC call.
     pub async fn get_host(&self, host_id: ObjectID) -> Result<HostInternal, anyhow::Error> {
-        get_host_by_id(&self.sui_sdk_params.rpc, host_id).await
+        get_host_by_id(&self.sui_nodes[0].rpc, host_id).await
     }
 
     /*
@@ -167,7 +184,7 @@ impl NetworkManager {
     }*/
 
     async fn get_localhost_id_from_registry(&mut self) -> Result<ObjectID, anyhow::Error> {
-        Err(DTPError::NotImplemented.into())
+        Err(DTPError::DTPNotImplemented.into())
     }
 
     pub async fn get_localhost(&mut self) -> Result<LocalhostInternal, anyhow::Error> {
@@ -182,13 +199,13 @@ impl NetworkManager {
         };
         //get_localhost_by_id(&self.sui_sdk_params.rpc, localhost_id).await;
         // Update localhost object
-        get_localhost_by_id(&self.sui_sdk_params.rpc, localhost_id).await
+        get_localhost_by_id(&self.sui_nodes[0].rpc, localhost_id).await
     }
 
     pub async fn load_local_client_registry(
         &mut self,
     ) -> Result<(HostInternal, LocalhostInternal), anyhow::Error> {
-        Err(DTPError::NotImplemented.into())
+        Err(DTPError::DTPNotImplemented.into())
     }
 
     // Mutators that do a JSON-RPC call and transaction.
@@ -227,8 +244,7 @@ impl NetworkManager {
 
         // Proceed with the creation.
         // TODO Retry once in a controlled manner?
-        let localhost =
-            create_localhost_on_network(&self.sui_sdk_params.rpc, &self.sui_sdk_params.txn).await?;
+        let localhost = create_localhost_on_network(&self.sui_nodes[0].rpc, &self.sui_txn).await?;
 
         let localhost_id = localhost.object_id(); // Copy for later
 
@@ -298,8 +314,8 @@ impl NetworkManager {
 
         // Create connection.
         let mut _tci = create_best_effort_transport_control_on_network(
-            &self.sui_sdk_params.rpc,
-            &self.sui_sdk_params.txn,
+            &self.sui_nodes[0].rpc,
+            &self.sui_txn,
             localhost,
             target_host,
             0,
@@ -308,6 +324,7 @@ impl NetworkManager {
         )
         .await?;
 
+        // Make sure this DTP client
         let stats = PingStats {
             ping_count_attempted: 1,
             ..Default::default()

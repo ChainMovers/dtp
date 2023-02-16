@@ -6,16 +6,12 @@ use dtp_test_helper::{Sender, SuiNetworkForTest};
 use serial_test::serial;
 mod common;
 
+#[allow(dead_code)]
 struct TwoHostsSetup {
-    #[allow(dead_code)]
     pub network: SuiNetworkForTest,
-    #[allow(dead_code)]
     pub dtp: DTP,
-    #[allow(dead_code)]
     pub dtp_peer: DTP,
-    #[allow(dead_code)]
     pub localhost: Host,
-    #[allow(dead_code)]
     pub host: Host,
 }
 
@@ -26,7 +22,7 @@ async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
 
     let owner = network.get_sender_address(Sender::LocalClient).clone();
     let mut dtp: DTP = DTP::new(owner, None).await?;
-    dtp.add_rpc("http://0.0.0.0:9000", None, None).await?;
+    dtp.add_rpc_url("http://0.0.0.0:9000").await?;
     dtp.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
 
     // Create and test a localhost.
@@ -64,7 +60,7 @@ async fn create_two_hosts_setup() -> Result<TwoHostsSetup, anyhow::Error> {
     // Create the second host.
     let second_owner = network.get_sender_address(Sender::PeerServer).clone();
     let mut dtp2: DTP = DTP::new(second_owner, None).await?;
-    dtp2.add_rpc("http://0.0.0.0:9000", None, None).await?;
+    dtp2.add_rpc_url("http://0.0.0.0:9000").await?;
     dtp2.set_package_id(network.dtp_package_id); // This won't be needed for mainnet.
 
     let mut result2 = dtp2.get_host().await.ok();

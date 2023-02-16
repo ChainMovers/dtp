@@ -13,7 +13,7 @@ use std::str::FromStr;
 
 use anyhow::Result;
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
-use sui_sdk::SuiClient;
+use sui_sdk::SuiClientBuilder;
 
 #[allow(dead_code)]
 
@@ -129,10 +129,12 @@ impl SuiNetworkForTest {
         // Note: Object not existing not considered an error.
 
         // Verification using self-contain code (its own SuiClient and all).
-        let sui = SuiClient::new("http://0.0.0.0:9000", None, None).await?;
+        let sui_client = SuiClientBuilder::default()
+            .build("http://0.0.0.0:9000")
+            .await?;
 
         // TODO: Check the different error code to differentiate inexistence from call failure. This is very incomplete.
-        let result = sui.read_api().get_parsed_object(object_id).await;
+        let result = sui_client.read_api().get_parsed_object(object_id).await;
 
         match result {
             Ok(_) => Ok(true),

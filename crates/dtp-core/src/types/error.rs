@@ -29,6 +29,9 @@ pub enum DTPError {
     #[error("DTP Failed Move host create({client:?}). Info from sui_sdk-> {inner:?}")]
     FailedMoveHostCreate { client: String, inner: String },
 
+    #[error("DTP Support for more than one RPC node not yet implemented. Consider contributing.")]
+    DTPMultipleRPCNotImplemented,
+
     #[error(
         "DTP Failed RPC get_objects_owned_by_address({client:?}). Info from sui_sdk-> {inner:?}"
     )]
@@ -42,7 +45,10 @@ pub enum DTPError {
     TestHelperObjectNotFound,
 
     #[error("DTP Not yet implemented. Need it? Ask for it on DTP Discord (Not Sui Discord).")]
-    NotImplemented,
+    DTPNotImplemented,
+
+    #[error("DTP Internal Error. Report to DTP developer please. Thanks.")]
+    DTPInternalError,
 
     #[error("DTP inner SuiError {0:?}")]
     InnerSuiError(#[from] SuiError),

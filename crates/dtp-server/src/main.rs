@@ -10,7 +10,7 @@ use telemetry_subscribers::TelemetryConfig;
 use futures::StreamExt;
 use sui_json_rpc_types::SuiEvent;
 use sui_sdk::rpc_types::SuiEventFilter;
-use sui_sdk::SuiClient;
+use sui_sdk::SuiClientBuilder;
 
 #[allow(clippy::large_enum_variant)]
 #[derive(Parser)]
@@ -34,9 +34,9 @@ impl Command {
         match self {
             Command::Localnet { path } => {
                 if let Some(_x) = path {
-                    let sui =
-                        SuiClient::new("http://0.0.0.0:9000", Some("ws://0.0.0.0:9000"), None)
-                            .await?;
+                    let sui = SuiClientBuilder::default()
+                        .build("http://0.0.0.0:9000")
+                        .await?;
                     let mut subscribe_all = sui
                         .event_api()
                         .subscribe_event(SuiEventFilter::All(vec![]))

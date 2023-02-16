@@ -1,5 +1,17 @@
 // DTP SDK API
 //
+// Example of use (simplified):
+//
+//      let dtp = DTP::new(client_address, keystore).await?;
+//
+//      dtp.add_url( ... your favorite fullnode ip... );
+//
+//      dtp.create_host(); // Create your own Host object!
+//
+//      let another_host = dtp.get_host_by_id(...); // Get someone else Host!
+//
+//      dtp.ping( another_host ); // Ping it!
+//
 // For most app, only one instance of DTP object will be needed but
 // multiple instance should work.
 //
@@ -16,7 +28,6 @@ use dtp_core::{
     types::PingStats,
 };
 use sui_sdk::types::base_types::{ObjectID, SuiAddress};
-use tokio::time::Duration;
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -67,13 +78,8 @@ impl DTP {
         self.netmgr.get_localhost_id()
     }
 
-    pub async fn add_rpc(
-        &mut self,
-        http_url: &str,
-        ws_url: Option<&str>,
-        request_timeout: Option<Duration>,
-    ) -> Result<(), anyhow::Error> {
-        self.netmgr.add_rpc(http_url, ws_url, request_timeout).await
+    pub async fn add_rpc_url(&mut self, http_url: &str) -> Result<(), anyhow::Error> {
+        self.netmgr.add_rpc_url(http_url).await
     }
 
     // get_host
@@ -104,8 +110,8 @@ impl DTP {
     //
     // Get an handle of any DTP Host expected to be already on the Sui network.
     //
-    // The handle is used for doing various operations such as pinging the host
-    // off-chain server and/or create a connection to it.
+    // The handle is used for doing various operations such as pinging the host, make
+    // RPC calls and/or create connections to it.
     pub async fn get_host_by_id(&self, host_id: ObjectID) -> Result<Host, anyhow::Error> {
         let host_internal = self.netmgr.get_host(host_id).await?;
         Ok(Host {
