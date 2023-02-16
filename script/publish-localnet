@@ -21,25 +21,14 @@ SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
 SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
 source "$SCRIPT_DIR/script_common" "$SCRIPT_DIR" "$SCRIPT_NAME" "$NETNAME" "$SUI_REPO_BRANCH"
 
+check_dev_setup
+
 # Remove some output from previous runs to minimize confusion.
 rm -rf "$SCRIPT_OUTPUT"
 
 # Following files created only on confirmed success of publication.
 rm -rf "$PUBLISH_DATA_DIR/package_id.txt"
 rm -rf "$PUBLISH_DATA_DIR/client_addresses.txt"
-
-# Sanity check init-localnet was done.
-if [ ! -d "$DEV_DIR" ]; then
-  setup_error "$DEV_DIR missing. Please run 'dtp/script/init-localnet'"
-fi
-
-if [ ! -d "$DEV_DIR/sui-devnet" ]; then
-  setup_error "$DEV_DIR/sui-devnet missing. Please run 'dtp/script/init-localnet'"
-fi
-
-if [ ! -d "$DEV_DIR/localnet" ]; then
-  setup_error "$DEV_DIR/localnet missing. Please run 'dtp/script/init-localnet'"
-fi
 
 # Create dtp-dev/publish_data if does not exists.
 mkdir -p "$PUBLISH_DATA_DIR"

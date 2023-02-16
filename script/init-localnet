@@ -47,31 +47,18 @@ SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
 SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
 source "$SCRIPT_DIR/script_common" "$SCRIPT_DIR" "$SCRIPT_NAME" "$NETNAME" "$SUI_REPO_BRANCH"
 
-# Verify Sui pre-requisites are installed.
-which curl &> /dev/null || setup_error "Need to install curl. See https://docs.sui.io/build/install#prerequisites";
-which git &> /dev/null || setup_error "Need to install git. See https://docs.sui.io/build/install#prerequisites";
-which cmake &> /dev/null || setup_error "Need to install cmake. See https://docs.sui.io/build/install#prerequisites";
-which rustc &> /dev/null || setup_error "Need to install rust. See https://docs.sui.io/build/install#prerequisites";
-which cargo &> /dev/null || setup_error "Need to install cargo. See https://docs.sui.io/build/install#prerequisites";
-
-# Verify Rust is recent enough.
-version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "Upgrade rust to a more recent version";
-
-# Create dtp-dev if does not exists.
-mkdir -p "$DEV_DIR"
-
-echo "Output location = $DEV_DIR"
+common_init_dev_setup
 
 # The script should not be called from a location that will get deleted.
-# It would work (on Linux) , but it is just to avoid user confusion later.
+# It would work (on Linux), but it is just to avoid user confusion later.
 CWD=$(pwd -P)
-if [[ "$CWD" = "$DEV_DIR/localnet"* ]]; then
-  echo "This script can't be called from a location to be deleted [$DEV_DIR/localnet]."
+if [[ "$CWD" = "$NETWORK_DATA_DIR"* ]]; then
+  echo "This script can't be called from a location to be deleted [$NETWORK_DATA_DIR]."
   setup_error "Change current directory location and try again."
 fi
 CWD=$(pwd -P)
-if [[ "$CWD" = "$DEV_DIR/publish_output/localnet"* ]]; then
-  echo "This script can't be called from a location to be deleted [$DEV_DIR/publish_output/localnet]."
+if [[ "$CWD" = "$PUBLISH_DATA_DIR"* ]]; then
+  echo "This script can't be called from a location to be deleted [$PUBLISH_DATA_DIR]."
   setup_error "Change current directory location and try again."
 fi
 
@@ -82,7 +69,7 @@ OLD_SUI_PID=$(ps x | grep "sui start" | grep -v grep | head -n 1 | sed -e 's/^[[
 
 if [ ! -z "$OLD_SUI_PID" ]
 then
-  echo "Stopping running localnet (sui process pid $OLD_SUI_PID)"
+  echo "Stopping running $NETNAME (sui process pid $OLD_SUI_PID)"
   skill -9 $OLD_SUI_PID
   # Make sure it is dead.
   end=$((SECONDS+15))
@@ -109,46 +96,10 @@ then
   fi
 fi
 
-# If not already done, get the github sui devnet branch.
-if [ ! -d "$DEV_DIR/sui-devnet" ]
-then
-  git clone -b devnet https://github.com/MystenLabs/sui.git "$DEV_DIR/sui-devnet"  || setup_error "Failed getting Sui devnet branch from github";
-fi
-
-# Update sui devnet local repo (if needed)
-(cd $DEV_DIR/sui-devnet && git remote update >& /dev/null)
-V1=$(cd $DEV_DIR/sui-devnet; git rev-parse HEAD)
-V2=$(cd $DEV_DIR/sui-devnet; git rev-parse '@{u}')
-if [ $V1 != $V2 ]
-then 
-  # Does a bit more than needed, but should allow to recover
-  # from most operator error...
-  echo Updating sui local repo in dtp-dev...
-  (cd $DEV_DIR/sui-devnet && git switch devnet > /dev/null)
-  (cd $DEV_DIR/sui-devnet && git fetch > /dev/null)
-  (cd $DEV_DIR/sui-devnet && git reset --hard origin/devnet > /dev/null)
-  (cd $DEV_DIR/sui-devnet && git merge '@{u}')
-fi
-
-# Verify sui built is latest.
-echo Building localnet using latest Sui devnet branch...
-(cd $DEV_DIR/sui-devnet; cargo build)
-
-# Sanity test that the sui binary works
-if [ ! -f "$SUI_BIN_DIR/sui" ]; then
-  setup_error "$SUI_BIN_DIR/sui binary not found"
-fi
-
-SUI_VERSION=$($SUI_BIN_DIR/sui --version)
-if [ -z "$SUI_VERSION" ]; then
-  setup_error "$SUI_BIN_DIR/sui --version not running properly"
-fi
-
-# Check if sui is recent enough.
-version_greater_equal "$SUI_VERSION" "$MIN_SUI_VERSION" || setup_error "Sui binary version too old (not supported)"
+build_sui_repo_branch
 
 # Clean-up previous localnet (if exists)
-RM_DIR="$DEV_DIR/localnet"
+RM_DIR="$NETWORK_DATA_DIR"
 if [ -d "$RM_DIR" ]
 then
   echo "Removing existing $RM_DIR directory"
@@ -156,7 +107,7 @@ then
 fi
 
 # Delete localnet publish directory (if exists) to force re-publication.
-RM_DIR="$DEV_DIR/publish_output/localnet/"
+RM_DIR="$PUBLISH_DATA_DIR"
 if [ -d "$RM_DIR" ]
 then
   echo "Removing existing $RM_DIR directory"
@@ -170,24 +121,24 @@ if [ "$GENESIS" = true ]; then
    exit
 fi
 
-echo Creating new localnet directory
-mkdir -p "$DEV_DIR/localnet"
+echo "Creating new $NETNAME directory"
+mkdir -p "$NETWORK_DATA_DIR"
 if [ "$DEBUG_RUN" = true ]; then
-  $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet"
+  $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$NETWORK_DATA_DIR"
 else
-  $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$DEV_DIR/localnet" >& /dev/null
+  $SUI_BIN_DIR/sui genesis --from-config "$GENESIS_DATA_DIR/config.yaml" --working-dir "$NETWORK_DATA_DIR" >& /dev/null
 fi
 
-yes | cp -rf "$GENESIS_DATA_DIR/sui.keystore" "$DEV_DIR/localnet"
-yes | cp -rf "$GENESIS_DATA_DIR/client.yaml" "$DEV_DIR/localnet"
+yes | cp -rf "$GENESIS_DATA_DIR/sui.keystore" "$NETWORK_DATA_DIR"
+yes | cp -rf "$GENESIS_DATA_DIR/client.yaml" "$NETWORK_DATA_DIR"
 
 # Replace placeholder string in client.yaml with an absolute path to the keystore.
 # Notice sed uses '+'' for seperator instead of '/' to avoid clash
 # with directory path. Also uses a .bak temp file because Mac (BSD) does not
 # allow in-place file change.
 SEARCH_STRING="<PUT_WORKING_DIR_PATH_HERE>"
-REPLACE_STRING="$DEV_DIR/localnet"
-sed -i.bak -e "s+$SEARCH_STRING+$REPLACE_STRING+g" "$DEV_DIR/localnet/client.yaml" && rm "$DEV_DIR/localnet/client.yaml.bak"
+REPLACE_STRING="$NETWORK_DATA_DIR"
+sed -i.bak -e "s+$SEARCH_STRING+$REPLACE_STRING+g" "$NETWORK_DATA_DIR/client.yaml" && rm "$NETWORK_DATA_DIR/client.yaml.bak"
 
 
 # When need to start in foreground to debug.

@@ -1,13 +1,12 @@
 #!/bin/bash
 
 # If not already done:
-#  - Get testnet binaries and build it under dtp-dev/sui-tesnet-branch
-#  - Initialize the user keystore under dtp-dev/user-testnet
+#  - Get devnet binaries and build it under dtp-dev/sui-devnet
+#  - Initialize the user keystore under dtp-dev/devnet 
 #
-
-NETNAME="testnet"
-SUI_REPO_BRANCH="testnet"
-SUI_SCRIPT="tsui"
+NETNAME="devnet"
+SUI_REPO_BRANCH="devnet"
+SUI_SCRIPT="dsui"
 
 # Call the initialization code common to all script.
 SCRIPT_READLINK="$(readlink -f "$0")"

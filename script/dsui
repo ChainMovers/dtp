@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Equivalent to sui, but target the localnet and its proper config files (network.yaml and client.yaml)
+# Equivalent to sui, but for targeting remote devnet network only.
 
-NETNAME="localnet"
+NETNAME="devnet"
 SUI_REPO_BRANCH="devnet"
-SUI_SCRIPT="lsui"
+SUI_SCRIPT="dsui"
 
 # Just find the absolute path of the "dtp-dev" where most
 # dependencies will be downloaded and build/runtime files
@@ -20,38 +20,41 @@ check_dev_setup
 SUI_SUBCOMMAND=$1
 if [[ "$1" = "client" || "$1" == "console" ]]; then  
   shift 1
-  $SUI_BIN_DIR/sui $SUI_SUBCOMMAND --client.config "$CLIENT_CONFIG" "$@"
+  "$SUI_BIN_DIR"/sui $SUI_SUBCOMMAND --client.config "$CLIENT_CONFIG" "$@"
   exit
 fi
 
 if [[ "$1" == "network" ]]; then
-  shift 1
-  $SUI_BIN_DIR/sui $SUI_SUBCOMMAND --network.config "$NETWORK_CONFIG" "$@"
+  if [[ "$2" == "--help" || "$2" == "-h" ]]; then
+    "$SUI_BIN_DIR"/sui network --help
+  fi
+  echo
+  echo "network command not supported by dsui for remote devnet. Try with sui directly if you think it should work!?"
   exit
 fi
 
 if [[ "$1" == "genesis" ]]; then
   if [[ "$2" == "--help" || "$2" == "-h" ]]; then
-    $SUI_BIN_DIR/sui genesis --help
+    "$SUI_BIN_DIR"/sui genesis --help
   fi
   echo
-  setup_error "Error: Use dtp/script/init-localnet instead for re-initializing localnet"
+  echo "genesis command not supported by dsui for remote devnet. Try with sui directly if you think it should work!?"
 fi
 
 if [[ "$1" == "start" ]]; then
   if [[ "$2" == "--help" || "$2" == "-h" ]]; then
-    $SUI_BIN_DIR/sui start --help
+    "$SUI_BIN_DIR"/sui start --help
   fi
   echo
-  # TODO Consider implementing a start-localnet script instead.
-  setup_error "Error: Use dtp/script/init-localnet instead for re-initializing localnet"
+  echo
+  echo "start command not supported by dsui for remote devnet. Try with sui directly if you think it should work!?"
 fi
 
 if [[ "$1" == "keytool" ]]; then
   shift 1
-  $SUI_BIN_DIR/sui $SUI_SUBCOMMAND --keystore-path "$KEYSTORE_FILE" "$@"
+  "$SUI_BIN_DIR"/sui $SUI_SUBCOMMAND --keystore-path "$KEYSTORE_FILE" "$@"
   exit
 fi
 
 # Default
-$SUI_BIN_DIR/sui "$@"
+"$SUI_BIN_DIR"/sui "$@"

@@ -33,14 +33,16 @@ MOVE_SRC_DIR="$(cd "$(dirname "$MOVE_SRC_DIR_REL")"; pwd)/$(basename "$MOVE_SRC_
 LOCAL_BIN="$HOME/.local/bin"
 
 # Some other commonly used locations.
-SUI_REPO_DIR="$DEV_DIR/sui-$SUI_REPO_BRANCH"
+SUI_REPO_DIR="$DEV_DIR/sui-$SUI_REPO_BRANCH-branch"
 SUI_BIN_DIR="$SUI_REPO_DIR/target/debug"
 GENESIS_DATA_DIR="$SCRIPT_DIR/genesis_data"
-PUBLISH_DATA_DIR="$DEV_DIR/publish_data/$NETNAME"
+
+NETWORK_DATA_DIR="$DEV_DIR/user-$NETNAME"
+PUBLISH_DATA_DIR="$NETWORK_DATA_DIR/published_data"
 
 # Configuration files (often needed for sui CLI calls)
-NETWORK_CONFIG="$DEV_DIR/$NETNAME/network.yaml"
-CLIENT_CONFIG="$DEV_DIR/$NETNAME/client.yaml"
+NETWORK_CONFIG="$NETWORK_DATA_DIR/network.yaml"
+CLIENT_CONFIG="$NETWORK_DATA_DIR/client.yaml"
 
 SCRIPT_OUTPUT="$PUBLISH_DATA_DIR/publish_output.txt"
 PACKAGE_ID_OUTPUT="$PUBLISH_DATA_DIR/package_id.txt"
@@ -71,25 +73,94 @@ update_bin_path() {
 }
 export -f update_bin_path
 
-# Sanity check the development setup is OK.
-if [ ! -d "$DEV_DIR" ]; then
-  setup_error "$DEV_DIR missing. Please run 'dtp/script/init-$NETNAME'"
-fi
+build_sui_repo_branch() {
 
-if [ ! -d "$DEV_DIR/sui-$SUI_REPO_BRANCH" ]; then
-  setup_error "$DEV_DIR/sui-$SUI_REPO_BRANCH missing. Please run 'dtp/script/init-$NETNAME'"
-fi
+  # Verify Sui pre-requisites are installed.
+  which curl &> /dev/null || setup_error "Need to install curl. See https://docs.sui.io/build/install#prerequisites";
+  which git &> /dev/null || setup_error "Need to install git. See https://docs.sui.io/build/install#prerequisites";
+  which cmake &> /dev/null || setup_error "Need to install cmake. See https://docs.sui.io/build/install#prerequisites";
+  which rustc &> /dev/null || setup_error "Need to install rust. See https://docs.sui.io/build/install#prerequisites";
+  which cargo &> /dev/null || setup_error "Need to install cargo. See https://docs.sui.io/build/install#prerequisites";
 
-if [ ! -d "$DEV_DIR/$NETNAME" ]; then
-  setup_error "$DEV_DIR/$NETNAME missing. Please run 'dtp/script/init-$NETNAME'"
-fi
+  # Verify Rust is recent enough.
+  version_greater_equal "$(rustc --version)" "$MIN_RUST_VERSION" || setup_error "Upgrade rust to a more recent version";
 
-update_bin_path "init-localnet"
-update_bin_path "init-testnet"
-update_bin_path "init-devnet"
-update_bin_path "lsui"
-update_bin_path "tsui"
-update_bin_path "dsui"
-update_bin_path "publish-localnet"
-update_bin_path "publish-testnet"
-update_bin_path "publish-devnet"
+  # If not already done, get the github sui $SUI_REPO_BRANCH.
+  if [ ! -d "$DEV_DIR/sui-$SUI_REPO_BRANCH-branch" ]
+  then
+    git clone -b devnet https://github.com/MystenLabs/sui.git "$DEV_DIR/sui-$SUI_REPO_BRANCH-branch"  || setup_error "Failed getting Sui $SUI_REPO_BRANCH branch from github";
+  fi
+
+  # Update sui devnet local repo (if needed)
+  (cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch && git remote update >& /dev/null)
+  V1=$(cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch; git rev-parse HEAD)
+  V2=$(cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch; git rev-parse '@{u}')
+  if [ $V1 != $V2 ]
+  then 
+    # Does a bit more than needed, but should allow to recover
+    # from most operator error...
+    echo Updating sui $NETNAME in dtp-dev...
+    (cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch && git switch $SUI_REPO_BRANCH > /dev/null)
+    (cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch && git fetch > /dev/null)
+    (cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch && git reset --hard origin/$SUI_REPO_BRANCH > /dev/null)
+    (cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch && git merge '@{u}')
+  fi
+
+  # Verify sui built is latest.
+  echo Building $NETNAME using latest Sui $SUI_REPO_BRANCH branch...
+  (cd $DEV_DIR/sui-$SUI_REPO_BRANCH-branch; cargo build)
+
+  # Sanity test that the sui binary works
+  if [ ! -f "$SUI_BIN_DIR/sui" ]; then
+    setup_error "$SUI_BIN_DIR/sui binary not found"
+  fi
+
+  SUI_VERSION=$($SUI_BIN_DIR/sui --version)
+  if [ -z "$SUI_VERSION" ]; then
+    setup_error "$SUI_BIN_DIR/sui --version not running properly"
+  fi
+
+  # Check if sui is recent enough.
+  version_greater_equal "$SUI_VERSION" "$MIN_SUI_VERSION" || setup_error "Sui binary version too old (not supported)"
+
+}
+
+export -f build_sui_repo_branch
+
+check_dev_setup() {
+  # Sanity check the development setup is OK.
+  if [ ! -d "$DEV_DIR" ]; then
+    setup_error "$DEV_DIR missing. Please run 'dtp/script/init-$NETNAME'"
+  fi
+
+  if [ ! -d "$DEV_DIR/sui-$SUI_REPO_BRANCH-branch" ]; then
+    setup_error "$DEV_DIR/sui-$SUI_REPO_BRANCH-branch missing. Please run 'dtp/script/init-$NETNAME'"
+  fi
+
+  if [ ! -d "$DEV_DIR/user-$NETNAME" ]; then
+    setup_error "$DEV_DIR/user-$NETNAME missing. Please run 'dtp/script/init-$NETNAME'"
+  fi
+}
+
+export -f check_dev_setup
+
+common_init_dev_setup() {
+  # This is intended to be a fast initialization setup, and
+  # no-op if already all setup. Intent is just to fix symlinks if
+  # user did accidently deleted them and save the day.
+  mkdir -p "$DEV_DIR"
+  mkdir -p "$DEV_DIR/user-$NETNAME"
+
+  update_bin_path "init-localnet"
+  update_bin_path "init-testnet"
+  update_bin_path "init-devnet"
+  update_bin_path "lsui"
+  update_bin_path "tsui"
+  update_bin_path "dsui"
+  update_bin_path "publish-localnet"
+  update_bin_path "publish-testnet"
+  update_bin_path "publish-devnet"
+
+  echo "Output location = $DEV_DIR"
+}
+export -f common_init_dev_setup
