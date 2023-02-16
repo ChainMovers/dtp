@@ -37,7 +37,7 @@ module dtp::transport_control {
     //
     // Shared object with public entry functions allowed only 
     // for the client and server of the related connection.
-    struct TransportControl has key {
+    struct TransportControl has key, store {
         id: UID,
 
         flags: u8, // DTP version+esc flags always after UID.

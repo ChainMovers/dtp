@@ -35,7 +35,7 @@ mod transport_control_internal;
 // this module Cargo.toml location.
 //
 // TODO Handle default for devnet/testnet ... mainnet.
-const DEFAULT_LOCALNET_KEYSTORE_PATHNAME: &str = "../../../dtp-dev/localnet/sui.keystore";
+const DEFAULT_LOCALNET_KEYSTORE_PATHNAME: &str = "../../../dtp-dev/user-localnet/sui.keystore";
 
 // NetworkManager
 //

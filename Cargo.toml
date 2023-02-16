@@ -39,11 +39,11 @@ default-run = "dtp-server"
 # If you are not comfortable with this way of doing and
 # prefer to have the "typical" rust way then comment out
 # the "path" dependencies and un-comment out the "git" ones.
-sui-sdk = { path = "../dtp-dev/sui-devnet/crates/sui-sdk/" }
-sui-json-rpc-types = { path = "../dtp-dev/sui-devnet/crates/sui-json-rpc-types/" }
-sui-keys = { path = "../dtp-dev/sui-devnet/crates/sui-keys/" }
-sui-types = { path = "../dtp-dev/sui-devnet/crates/sui-types/" }
-sui-adapter = { path = "../dtp-dev/sui-devnet/crates/sui-adapter/" }
+sui-sdk = { path = "../dtp-dev/sui-devnet-branch/crates/sui-sdk/" }
+sui-json-rpc-types = { path = "../dtp-dev/sui-devnet-branch/crates/sui-json-rpc-types/" }
+sui-keys = { path = "../dtp-dev/sui-devnet-branch/crates/sui-keys/" }
+sui-types = { path = "../dtp-dev/sui-devnet-branch/crates/sui-types/" }
+sui-adapter = { path = "../dtp-dev/sui-devnet-branch/crates/sui-adapter/" }
 
 # Comment these sui-XXXXX "git" dependencies if using the above "path" dependencies.
 #sui-sdk = { git = "https://github.com/MystenLabs/sui", branch = "devnet" }

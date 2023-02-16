@@ -60,7 +60,7 @@ impl SuiNetworkForTest {
         let path = env!("CARGO_MANIFEST_DIR");
         let pathname = format!(
             "{}{}",
-            path, "/../../../dtp-dev/publish_data/localnet/package_id.txt"
+            path, "/../../../dtp-dev/user-localnet/published_data/package_id.txt"
         );
 
         // Make sure the localnet is running.
@@ -82,7 +82,7 @@ impl SuiNetworkForTest {
         // Get the Sui client addresses (which we will call sender addresses from this point).
         let pathname = format!(
             "{}{}",
-            path, "/../../../dtp-dev/publish_data/localnet/client_addresses.txt"
+            path, "/../../../dtp-dev/user-localnet/published_data/client_addresses.txt"
         );
         if let Ok(lines) = SuiNetworkForTest::read_lines(pathname) {
             for line in lines.flatten() {
