@@ -2,27 +2,17 @@
 
 # Equivalent to sui, but target the localnet and its proper config files (network.yaml and client.yaml)
 
-# Utility functions.
-setup_error() { echo "$*" 1>&2 ; exit 1; }
+NETNAME="localnet"
+SUI_REPO_BRANCH="devnet"
+SUI_SCRIPT="lsui"
 
-# Just find the absolute path of the "dtp-dev"
+# Just find the absolute path of the "dtp-dev" where most
+# dependencies will be downloaded and build/runtime files
+# will be located.
 SCRIPT_READLINK="$(readlink -f "$0")"
 SCRIPT_NAME="$(basename $SCRIPT_READLINK)"
 SCRIPT_DIR="$(dirname $SCRIPT_READLINK)"
-DEV_DIR_REL="$SCRIPT_DIR/../../dtp-dev"
-DEV_DIR="$(cd "$(dirname "$DEV_DIR_REL")"; pwd)/$(basename "$DEV_DIR_REL")"
-
-# Some other commonly used locations.
-SUI_BIN_DIR="$DEV_DIR/sui-devnet/target/debug"
-
-# Files often needed for sui CLI calls
-NETWORK_CONFIG="$DEV_DIR/localnet/network.yaml"
-CLIENT_CONFIG="$DEV_DIR/localnet/client.yaml"
-KEYSTORE_FILE="$DEV_DIR/localnet/sui.keystore"
-
-mkdir -p "$DEV_DIR/localnet"
-
-# TODO Validate if dtp-dev and sui binary are correct and give advises if not.
+source "$SCRIPT_DIR/script_common" "$SCRIPT_DIR" "$SCRIPT_NAME" "$NETNAME" "$SUI_REPO_BRANCH"
 
 # Use the proper config automatically.
 SUI_SUBCOMMAND=$1
