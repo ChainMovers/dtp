@@ -52,7 +52,7 @@ sui-adapter = { path = "../dtp-dev/sui-devnet-branch/crates/sui-adapter/" }
 #sui-types = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-types" }
 #sui-adapter = { git = "https://github.com/MystenLabs/sui", branch = "devnet", package = "sui-adapter" }
 
-tokio = { version = "1.22.0", features = ["full"] }
+tokio = { version = "1.24.1", features = ["full"] }
 telemetry-subscribers = { version = "0.2.0" }
 
 anyhow = { version = "1.0.68", features = ["backtrace"] }
