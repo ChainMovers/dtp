@@ -7,6 +7,10 @@ outputs:
   isRust:
     description: True when changes happened to the Rust code
     value: "${{ steps.diff.outputs.isRust }}"
+  isMove:
+    description: True when changes happened to the Move code
+    value: "${{ steps.diff.outputs.isMove }}"
+    
 runs:
   using: composite
   steps:
@@ -18,9 +22,13 @@ runs:
       filters: |
         isRust:
           - 'crates/**'
-          - '.github/workflows/codecov.yml'
           - '.github/workflows/rust.yml'
         isDoc:
-          - 'doc/**'
+          - 'docs/**'
+          - 'mkdocs.yml'
           - '*.md'
           - '.github/workflows/docs.yml'
+        isMove:
+          - 'move/sources/**'
+          - 'Cargo.toml'
+          - 'Cargo.lock'
