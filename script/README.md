@@ -9,10 +9,11 @@ Try this:
   5. Run 'init-localnet' anytime to reset the localnet to its initial state.
 
 ## Features
-  - Keeps localnet/devnet/testnet/mainnet keystores seperated.
-  - Does not touch the user level ~/.sui and its keystore (assumes might be used for mainnet).
-  - Creates self-contain and deterministic localnet that can be re-initialized with the same pre-funded address.
-  - Sui CLI frontends that target specific network (e.g. "dsui client gas" will be for the live devnet).
+  - Keeps localnet/devnet/testnet keystores seperated.
+  - Does not touch the user level ~/.sui and its keystore (assumes might be used later for mainnet).
+  - Repeatable localnet that can be reset quickly with the same pre-funded address.
+  - Customizeable pre-funding amount ( See script/genesis/config.yaml )
+  - Convenient Sui CLI frontends for each network ("dsui" for devnet, "tsui" for testnet...)
 
 ## Verify the Sui localnet is running on your machine
 Do the following
@@ -21,8 +22,6 @@ $ pgrep sui
 1773
 ```
 This is the PID. If a number is shown, the sui process is running, meaning the localnet is running.
-
-TODO Add a simple cURL to confirm port open.
 
 ## Initial State
 Always same 5 client addresses. The 0xc7148~89a7 is the default active client and will be funded with 5 object coins.
@@ -42,12 +41,13 @@ $ lsui client active-address
 $ lsui client gas
                  Object ID                  |  Gas Value
 ----------------------------------------------------------------------
- 0x0b162ef4f83118cc0ad811de35ed330ec3441d7b | 100000000000000
- 0x2d43245a6af1f65847f7c18d5f6aabbd8e11299b | 100000000000000
- 0x9811c29f1dadb67aadcd59c75693b4a91b347fbb | 100000000000000
- 0xc8381677d3c213f9b0e9ef3d2d14051458b6af8a | 100000000000000
- 0xd0b2b2227244707bce233d13bf537af7a6710c01 | 100000000000000
+ 0x0b162ef4f83118cc0ad811de35ed330ec3441d7b | 800000000000000
+ 0x2d43245a6af1f65847f7c18d5f6aabbd8e11299b | 800000000000000
+ 0x9811c29f1dadb67aadcd59c75693b4a91b347fbb | 800000000000000
+ 0xc8381677d3c213f9b0e9ef3d2d14051458b6af8a | 800000000000000
+ 0xd0b2b2227244707bce233d13bf537af7a6710c01 | 800000000000000
 ```
+(Default 40 Sui per client, you can customize to as much as you need)
 
 ## Development Setup
  ```
@@ -56,21 +56,26 @@ $ lsui client gas
        ├── dtp/           # The git cloned dtp
        |   ├── ...
        │   └── script/
-       │       ├── init-localnet # Creates dtp-dev/sui-devnet and dtp-dev/localnet
-       │       ├── lsui          # Sui CLI frontend for localnet (devnet branch)
-       │       ├── dsui          # Sui CLI frontend for live devnet (TODO)
-       │       └── tsui          # Sui CLI frontend for live testnet (TODO)
+       │       ├── init-localnet # Create or update dtp-dev/sui-devnet-branch and dtp-dev/user-localnet
+       |       ├── init-devnet   # Create or update dtp-dev/sui-devnet-branch and dtp-dev/user-devnet
+       |       ├── init-testnet  # Create or update dtp-dev/sui-tesnet-branch and dtp-dev/user-testnet
+       │       ├── lsui          # Sui CLI frontend for localnet
+       │       ├── dsui          # Sui CLI frontend for live devnet
+       │       └── tsui          # Sui CLI frontend for live testnet
        │       
        └── dtp-dev/       # Created by the scripts
-           ├── sui-devnet         # Complete local repo of Sui devnet branch.
-           ├── localnet           # All localnet files, devnet branch runs at http://0.0.0.0:9000
-           ├── devnet             # Keystore for live devnet network
-           └── testnet            # Keystore for live tesnet network
+           ├── sui-devnet-branch      # Complete local repo of Sui devnet branch.
+           ├── sui-testnet-branch     # Complete local repo of Sui testnet branch.           
+           ├── user-localnet          # All localnet files, devnet branch runs at http://0.0.0.0:9000
+           ├── user-devnet            # Keystore for live devnet network
+           └── user-testnet           # Keystore for live tesnet network
 ```
 
 init-localnet fetch&build latest devnet from the Sui repo, create the localnet from scratch and (re)start the sui daemon.
 
 The first init-localnet execution will be long (many minutes to compile everything), but subsequent calls are fast (~10 seconds).
+
+It is intentional that localnet and devnet are using the same repo. Consider also to make your Cargo.toml of your app refer to the same local repo (instead of remote git), avoiding this way any out-of-sync binaries.
 
 # Example localnet call with sui-sdk (Rust)
 ```
