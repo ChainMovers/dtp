@@ -71,4 +71,6 @@ accounts:
         gas_value: 800000000000000
       - object_id: "0x9811c29f1dadb67aadcd59c75693b4a91b347fbb"
         gas_value: 800000000000000
+      - object_id: "0x0000000000000000000000000000000000000fa7"
+        gas_value: 0xFFFFFFFFFFFFFFFF
     gas_object_ranges: []
