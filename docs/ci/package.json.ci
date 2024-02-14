@@ -1,0 +1,20 @@
+{
+  "name": "dtp",
+  "version": "0.0.1",
+  "description": "Decentralized Transport Protocol",
+  "license": "Apache 2.0",
+  "type": "module",
+  "scripts": {
+    "start": "vuepress dev src",
+    "docs:build": "vuepress-vite build src",
+    "docs:clean-dev": "vuepress-vite dev src --clean-cache",
+    "docs:dev": "vuepress-vite dev src",
+    "docs:update-package": "pnpm dlx vp-update"
+  },
+  "devDependencies": {
+    "@vuepress/bundler-vite": "2.0.0-rc.7",
+    "vue": "^3.4.19",
+    "vuepress": "2.0.0-rc.7",
+    "vuepress-theme-hope": "2.0.0-rc.23"
+  }
+}
