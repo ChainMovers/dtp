@@ -20,9 +20,9 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Detect Changes
-      uses: dorny/paths-filter@v2.11.1
+      uses: dorny/paths-filter@v3
       id: diff
       with:
         filters: |
