@@ -16,60 +16,96 @@ tagline: ""
   #- text: Docs
   #  link: /guide/
 
-features:
-  - title:  Create hybrid dApps
-    icon: star-half-stroke
-    details: "Decentralized connection control, metering and crypto-economics<br>
+#features:
+#  - title:  Create hybrid dApps
+#    icon: star-half-stroke
+#    details: "Decentralized connection control, metering and crypto-economics<br>
+#    <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</b>
+#    <br>Your existing off-chain services and data."
+#    link: /
+
+#<div class="vp-feature-wrapper" style="transition: transform 0.25s ease-in-out 0.24s, opacity 0.25s ease-in-out 0.24s; transform: translateY(0px); opacity: 1;">
+#<div class="vp-features">
+# class vp-feature-item
+---
+
+
+
+<div class="vp-feature-wrapper" style="transition: transform 0.25s ease-in-out 0.24s, opacity 0.25s ease-in-out 0.24s; transform: translateY(0px); opacity: 1;">
+<div class="vp-features">
+
+<a class="route-link vp-feature-item link" href="/" aria-label="Create Hybrid dApps" style="text-decoration: none">
+  <h3 class="vp-feature-title">    
+    <HopeIcon icon="star-half-stroke" color="light-blue"/>    
+    <span style="position: relative; top: 3px">Create hybrid dApps</span>
+  </h3>
+  <p class="vp-feature-details">
+    Decentralized connection control, metering and crypto-economics<br>
     <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</b>
-    <br>Your existing off-chain services and data."
-    link: /
+    <br>Your existing off-chain services and data.
+  </p>
+</a>
 
-  - title: Security and DDoS Protection
-    icon: shield-halved
-    details: "<ul style='list-style-type:disc;'>
-    <li>Scalable firewall built-in the Sui network!</li>
-    <li>Stop DDoS attacks even before it reaches your servers.</li>
-    <li>Keep IP addresses hidden (visible only to Sui node operators).</li></ul>
-    <a href='examples/rpc_firewall.md'> See firewall example...</a>"
-  
-    link: /examples/rpc_firewall.md
+<a class="route-link vp-feature-item link" href="/examples/rpc_firewall" aria-label="Security and DDoS Protection" style="text-decoration: none">
+  <h3 class="vp-feature-title">    
+    <HopeIcon icon="shield-halved" color="light-blue"/>    
+    <span style="position: relative; top: 3px">Security and DDoS Protection</span>
+  </h3>
+  <p class="vp-feature-details">
+    &bull; Scalable firewall built-in the Sui network!<br>
+    &bull; Stop DDoS attacks even before it reaches your servers.<br>
+    &bull; Keep IP addresses hidden (visible only to Sui node operators).<br>    
+  </p>
+</a>
 
-  - title: Privacy & Authenticity
-    icon: user-lock
-    details: "<ul style='list-style-type:disc;'>
-    <li>On-chain secret exchanges with end-to-end encryption.</li>
-    <li>Secured key/certificate installation from centralized servers.</li>
-    <li>Authenticity with signed data transfer.</li></ul>"
-    link: /
+<a class="route-link vp-feature-item link" href="/" aria-label="Privacy & Authenticity" style="text-decoration: none">
+  <h3 class="vp-feature-title">    
+    <HopeIcon icon="user-lock" color="light-blue"/>    
+    <span style="position: relative; top: 3px">Privacy & Authenticity</span>
+  </h3>
+  <p class="vp-feature-details">
+    &bull; On-chain secret exchanges with end-to-end encryption.<br>
+    &bull; Secured key/certificate installation from centralized servers.<br>
+    &bull; Authenticity with signed data transfer.<br> 
+  </p>
+</a>
 
-  - title:  Open-Source
-    icon: /assets/images/free_icon.svg
-    details: "<ul style='list-style-type:disc;'>
-    <li>Only code from developers for developers.</li>
-    <li>No Token, middlemen, commission or dev fee.</li>
-    <li>Only requires smart contracts execution costs (gas fee for Sui transactions).</li></ul>
-    <a href='/faq.md'> Check the faq...</a>"
-    
-    link: /faq.md
+<a class="route-link vp-feature-item link" href="/faq.md" aria-label="Open-Source" style="text-decoration: none">
+  <h3 class="vp-feature-title">        
+    <img src="/assets/images/free_icon.svg?url" style="position: relative; top: 7px; margin-right: 10px" width="24" height="24"/>
+    <span style="position: relative; top: 3px">Open-Source</span>
+  </h3>
+  <p class="vp-feature-details">    
+    &bull; Only code from developers for developers.<br>
+    &bull; No Token, middlemen, commission or dev fee.<br>
+    &bull; Only requires smart contracts execution costs (gas fee for Sui transactions).<br>
+  </p>
+</a>
 
+<a class="route-link vp-feature-item link" href="/" aria-label="High Availability" style="text-decoration: none">
+  <h3 class="vp-feature-title">    
+    <HopeIcon icon="network-wired" color="light-blue"/>    
+    <span style="position: relative; top: 3px">High Availability</span>
+  </h3>
+  <p class="vp-feature-details">
+    &bull; Automatic failover and/or load balancing among your backend servers.<br>
+    &bull; Maybe your service would benefit from censorship resistance of the Sui network?<br>
+    &bull; Add serf-like coordination/governance among loosely coupled web2 servers.<br>   
+  </p>
+</a>
 
-  - title:  High Availability
-    icon: network-wired
-    details: "<ul style='list-style-type:disc;'>
-    <li>Automatic failover and/or load balancing among your backend servers.</li>
-
-    <li>Maybe your service would benefit from censorship resistance of the Sui network?</li>
-  
-    <li>Add serf-like coordination/governance among loosely coupled web2 servers.</li></ul>"
-    link: /
-
-  - title: Service Level Agreements
-    icon: building-columns
-    details: "<ul style='list-style-type:disc;'><li>Add fair Tokenomics to Web2: Pay per request, per byte, per RPC call etc...</li>
-    
-    <li>Escrow for fair payments depending of success/failure of a query...</li></ul>"
-    link: /
-
+<a class="route-link vp-feature-item link" href="/" aria-label="Service Level Agreements" style="text-decoration: none">
+  <h3 class="vp-feature-title">    
+    <HopeIcon icon="building-columns" color="light-blue"/>    
+    <span style="position: relative; top: 3px">Service Level Agreements</span>
+  </h3>
+  <p class="vp-feature-details">
+    &bull; Add fair Tokenomics to Web2: Pay per request, per byte, per RPC call etc...<br>
+    &bull; Escrow for fair payments depending of success/failure of a query...<br>
+  </p>
+</a>
+</div>
+</div>
 
 ---
 
