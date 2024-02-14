@@ -29,7 +29,7 @@ tagline: ""
 # class vp-feature-item
 ---
 
-
+<div><h1 align="center" style="color: gray">For when you want some <b>web2</b> on the <b>web3</b> playground</h1></div>
 
 <div class="vp-feature-wrapper" style="transition: transform 0.25s ease-in-out 0.24s, opacity 0.25s ease-in-out 0.24s; transform: translateY(0px); opacity: 1;">
 <div class="vp-features">
