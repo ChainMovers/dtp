@@ -1,8 +1,7 @@
 ---
+title: What is DTP?
 editLink: true
 ---
-
-**What is DTP?**
 
 It is a TCP-Like protocol facilitating data transfer between any web2 applications, with additional Web3 features such as services monetization, anonymity and security.
 

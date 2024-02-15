@@ -1,8 +1,8 @@
 ---
+title: Full Development Setup
 editLink: true
 headerDepth: 0
 ---
-## Full Development Setup
 
 ::: warning
 work-in-progress. The installation process is not yet fully implemented.

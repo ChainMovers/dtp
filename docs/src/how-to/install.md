@@ -1,4 +1,5 @@
 ---
+title: Installation
 editLink: true
 ---
 

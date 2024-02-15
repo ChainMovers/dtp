@@ -30,7 +30,7 @@ export const enSidebar = sidebar({
           link: "examples/README.md",
         },
         {
-          text: "RPC Firewall",
+          text: "JSON-RPC Firewall",
           link: "examples/rpc_firewall.md",
         },
         {
