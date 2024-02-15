@@ -16,5 +16,5 @@ Alternatively, you can direct your TCP/IP socket (or websocket) traffic toward a
 
 Not sure if a good fit? <a href='../examples/?url'><HopeIcon icon="arrow-right"/> Check a few use cases</a>.
 
-Ready to try it ? <a href='../how-to/install.md?url'><HopeIcon icon="arrow-right"/> Go to Installation</a>.
+Ready to try it ? <a href='../how-to/install?url'><HopeIcon icon="arrow-right"/> Go to Installation</a>.
 

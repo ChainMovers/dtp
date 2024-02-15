@@ -9,7 +9,7 @@ DTP provides networking building blocks that can be applied in many ways.
 
 You will find on this page a few inspiring ideas.
 
-When ready <a href='../how-to/install.md?url'><HopeIcon icon="arrow-right"/> Go to choose your installation setup ...</a>.
+When ready <a href='../how-to/install?url'><HopeIcon icon="arrow-right"/> Go to choose your installation setup ...</a>.
 
 ## Which layer do you need to work with?
 DTP features are available in roughly 3 layers (by increasing level of difficulty):

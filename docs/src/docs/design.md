@@ -52,7 +52,7 @@ Slower transactions (Sui consensus) are used for most "control plane" synchroniz
 
 Firewall functionality also includes back pressure management to minimize initiating/paying for transactions while the server is already known offline or too busy.
 
-(2) Optionally, the DTP Host object gather statistics from all its Pipe objects and can adjust the traffic policies, as an example to block an abusing sender. (Note: Synchronization with owned object is a **logical** representation. See [Non-Blocking Fast path](#non-blocking-fast-path) for more design details).
+(2) Optionally, the DTP Host object gather statistics from all its Pipe objects and can adjust the traffic policies, as an example to block an abusing sender. (Note: Synchronization with owned object is a **logical** representation. See [Non-Blocking Data Plane](#non-blocking-data-plane) for more design details).
 
 (3) The server configure the firewall and does a periodical heartbeat using its shared DTP Host object. The DTP services daemon can also be configured to further actively control the firewall depending of its load (TBD).
 

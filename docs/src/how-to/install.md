@@ -23,7 +23,7 @@ The setup includes a Sui development framework (Suibase), the DTP Service Daemon
 
 DTP is not conflicting with other Sui installations (e.g. official Mysten Labs cargo install) and can be uninstalled easily.
 
-<a href='./full_setup.md?url'><i class='iconfont icon-arrow'></i> Go to Full Setup ...</a>
+<a href='../how-to/full_setup?url'><HopeIcon icon="arrow-right"/> Go to Full Setup ...</a>.
 
 ## Choice 2 of 3: DTP Services Runtime (No Coding)
 
