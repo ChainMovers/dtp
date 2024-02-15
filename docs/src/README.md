@@ -37,11 +37,11 @@ tagline: ""
 <a class="route-link vp-feature-item link" href="/" aria-label="Create Hybrid dApps" style="text-decoration: none">
   <h3 class="vp-feature-title">    
     <HopeIcon icon="star-half-stroke" color="light-blue"/>    
-    <span style="position: relative; top: 3px">Create hybrid dApps</span>
+    <span style="position: relative; top: 3px">Create Hybrid dApps</span>
   </h3>
   <p class="vp-feature-details">
     Decentralized connection control, metering and crypto-economics<br>
-    <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</b>
+    <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+</b>
     <br>Your existing off-chain services and data.
   </p>
 </a>
@@ -64,9 +64,9 @@ tagline: ""
     <span style="position: relative; top: 3px">Privacy & Authenticity</span>
   </h3>
   <p class="vp-feature-details">
-    &bull; On-chain secret exchanges with end-to-end encryption.<br>
+    &bull; End-to-end encryption for on-chain secret exchanges.<br>
     &bull; Secured key/certificate installation from centralized servers.<br>
-    &bull; Authenticity with signed data transfer.<br> 
+    &bull; Signed data transfer for authenticity.<br> 
   </p>
 </a>
 
@@ -76,8 +76,8 @@ tagline: ""
     <span style="position: relative; top: 3px">Open-Source</span>
   </h3>
   <p class="vp-feature-details">    
-    &bull; Only code from developers for developers.<br>
-    &bull; No Token, middlemen, commission or dev fee.<br>
+    &bull; Code from developers for developers.<br>
+    &bull; No "DTP" Tokens, middlemen or dev fee.<br>
     &bull; Only requires smart contracts execution costs (gas fee for Sui transactions).<br>
   </p>
 </a>
@@ -111,19 +111,25 @@ tagline: ""
 
 <img src="/assets/images/total_vs_partial_order_small.PNG?url" style="float: left; padding-right: 20px;"/>
 
+
 <b> Why Sui and not blockchain 'x' ?</b><br>
 SUI has good finality latency stability (low jitter) and network scalability (maintains per connection throughput regardless of total load).<br>
 
-Sui architecture provides two type of transactions:
+Sui provides two type of processing:
 
-  * Simple Transaction with sub-second finality for data plane transfer (See 'partial ordering' illustration). This allows fast async/parallel transmission.
+<p>
+<ul style="padding-left: 40px;">
+  <li>Fast path transactions with sub-second finality for data plane transfer (See 'partial ordering' illustration). This facilitate async/parallel/scalable transmission.</li>
 
-  * Narwhal/Bullshark consensus with 2-3 seconds finality used for slower control plane synchronization, like escrow services, reconfiguration, connection creation,etc...
+  <li>Narwhal/Bullshark consensus with 2-3 seconds finality used for slower control plane synchronization, like connection creations, services and firewall reconfiguration etc...
+  </li>
+</ul>
+</p>
 
 
-With its flexible dual-type of transactions, Sui makes practical the implementation of common data + control plane design found in IP networks ( [Cloudflare explains it well](https://www.cloudflare.com/learning/network-layer/what-is-the-control-plane/) ).
+With its flexible dual-type transactions, Sui makes practical implementing the typical data + control plane design found in IP networks ( [Cloudflare explains it well](https://www.cloudflare.com/learning/network-layer/what-is-the-control-plane/) ).
  
-See [How Sui Differs from Other Blockchains?](https://docs.sui.io/learn/sui-compared)
+See [How Sui Differs from Other Blockchains?](https://docs.sui.io)
 
 Why not simply use the good old, faster and free internet?
 

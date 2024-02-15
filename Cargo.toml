@@ -20,7 +20,7 @@ default-run = "dtp-server"
 #
 # This make sure that your localnet, DTP and your app are all 
 # built and tested using the *same* binaries, saving you from chasing
-# unecessary problems of unmatching versions.
+# unnecessary problems of unmatching versions.
 #
 # The local version is initialized by the script:
 #   dtp/script/init-localnet

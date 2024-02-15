@@ -15,13 +15,13 @@ Recommended if you need any of these:
 
   * Develop Sui Move package (with or without DTP)
   
-  * Create your own Rust application using DTP and/or Sui Rust SDK.  
+  * Develop your own Rust application using DTP and/or Sui Rust SDK.  
   
-  * Development of a new DTP service (e.g. you are writing your own backend Rust servers and do not want to use the DTP Services daemon as an intermediate).
+  * Develop a new type of DTP service (e.g. you want your own backend Rust server process and do not want to use the DTP Services daemon as an intermediate).
 
 The setup includes a Sui development framework (Suibase), the DTP Service Daemon runtime, all the DTP SDKs and some utility scripts for quicker edit/publish/debug development cycles.
 
-DTP dev framework is not conflicting with other Sui installations (e.g. official Mysten Labs cargo install) and can be uninstalled easily.
+DTP is not conflicting with other Sui installations (e.g. official Mysten Labs cargo install) and can be uninstalled easily.
 
 <a href='./full_setup.md?url'><i class='iconfont icon-arrow'></i> Go to Full Setup ...</a>
 

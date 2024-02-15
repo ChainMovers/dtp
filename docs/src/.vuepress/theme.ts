@@ -66,6 +66,7 @@ export default hopeTheme({
       component: true,
       // demo: true,
       figure: false,
+      footnote: true,
       // flowchart: true, Needed?
       imgLazyload: true,
       imgSize: true,

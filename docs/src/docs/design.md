@@ -13,15 +13,15 @@ This document is for developers curious about DTP inner works.
 
 ## At high level, how is the Sui Network used?
 
-Sui owned objects are used for unidirectional data transfer with sub-second latency (See [Simple Transaction](https://docs.sui.io/devnet/learn/how-sui-works#simple-transactions) in Sui docs).
+Sui owned objects are used for unidirectional data transfer with sub-second latency (See [Fast Path Transactions](https://docs.sui.io/concepts/transactions/transaction-lifecycle) in Sui docs).
 
 Data Ingress: A data stream is sliced into transactions (txns) and added to the Sui network. The txns are targeted to a destination Pipe (owned object).
 
-Data egress: The data "exit" the network through event streams (emitted by the txns being received at the destination Pipe). The transmitted data can be "observed" by any users, but decoded only by the ones having the decryption key.
+Data egress: The data "exit" the network through event streams (emitted by the txns executed for the destination Pipe). The data can be "observed" by any users, but decoded only by the ones having the decryption key.
 
 The receiving end DTP SDK re-assembles the txns into the original data stream. The stream is then forwarded to the intended end-user (a TCP server, a Rust application layer above etc...).
 
-Slower transactions (Sui consensus) are used for most "control plane" synchronizations.
+Slower transactions (Sui consensus) are used for most "control plane" synchronizations (e.g. opening a connection)
 
  
 ## DTP Glossary
@@ -32,11 +32,11 @@ Slower transactions (Sui consensus) are used for most "control plane" synchroniz
 
 **Connection:** One connection allows exchanging data between two applications. The applications are localized by their Host object on the Sui network. A connection will start to exchange data only after a Transport Control and one or two Pipe objects are created (for uni or bidirectional transfer respectively).
 
-**Host Object**: Any signature authority that want to transfer data must create its own Host object. This is a Sui shared object involved in many control plane transactions (e.g. creation of a connection). It allows to configure the services (and SLA) that are to be provided, the lifecycle of its associated connections and control the firewall.
+**Host Object**: Any signature authority that want to transfer data must create its own Host object. This object is involved in many control plane transactions. It allows to configure the services (and SLA) that are to be provided and control some firewall functions (e.g. limit maximum number of simultaneous open connections).
 
-**Objects:** Usually refer to Sui objects (See [Sui Docs](https://docs.sui.io/build/programming-with-objects))
+**Objects:** Usually refer to Sui objects (See [Sui Docs](https://docs.sui.io/concepts/object-model)
 
-**Pipe Object**:All off-chain data exchange involves an intermediate object on the Sui network. This object is the Pipe. It is owned by the sender of the data, and have its event stream observed by the receiver(s). A Pipe is loosely coupled to a Transport or Broadcast Control object for synchronization.
+**Pipe Object**: All off-chain data exchange involves an intermediate object on the Sui network. This object is the Pipe. It is owned by the sender of the data, and have its event stream observed by the receiver(s). A Pipe is loosely coupled to a Transport or Broadcast Control object for synchronization.
 
 **Server**: Off-chain process intended to respond to client requests.
 
@@ -52,36 +52,60 @@ Slower transactions (Sui consensus) are used for most "control plane" synchroniz
 
 Firewall functionality also includes back pressure management to minimize initiating/paying for transactions while the server is already known offline or too busy.
 
-(2) Optionally, the DTP Node Host object gather statistics from all its Pipe objects and adjust the rate limiting rules. This may happen when the Server detects excessive incoming traffic. The gas cost for these likely rare adjustments is to be handled by the Server. (Note: This is a **logical** representation. More details will follow on how this is implemented such that Pipe objects are not involved with slower consensus transactions).
+(2) Optionally, the DTP Host object gather statistics from all its Pipe objects and can adjust the traffic policies, as an example to block an abusing sender. (Note: Synchronization with owned object is a **logical** representation. See [Non-Blocking Fast path](#non-blocking-fast-path) for more design details).
 
-(3) The server configure the firewall and does a periodical heartbeat using its shared DTP Host object. The server may also do some fast detection and control on the firewall (TBD).
+(3) The server configure the firewall and does a periodical heartbeat using its shared DTP Host object. The DTP services daemon can also be configured to further actively control the firewall depending of its load (TBD).
 
-(4) When a transaction has no-effect because of the firewall, there is no event emitted (and sender is informed that the transaction was executed, but blocked by the firewall). Therefore, the Server is not impacted.
+(4) When a transmission is block because of the firewall, there is no event emitted (and sender is informed with a transaction error). Statistics are accumulated, but the Server is not impacted.
 
 
-## Multi-Channel Connection
+## Non-Blocking Data Plane
+A single owned Pipe object used as part of a transaction requiring slow consensus would cause a blocking of the data plane in the order of seconds. This is unacceptable if streaming audio/video.
 
-Media byte streams are ineviteably divided into transaction "block" at some point. Even with a fast finality, the bandwidth is limited by the maximum transaction size and their serialization as allowed by the L1 network (e.g. one simple transaction per object and gas coin at the time).
+Therefore, a DTP Pipe is actually composed of independent InnerPipe owned objects. One InnerPipe can be block and used as part of a slow consensus while the others keeps "flowing" with fast path transactions.
 
-Therefore, to support high bandwidth, it might be needed to perform multiple transaction in parallel for a single connection transfer. These transaction flows through independent DTP channels.
+<img src="/assets/images/design_inner_pipe.png?url" style="display:block; margin-left: auto; margin-right: auto;"/>
 
-Most of the complexity is handled off-chain by DTP when dividing and re-assembling the transactions into a data stream:
+The receiver will re-assemble the data stream coming from all flowing InnerPipes (does not matter which one, DTP has sequence numbers for re-ordering).
 
-![](/assets/images/multi_channels.png?url)
+Note: Every InnerPipe needs periodical synchronization with the control plane to exchange statistics and enforce traffic rules. DTP "forces" the sender (object owner) to collaborate by making an InnerPipe automatically blocked if not recently synchronized with the control plane. If the sender choose to not follow the "sync" protocol, then the whole Pipe will eventually be blocked.
+
+A Sui slow consensus synchronization will look like this:
+```
+  fun slow_sync( pipe: &mut Pipe, 
+                 inner_pipe: &mut InnerPipe, 
+                 transport_control: &mut TransportControl )
+  {
+    // ... does a slow control plane operation ...
+  }
+```
+
+A Sui fast path transaction will be:
+```
+  fun fast_data_send(inner_pipe: &mut InnerPipe, data: vector<u8>) 
+  {
+    // ... does a fast data plane transmission ...
+  }
+```
+
+
+## Video Streaming
+
+A media byte stream is eventually divided into transaction. A serialization of these transactions would limit quickly the bandwidth because of the **Sui finality time** and **maximum transaction size**.
+
+To support high bandwidth, DTP uses multiple InnerPipes for parallel fast path transactions (See [Non-Blocking Data Plane](#non-blocking-data-plane)).
+
+Most of the complexity is handled off-chain by DTP when dividing and re-assembling the transactions into a data stream.
 
 **Will this be practical?**
-There is a lot of cost/performance unknowns with both Sui network and DTP that will probably persist through 2023. DTP architecture supports media streaming, but it remains to be seen how practical it will be.
+There is still some cost/performance/implementation unknowns that might persist until DTP is further develop...
 
-Gas might be expensive and there is some potential limitations about how much Sui fullnodes could scale on a viral broadcast (problem at egress of the network, not with the consensus performance itself).
-
-Light data streaming (<20 Kbps) very likely to be supported and be useful within 2023.
-
-Regardless of practicality, support for multi-channel will be at least useful for demo/stress load on a test network.
+Gas might get too expensive, there is also some potential issues with Sui fullnodes performance... (problem at egress of the network, not with the consensus performance itself).
 
 Some estimations (See on [Google Sheet](https://docs.google.com/spreadsheets/d/1zBrB1ifhPpnLlsDr6nBN\_N55Kkw9hX06a7EVUpogyn4/edit?usp=sharing)):
 
 ![](/assets/images/multi_channel_est.png?url)
-*<div style="text-align:center"><small style="color:red;">(Note: Numbers are best guess as of 11/21/22. Will be revised from time to time)</small></div>*</br>
+*<div style="text-align:center"><small style="color:red;">(Note: Numbers are best guess as of 02/14/24. Will be revised from time to time)</small></div>*</br>
 
 
 ## High-Availability and Load Balancing

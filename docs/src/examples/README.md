@@ -18,7 +18,7 @@ DTP features are available in roughly 3 layers (by increasing level of difficult
 
 - <b>DTP Protocols</b> Think "TCP". The DTP/Sui SDKs allows developers to have more control for connecting any mix of web2 apps (webapp, client/servers...). You will need to write Rust and/or Typescript apps. This is also the solution to eliminate having to install the DTP Services Daemon on your end-users' devices.
   
-- <b>DTP Sui Move Packages</b> Innovations particular to Sui, such as RPC escrows, [data streaming](../docs/design.md#multi-channel-connection), coins&call equivocation mitigation, metering etc... you will likely be deeply involve into web3 development at this point.
+- <b>DTP Sui Move Packages</b> Innovations particular to Sui, such as RPC escrows, new traffic policies, coins&call equivocation mitigation, metering etc... you will likely be deeply involve into web3 development at this point.
 
 For most users, you will deal only with the "easiest" layer, the "DTP Services Daemon".
 

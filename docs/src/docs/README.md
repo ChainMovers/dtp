@@ -21,9 +21,9 @@ The typical ```<IP address>:<Port>``` becomes a ```<Host Object ID>:<Port>```
 
 For security reason, each Host Object are by default created "completely closed". Using the DTP API, an application can choose to open ports of its Host object to progressively add services.
 
-Other application will be able to observe what other Host allow/block even before attempting to use their service. Even if an attacker try to use a service when they should not, it will be rejected by the DTP Move package on-chain, therefore have no impact on the destination.
+End-users will be able to observe what an Host allows (or blocks) even before attempting to use the service. An attacker trying to use a non-authorized service will be rejected by the DTP Move package on-chain (no impact on the server at all).
 
-The DTP API allows fine grain control of allowance/blocking of particular requester, connection count or bandwidth limit. Configuration are kept and applied 24/7 on-chain.
+The DTP API supports white/black listing of sender sui address and various traffic policies. Configuration are kept and applied 24/7 on-chain.
 
 ## Service Level Agreements (SLA)
 
@@ -33,20 +33,22 @@ When configuring a service for your Host, you must choose a "Service Level Agree
 
 An example is to require the requester to pay for the cost of the response that your server will have to provide.
 
-::: tip This is a good example where adding Web3 qualities to an existing Web2 service creates API monetization without requiring huge security/edge infrastructure investments
+::: tip Side Note
+This is a good example where adding Web3 qualities to an existing Web2 service creates API monetization without requiring huge security/edge infrastructure investments
 :::
 
 DTP defines a set of "Typical" service level agreement to help minimize market confusion. 
 
-| Service Level Agreement | Who Pays                                                 |
-| ----------------------- | -------------------------------------------------------- |
-| OpenDataStream          | Everyone pay for their own transactions (txns).          |
-| AudioStream-Free        | Broadcaster only.                                        |
-| JSON-RPC-BestEffort     | Everyone pay for their own txns. No response guaranteed. |
-| JSON-RPC-RequesterPaid  | RPC Requester pays. Responder refunded through escrow.   |
-| Ping-RequesterPaid      | RPC Requester pays. Responder refunded through escrow.   |
+| Service Level Agreement     | Who Pays                                                   |
+| --------------------------- | ---------------------------------------------------------- |
+| DataStream-Balanced         | Everyone pay for their own transactions (txns).            |
+| AudioStream-Free            | Broadcaster pays all transaction costs.                    |
+| JSON-RPC-Balanced           | Everyone pay for their own txns. Best-effort service.      |
+| JSON-RPC-RequesterPaid      | RPC Requester pays. Escrow for success/failure.            |
+| JSON-RPC-RequesterPaidPlus  | Same as above, plus the server charges additional fee.     |
+| Ping-RequesterPaid          | Ping Requester pays. Escrow for success/failure.           |
 
-The requester agree to the SLA upon creation of the connection and is enforced through DTP escrow for the connection duration. DTP handles the fund redistribution fairly with consideration of various success/failure criteria (more refinement will follow in ~2024).
+The requester agree to the SLA upon creation of the connection and is enforced through DTP escrow for the connection duration. DTP handles the fund redistribution fairly with consideration of various success/failure criteria (more refinement will follow in ~2025).
        
       
        

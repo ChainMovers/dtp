@@ -22,14 +22,13 @@ The use of P2P or not remains irrelevant to the broadcaster which always interfa
 
 ## Data Deletion
 
-Once the data is confirmed consumed by the receiver(s), then it can be deleted on the L1 network to recover some storage fee 
---> Revisit the design needed here once Sui implements Storage fund.
+Once the data is confirmed consumed by the receiver(s), then it can be deleted on the L1 network to recover some storage fee.
 
 The sender of the data can opt out from automated deletion and assume the full storage cost.
 
 Automated deletion is controlled by DTP to provide a fair time for the receiver(s) to consume the data and can be fine tuned through the sender service level agreement (SLA).
 
-The SLAs are published by the server (in its Node object) and one is selected by the client at the time of the connection being established.
+The SLAs are published by the server (in its Host object) and one is selected by the client at the time of the connection being established.
 
 ## Data Consumption Confirmation
 

@@ -8,7 +8,6 @@ It is a TCP-Like protocol facilitating data transfer between any web2 applicatio
 
 <img src="/assets/images/home_high_level.png?url" style="display:block; margin-left: auto; margin-right: auto;"/>
 
-
 DTP facilitate high-level data transfer, such as audio, video, RPC calls etc...
 
 DTP can be integrated into your own Rust/Typescript apps (frontend and/or backend).
