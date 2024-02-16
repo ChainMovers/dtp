@@ -60,6 +60,7 @@ Firewall functionality also includes back pressure management to minimize initia
 
 
 ## Non-Blocking Data Plane
+
 The owned objects on the data plane (e.g. Pipe) need to synchronize periodically with the control plane. This is for forwarding traffic statistic, apply latest firewall commands and bring the escrows to resolution.
 
 The control plane typically uses shared object. Involving a single Pipe object with a slow consensus would cause a 2-3 seconds blocking of the data plane. This is unacceptable if streaming audio/video.
@@ -126,38 +127,55 @@ Some estimations (See on [Google Sheet](https://docs.google.com/spreadsheets/d/1
 *<div style="text-align:center"><small style="color:red;">(Note: Numbers are best guess as of 02/14/24. Will be revised from time to time)</small></div>*</br>
 
 
-## High-Availability and Load Balancing
+## Off-Chain Single Cluster Load Balancing
+
+A DTP Services daemon can dispatch the connections to multiple servers. This mitigate some scalability and availability issues. The DTP Services daemon remains a single point of failure though.
+
+Note: This feature was already implemented for JSON-RPC high availability by Suibase in 2023. This will be integrated into the DTP Services daemon in 2024.
+
+## On-Chain Multi-Cluster Load Balancing
+
+This optional feature is an enhancement to the [off-chain single cluster load balancing](#off-chain-single-cluster-load-balancing).
+
+It enables better availability by avoiding having a single server (point of failure) dispatch all the traffic. 
+
+This features add "worldwide" dispatching consensus and by-design works great for coordinating servers regardless of their location. It also helps mitigate "split brain" network problems (e.g. when servers in a region can't coordinate with the rest but they are still able to serve their share of DTP connections).
 
 ![](/assets/images/ref_ha.png?url)
 *<div style="text-align:center">Forwarding decision made by Pipe object when multiple end-points (servers)</div>*
 
-Off-chain servers can share the incoming load or be each other's fallback for high-availability.
+Unlike traditional network, the data is not physically pushed toward a server. Instead, the data remains on the network and an event is emitted about **who** should pull it. The **who** question is "best effort" answered by this on-chain logic.
 
-Unlike traditional network, the data is not physically pushed toward a server. Instead, the data remains on the network and an event is emitted about who should "pull it".
+It is the responsibility of the servers to subscribe to their respective event stream and normally respond only to its assigned data (this change in some recovery/retry scenario).
 
-It is an off-chain responsibility for the application to subscribe to their respective event stream (with proper identifier filtering) and normally retrieve only its assigned data (this change in some recovery scenario).
+Configuration of the end-points and their health is managed through the DTP Host object, which in turn eventually updates all its transport control objects and pipes.
 
-Configuration of the end-points and health of the servers is managed through the DTP node, which in turn updates all its pipes and transport control objects.
+The combination of this on-chain logic and DTP Service Daemon will hide the high complexity of automatic recovery/retry logic with a different server.
 
-DTP will hide the high complexity of many race conditions (assignment to a server that died) and connection migrations among all end-points belonging to the same Node.
+Note: The complexity of load balancing is not visible to the senders. This is all configured and handled on the receiving end.
 
 ## Uni-directional Transfer
-Similar to bi-directionals, but with a single Pipe object for data plane to minimize cost/complexity. Control plane still bi-directional (e.g. for encryption handshake).
+
+Similar to bi-directionals, but with a single Pipe object. Control plane still bi-directional for end-to-end encryption.
 
 ![](/assets/images/ref_uni.png?url)*<div style="text-align:center">Uni-Directional Data Transfer</div>*
 
-
+This type of connection is ideal for just queueing data to a server and there is no response needed.
 
 ## Public Broadcasting
 
-Similar to unidirectional, but without encryption and using Broadcast objects instead of a Pipe&Transport control.
+Broadcasting is ideal for distributing static content (e.g. a single-page-application website bundle) or media streaming (e.g. live video).
 
+The key distinctions of a broadcast are:
+  - No encryption.
+  - There is no connection to receivers (no firewall needed). Consequently this will be implemented with "Broadcast" specialized objects instead of "Transport Control" and "Pipes".
+  
 ![](/assets/images/ref_broadcast.png?url)*<div style="text-align:center">Broadcasting Specific Objects</div>*
 
+Broadcasters may also require some different crypto-economic capability. Examples:
+  
+* A live broadcast is wasteful if there is no one listening... one option will be to let DTP stop streaming until there are enough fund from listeners to cover, say, the production cost of the next 1 minute. DTP would handle the automatic "on air" logic and fairly spread the cost among the contributors.
+* While the broadcasting the receiver may pay for initiating concurrent connection-oriented services (private or group chat, two-way streaming etc...).
+* Receiver may choose to tip a live broadcaster (for special song requests?).
 
-Broadcasters may require some different crypto-economic capability. Examples:
-
-* A live broadcast is wasteful if there is no one listening... one option will be to let DTP stop stream until there are enough fund from listeners to cover, say, the production cost of the next 1 minute. DTP would handle the automatic "on air" logic and fairly spread the cost among the contributors.
-* Listener may choose to tip a live broadcaster (for special requests?).
-
-There are also some technical challenges particular to broadcasting (See [Future Work](future_work.md#broadcasting-challenges)).
+There are some technical challenges particular to broadcasting (See [Future Work](future_work.md#broadcasting-challenges)).
