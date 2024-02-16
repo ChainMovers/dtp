@@ -60,27 +60,40 @@ Firewall functionality also includes back pressure management to minimize initia
 
 
 ## Non-Blocking Data Plane
-A single owned Pipe object used as part of a transaction requiring slow consensus would cause a blocking of the data plane in the order of seconds. This is unacceptable if streaming audio/video.
+The owned objects on the data plane (e.g. Pipe) need to synchronize periodically with the control plane. This is for forwarding traffic statistic, apply latest firewall commands and bring the escrows to resolution.
 
-Therefore, a DTP Pipe is actually composed of independent InnerPipe owned objects. One InnerPipe can be block and used as part of a slow consensus while the others keeps "flowing" with fast path transactions.
+The control plane typically uses shared object. Involving a single Pipe object with a slow consensus would cause a 2-3 seconds blocking of the data plane. This is unacceptable if streaming audio/video.
 
-<img src="/assets/images/design_inner_pipe.png?url" style="display:block; margin-left: auto; margin-right: auto;"/>
+Therefore, a owned Pipe is actually assisted by InnerPipe owned objects. The synchronization between InnerPipe and the slower control plane is done in two steps.
 
-The receiver will re-assemble the data stream coming from all flowing InnerPipes (does not matter which one, DTP has sequence numbers for re-ordering).
+ 1. Each InnerPipe is sequentially "fast synch" with its related Pipe (all fast path).
+ 2. The Pipe object is "slow synch" with the control plane. This is a consensus transaction.
 
-Note: Every InnerPipe needs periodical synchronization with the control plane to exchange statistics and enforce traffic rules. DTP "forces" the sender (object owner) to collaborate by making an InnerPipe automatically blocked if not recently synchronized with the control plane. If the sender choose to not follow the "sync" protocol, then the whole Pipe will eventually be blocked.
+<img src="/assets/images/design_inner_pipe_2.png?url" style="display:block; margin-left: auto; margin-right: auto;"/>
 
-A Sui slow consensus synchronization will look like this:
+With this design, the data plane flows at "full speed" while keeping all objects **eventually** synchronized.
+
+The receiver re-assemble the data stream from what is observed from all flowing InnerPipes (DTP has sequence numbers for re-ordering).
+
+
+A fast path sync looks like:
 ```
-  fun slow_sync( pipe: &mut Pipe, 
-                 inner_pipe: &mut InnerPipe, 
-                 transport_control: &mut TransportControl )
+  fun fast_sync( pipe: &mut Pipe, inner_pipe: &mut InnerPipe ) 
   {
-    // ... does a slow control plane operation ...
+    // ... quickly exchange data plane stats, latest control plane commands etc...
   }
 ```
 
-A Sui fast path transaction will be:
+The slow consensus sync is:
+```
+  fun slow_sync( pipe: &mut Pipe,                  
+                 transport_control: &mut TransportControl )
+  {
+    // ... does slow control plane operation ...
+  }
+```
+
+The fast path data flowing is:
 ```
   fun fast_data_send(inner_pipe: &mut InnerPipe, data: vector<u8>) 
   {
@@ -88,6 +101,11 @@ A Sui fast path transaction will be:
   }
 ```
 
+Of course, the sender has to be extra careful about equivocation.
+
+Note 1: DTP "forces" the sender (Pipe/InnerPipe owner) to collaborate. An InnerPipe will automatically block when not "sufficiently" synchronized (e.g. block after 20 transaction without sync). If the sender choose to not follow the "sync" protocol, then the whole Pipe will eventually be blocked/useless. At worst, any party can "hangup" the connection and let DTP do fair final escrows resolutions.
+
+Note 2: All this design is encapsulated within the DTP protocol and SDKs. The complexity will not be visible at the DTP API level.
 
 ## Video Streaming
 
