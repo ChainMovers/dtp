@@ -1,8 +1,11 @@
 ---
+title: Future Work
+contributors: true
 editLink: true
+headerDepth: 0
 ---
 
-# Future Work
+A few additional ideas... that might never be implemented unless there is a strong demand from the community.
 
 ## Broadcasting Challenges
 

@@ -68,11 +68,25 @@ export const enSidebar = sidebar({
         },
         {
           text: "Design",
-          link: "docs/design.md",
-        },
-        {
-          text: "Future Work",
-          link: "docs/future_work.md",
+          prefix: "docs/",
+          children: [
+            {
+              text: "Architecture",
+              link: "design.md",
+            },
+            {
+              text: "Public Broadcast",
+              link: "public_broadcast.md",
+            },
+            {
+              text: "Load Balancing",
+              link: "load_balancing.md",
+            },
+            {
+              text: "Future Work",
+              link: "future_work.md",
+            },
+          ],
         },
       ],
     },
