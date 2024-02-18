@@ -1,6 +1,8 @@
+#[allow(unused_field, unused_use, lint(share_owned))]
+
 module dtp::transport_control {
 
-    struct BEConReq has copy, drop {
+    public struct BEConReq has copy, drop {
         sender: address, // Sender Requesting a Connection
     }
 
@@ -37,7 +39,7 @@ module dtp::transport_control {
     //
     // Shared object with public entry functions allowed only 
     // for the client and server of the related connection.
-    struct TransportControl has key, store {
+    public struct TransportControl has key, store {
         id: UID,
 
         flags: u8, // DTP version+esc flags always after UID.
@@ -191,7 +193,7 @@ module dtp::transport_control {
         // client some storage fee by allowing to delete the object created).
         //         
         let sender = tx_context::sender(ctx);  
-        let tc = dtp::transport_control::new(
+        let mut tc = dtp::transport_control::new(
             option::some(client_host),
             server_host,
             option::some(sender),

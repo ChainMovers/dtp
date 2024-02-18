@@ -17,7 +17,7 @@ module dtp::pipe {
     #[test_only]
     friend dtp::test_transport_control;
 
-    struct Pipe has key {
+    public struct Pipe has key {
         id: UID,
 
         flgs: u8, // DTP version+esc flags always after UID.

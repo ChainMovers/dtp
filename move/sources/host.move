@@ -6,95 +6,82 @@
 // Typical next step with the DTP API will be ping or
 // create a connection with that Host object.
 //
+#[allow(unused_field, unused_use, lint(share_owned))]
 module dtp::host {
 
-    use sui::object::{Self, UID, ID};
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
+    use sui:: {
+        object::{Self, UID, ID},
+        transfer::{Self},
+        tx_context::{TxContext},
+        linked_table::{LinkedTable},        
+        dynamic_field as df,
+    };    
 
+    use dtp:: {
+        service_type::{ServiceType},
+        stats::{ConnectionAcceptedStats, ConnectionRejectedStats, ConnectionClosedStats},
+        basic_types::{WeakID},
+    };
+    
     #[test_only]
     friend dtp::test_host;
     #[test_only]
     friend dtp::test_transport_control;
 
-    // Put a limit on number of connection that a single host
-    // can handle.
-    //
-    // This is to avoid poor performance or high gas cost when:
-    //  - iterating all connections (e.g. firewall processing)
-    //  - table of connections would exceed MAX_MOVE_OBJECT_SIZE
-    //
-    // Planning for ~40 bytes of data per connection in a Host object. So:
-    //
-    //   4096 * 40 = 164 KB which must remain below MAX_MOVE_OBJECT_SIZE.
-    //
-    // See:
-    // https://github.com/MystenLabs/sui/blob/main/crates/sui-protocol-constants/src/lib.rs
-    //
-    // Why 4096? because it fits in 12 bits for some potential indexing trick.
-    //
-    // Need to handle more connections?
-    // 
-    // Every service in a Host can optionally be added to a HostGroup.
-    //
-    // If a Host is too busy, the connection initiator can look
-    // into the HostGroup for an alternative way to reach the service.
-    //
-    // Therefore the limit is 4096 * 4096 = ~16.7 million connections for 
-    // one centralized service (the practical limit is likely lower...).
-    //
-    const MAX_CONNECTION_PER_HOST : u16 = 4096; 
-    const MAX_HOST_PER_HOSTGROUP : u16 = 4096;
-
-    // Default is 25% of MAX at Node initialization and can be later reconfigured.
-    const MAX_CONNECTION_PER_HOST_DEFAULT : u16 = 1024;
 
     // Public Shared  Object
-    struct WeakReference has store, drop {
-      // Refer to a Sui object without holding a reference to it.
-      //
-      // This information is often intended to be read by an off-chain client
-      // who can asynchronously try to query or create transaction on that object.
-      //   
-      // The Flags bitmap interpretation mostly depends of the context of the reference,
-      // except for the value 0x00 being reserved to mean the ID is undefined/invalid.
-      flags: u8,
-      wid: ID,
-    }
-
-    struct HostGroup has key, store {
+    public struct AdminCap has key, store {
         id: UID,
-        hosts: vector<WeakReference>,
     }
 
-    public(friend) fun delete(object: HostGroup) {
-        let HostGroup { id, hosts: _ } = object;
-        object::delete(id);
+    public struct Connection has store {        
+        tctrl_id: WeakID,
+        service_id: WeakID,
     }
 
-    struct Host has key, store {
+    public struct Service has store {
+        srvc_type: ServiceType,
+
+        // Each connection requested increments one member of either con_accepted or con_rejected.
+        con_accepted: ConnectionAcceptedStats,
+        con_rejected: ConnectionRejectedStats,
+
+        // Every con_accepted are either represented in cons container or
+        // an increment of one member of con_closed.
+        con_closed: ConnectionClosedStats,
+        
+        // Active connections 
+        cons: LinkedTable<ID,Connection>,
+
+        // Recently closed connections (for debug purpose).
+        cons_recent_closed: LinkedTable<ID,Connection>,
+    }
+
+    public struct HostConfig has store {
+        // Configurations that can be changed only by the AdminCap.
+
+        // Maximum number of connection allowed for the whole host.
+        //
+        // [0..dtp::consts::MAX_CONNECTION_PER_HOST]
+        //
+        // Change will not trig the immediate closing of existing connections, 
+        // it is therefore possible to have temporarly more open connections 
+        // than allowed.
+        //
+        // The protocol will progressively close LRU connections until eventual
+        // respect the new limit.        
+        max_con: u16,
+
+    }
+
+    public struct Host has key, store {
         id: UID,
 
         flgs: u8, // DTP version+esc flags always after UID.
 
-        // The administrator has more control through transactions.
-        adm: address, 
-
-        // Real-Time statistics.
-        // 
-        // rejected connection can be calculated as (requested - created).
-        // created always >= deleted
-        con_req: u64, 
-        con_add: u64,
-        con_del: u64,
-        con_rcy: u64,
 
         // Settings that may change from time to time.
         //
-        // If after a change the connections_active > max_connections_active, then no
-        // new connection will be allowed. Existing connections are not forced to terminate
-        // butwill be closed if becoming inactive.
-        max_con: u16,
 
         // Aggregated connections statistic (updated periodically).
         // TODO
@@ -118,20 +105,12 @@ module dtp::host {
     public(friend) fun new(ctx: &mut TxContext) : Host {
         Host {
             id: object::new(ctx),
-            flgs: 0,
-            adm: tx_context::sender(ctx),
-            con_req: 0, 
-            con_add: 0,
-            con_del: 0,
-            con_rcy: 0,
-            max_con: MAX_CONNECTION_PER_HOST_DEFAULT,
+            flgs: 0
         }
     }
 
     public entry fun create( ctx: &mut TxContext ) { transfer::share_object<Host>(new(ctx)); }
-
-    // Accessors
-    public(friend) fun adm(self: &Host) : address { self.adm }
+    
 }
 
 #[test_only]

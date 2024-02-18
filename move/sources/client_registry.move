@@ -13,7 +13,7 @@ module dtp::client_registry {
     // on short term (the DTP SDK will prevent to create more than one).
     //
     // TODO Add general purpose key-value once problem with validators are iron out.
-    struct Registry has key, store {
+    public struct Registry has key, store {
       id: UID,
       localhost_blob: vector<u8>,
     }
