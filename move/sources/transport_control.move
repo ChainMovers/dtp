@@ -2,10 +2,6 @@
 
 module dtp::transport_control {
 
-    public struct BEConReq has copy, drop {
-        sender: address, // Sender Requesting a Connection
-    }
-
     // Code order guideline? (WIP - still learning):
     //    use (std, sui, other, dtp)
     //    { friend }
@@ -25,31 +21,52 @@ module dtp::transport_control {
     //    Other private                                    Less Accessible
     //    ================ Tests =====================
     //    Unit Tests
-    use std::option::{Self, Option};
 
-    use sui::object::{Self, ID, UID};
-    use sui::tx_context::{Self,TxContext};
-    use sui::event;
-    use sui::transfer;
+    use std:: {
+        option::{Self, Option},
+    };
+
+    use sui:: {
+        object::{Self, ID, UID},
+        tx_context::{Self,TxContext},
+        event,
+        transfer
+    };
+
+    use dtp:: {
+        service_type::{Self},
+        errors::{Self},
+    };
 
     #[test_only]
     friend dtp::test_transport_control;
 
+    public struct BEConReq has copy, drop {
+        sender: address, // Sender Requesting a Connection
+    }
+
     // Control Plane of a connection.
     //
-    // Shared object with public entry functions allowed only 
-    // for the client and server of the related connection.
+    // Shared object
+    //
+    // Authorized Callers: 
+    //   - Connection Initiator (Client)
+    //   - Host owner (Server)
+    //    
     public struct TransportControl has key, store {
         id: UID,
 
         flags: u8, // DTP version+esc flags always after UID.
+        
+        service_idx: u8, // UDP, Ping, HTTPS etc...
 
-        client_host: Option<ID>, // Not set on broadcast.
+        // Hosts involved in the connection.        
+        client_host: ID,
         server_host: ID,
-
-        // Do not change for the lifetime of this object.
-        client_adm: Option<address>, // Not set on broadcast.
-        server_adm: address,
+        
+        // Authorization verified by sender ID address.        
+        client_addr: address,
+        server_addr: address,
 
         // Connection Type.
         //
@@ -59,65 +76,61 @@ module dtp::transport_control {
         //
         // Intended for slow discovery.
         //
-        // It is expected that related DTP endpoints
-        // will cache these IDs.
-        // 
-        // TODO Just one pipe per direction for now (Multi-Channel later)
+        // It is expected that DTP off-chain will cache these IDs.
+        //
+        // Optional in case of uni-directiobal connection.
         client_tx_pipe: Option<ID>,
-        server_tx_pipe: Option<ID>,
-
-        // {Protocol,Port} tupple aka the Service.
-        protocol: u16,
-        port: Option<u16>,
-
-        // Intended for traffic returning to the client in a bi-directional connection.        
-        return_port: Option<u16>,
-
-        // Pipe Aggregated statistics (updated periodically)
-        // Useful as a "feedback/debug" for the peer.
-        // TODO
+        server_tx_pipe: Option<ID>, 
     }
 
 
     // Constructors
 
-    fun init(_ctx: &mut TxContext) {}
-
     public(friend) fun new(
-        client_host: Option<ID>, server_host: ID,
-        client_adm: Option<address>, server_adm: address,
-        client_tx_pipe: Option<ID>, server_tx_pipe: Option<ID>,
-        protocol: u16, port: Option<u16>, return_port: Option<u16>,
+        service_idx: u8,
+        client_host: ID, server_host: ID,
+        client_addr: address, server_addr: address,
+        client_tx_pipe: Option<ID>, server_tx_pipe: Option<ID>,        
         ctx: &mut TxContext): TransportControl
     {
+
+        // If address are same, then the host ID must be the same, else the host ID must be different.
+        if (client_addr == server_addr) {
+            assert!(client_host == server_host, errors::EHostAddressMismatch1());
+        } else {
+            assert!(client_host != server_host, errors::EHostAddressMismatch2());
+        };
+
+        // Verify that at least one pipe is provided._
+        assert!(option::is_some(&client_tx_pipe) || option::is_some(&server_tx_pipe), errors::EOnePipeRequired());
+
+        // If two pipes are provided, they must be different.
+        if (option::is_some(&client_tx_pipe) && option::is_some(&server_tx_pipe)) {
+            let pipe1 = option::some(client_tx_pipe);
+            let pipe2 = option::some(server_tx_pipe);
+            assert!(pipe1 != pipe2, errors::EPipeInstanceSame());
+        };
+
+        // Check service_idx is in-range.        
+        assert!(service_idx < service_type::SERVICE_TYPE_MAX_IDX(), errors::EServiceIdxOutOfRange());
+
         TransportControl {
             id: object::new(ctx), flags: 0,
+            service_idx,
             client_host, server_host,
-            client_adm, server_adm,
-            client_tx_pipe, server_tx_pipe,
-            protocol, port, return_port
+            client_addr, server_addr,
+            client_tx_pipe, server_tx_pipe,            
         }
     }
 
 
     public(friend) fun delete( self: TransportControl ) {
         let TransportControl { id, flags: _,
-          client_host, server_host: _,
-          client_adm, server_adm: _,
-          client_tx_pipe, server_tx_pipe,
-          protocol: _, port: _, return_port: _
+          service_idx: _,
+          client_host: _, server_host: _,
+          client_addr: _, server_addr: _,
+          client_tx_pipe, server_tx_pipe,          
         } = self;
-        if (option::is_some(&client_host)) {
-            option::destroy_some(client_host);
-        } else {
-            option::destroy_none(client_host);
-        };
-
-        if (option::is_some(&client_adm)) {
-            option::destroy_some(client_adm);
-        } else {
-            option::destroy_none(client_adm);
-        };
 
         if (option::is_some(&client_tx_pipe)) {
             option::destroy_some(client_tx_pipe);
@@ -135,12 +148,12 @@ module dtp::transport_control {
     }    
 
     // Read accessors
-    public(friend) fun server_adm(self: &TransportControl): address {
-        self.server_adm
+    public(friend) fun server_addr(self: &TransportControl): address {
+        self.server_addr
     }
 
-    public(friend) fun client_adm(self: &TransportControl): Option<address> {
-        self.client_adm
+    public(friend) fun client_addr(self: &TransportControl): address {
+        self.client_addr
     }
 
     // The TransportControl is the shared object for the
@@ -172,17 +185,14 @@ module dtp::transport_control {
     // wasted gas attempting to connect.
     //
     // Pre-approved Service is a more controlled approach where the connection is
-    // very likely to work for the approved user. It is more appropriate in any
-    // circumstance where a service level agreement is expected (e.g. customer 
-    // and business relationship). Firewall and controlled access is possible,
-    // the server ressources is reserved for their intended users.
+    // very likely to work for the approved user. It is more appropriate in
+    // circumstance where there is an off-chain business relationship.
     //
-    public entry fun create_best_effort( client_host: ID,
+    public entry fun create_best_effort( service_idx: u8,
+                                         client_host: ID,
                                          server_host: ID,
-                                         server_adm: address,
-                                         protocol: u16,
-                                         port: u16,
-                                         return_port: u16,
+                                         server_addr: address,
+                                         _return_port: u16,
                                          ctx: &mut TxContext )    
     {
         // Create the tx pipes and the TransportControl itself.
@@ -194,17 +204,18 @@ module dtp::transport_control {
         //         
         let sender = tx_context::sender(ctx);  
         let mut tc = dtp::transport_control::new(
-            option::some(client_host),
+            service_idx,
+            client_host,
             server_host,
-            option::some(sender),
-            server_adm,
-            option::none(), 
+            sender,
+            server_addr,
+            option::none(), // Pipe are not known yet.
             option::none(),
-            protocol, option::some(port), option::some(return_port), ctx );
+            ctx );
         
         // Weak references between Pipes and TC using ID (for recovery scenario).
         tc.client_tx_pipe = option::some(dtp::pipe::create_internal(ctx, sender));
-        tc.server_tx_pipe = option::some(dtp::pipe::create_internal(ctx, server_adm));
+        tc.server_tx_pipe = option::some(dtp::pipe::create_internal(ctx, server_addr));
 
         // Emit the "Connection Request" Move event.
         // The server will see the sender object therefore will know the TC and plenty of info!
@@ -267,13 +278,8 @@ module dtp::test_transport_control {
         let scenario_val = test_scenario::begin(creator);
         let scenario = &mut scenario_val;
         
-        /* TODO Figure out how to call init, or is it always called by default?
-        {
-            transport_control::init(ctx);
-        };*/
-
-        let fake_client_address = @0x2;
-        let fake_server_address = @0x3;
+        let fake_client_address = @0x20;
+        let fake_server_address = @0x30;
         let fake_client_pipe_id;
         let fake_server_pipe_id;
 
@@ -301,7 +307,7 @@ module dtp::test_transport_control {
                 ctx );
 
             // Test accessors
-            assert!(transport_control::server_adm(&tc) == fake_server_address, 1);
+            assert!(transport_control::server_addr(&tc) == fake_server_address, 1);
 
             //debug::print(&tc);
 

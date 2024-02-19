@@ -11,12 +11,12 @@ module dtp::consts {
     //  
     // If you need more connections, consider creating additional hosts.
     const C_MAX_CONNECTION_PER_SERVICE: u16 = 4096;    
-    public(friend) fun MAX_CONNECTION_PER_SERVICE() : u16 { C_MAX_CONNECTION_PER_SERVICE }
+    public fun MAX_CONNECTION_PER_SERVICE() : u16 { C_MAX_CONNECTION_PER_SERVICE }
     
     const C_MAX_SERVICE_PER_HOST: u8 = 16;
-    public(friend) fun MAX_SERVICE_PER_HOST() : u8 { C_MAX_SERVICE_PER_HOST }
+    public fun MAX_SERVICE_PER_HOST() : u8 { C_MAX_SERVICE_PER_HOST }
 
-    public(friend) fun MAX_CONNECTION_PER_HOST() : u32 {
+    public fun MAX_CONNECTION_PER_HOST() : u32 {
         (C_MAX_CONNECTION_PER_SERVICE as u32) * (C_MAX_SERVICE_PER_HOST as u32)
     }
 }

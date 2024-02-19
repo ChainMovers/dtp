@@ -21,6 +21,8 @@ module dtp::host {
         service_type::{ServiceType},
         stats::{ConnectionAcceptedStats, ConnectionRejectedStats, ConnectionClosedStats},
         basic_types::{WeakID},
+        consts::{Self},
+        errors::{Self},
     };
     
     #[test_only]
@@ -40,7 +42,7 @@ module dtp::host {
     }
 
     public struct Service has store {
-        srvc_type: ServiceType,
+        service_idx: u8,
 
         // Each connection requested increments one member of either con_accepted or con_rejected.
         con_accepted: ConnectionAcceptedStats,
@@ -70,7 +72,7 @@ module dtp::host {
         //
         // The protocol will progressively close LRU connections until eventual
         // respect the new limit.        
-        max_con: u16,
+        max_con: u32,
 
     }
 
@@ -79,24 +81,29 @@ module dtp::host {
 
         flgs: u8, // DTP version+esc flags always after UID.
 
+        // Creation timestamp (UTC)
+        // TODO
 
-        // Settings that may change from time to time.
-        //
+        // Last SLA Update timestamp (UTC)
+        // TODO
+
+        // Last Server Heartbeat timestamp (UTC)
+        // TODO
+
+        // Last Config Update timestamp (UTC) - For debugging purpose.
+        // TODO
+
+        // Last Protocol Sync timestamp (UTC) - For debugging purpose.
+        // TODO
+
+        // Settings controlled by AdminCap.
+        config: HostConfig, 
 
         // Aggregated connections statistic (updated periodically).
         // TODO
 
-        // *************************************************************
-        // Information that do not change for the lifetime of the  Node.
-        // *************************************************************
-
-        // Creation time info
-        // TODO
-
         // Service Level Agreements
         // TODO
-
-        // Future proofing.
     }
 
     // Constructors
@@ -105,12 +112,14 @@ module dtp::host {
     public(friend) fun new(ctx: &mut TxContext) : Host {
         Host {
             id: object::new(ctx),
-            flgs: 0
+            flgs: 0,
+            config: HostConfig {
+                max_con: consts::MAX_CONNECTION_PER_HOST(),
+            },
         }
     }
 
-    public entry fun create( ctx: &mut TxContext ) { transfer::share_object<Host>(new(ctx)); }
-    
+    public entry fun create( ctx: &mut TxContext ) { transfer::share_object<Host>(new(ctx)); }    
 }
 
 #[test_only]
