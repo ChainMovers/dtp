@@ -14,7 +14,9 @@ module dtp::errors {
     public fun EHostAddressMismatch2() : u64 { 3 }    
     public fun EPipeInstanceSame() : u64 { 4 }
     public fun EServiceIdxOutOfRange() : u64 { 5 }
-    
+    public fun EInvalidAccessOnNone() : u64 { 6 }
+    public fun EHostNotOwner() : u64 { 7 }
+
   // === Structs ===
 
   // === Public-Mutative Functions ===

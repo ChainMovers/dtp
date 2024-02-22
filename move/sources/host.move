@@ -6,42 +6,43 @@
 // Typical next step with the DTP API will be ping or
 // create a connection with that Host object.
 //
-#[allow(unused_field, unused_use, lint(share_owned))]
+#[allow(unused_field, unused_use)]
 module dtp::host {
 
-    use sui:: {
-        object::{Self, UID, ID},
-        transfer::{Self},
-        tx_context::{TxContext},
-        linked_table::{LinkedTable},        
-        dynamic_field as df,
-    };    
+  // === Imports ===
+    use sui::object::{Self, UID, ID, uid_to_address};
+        
+    //use sui::transfer::{Self};
+    use sui::tx_context::{Self,TxContext};
+    use sui::linked_table::{LinkedTable};
 
-    use dtp:: {
-        service_type::{ServiceType},
-        stats::{ConnectionAcceptedStats, ConnectionRejectedStats, ConnectionClosedStats},
-        basic_types::{WeakID},
-        consts::{Self},
-        errors::{Self},
-    };
-    
+    //use dtp::service_type::{ServiceType};
+    use dtp::stats::{ConnectionAcceptedStats, ConnectionRejectedStats, ConnectionClosedStats};
+    use dtp::weak_ref::{WeakRef};
+    use dtp::consts::{Self};
+    //use dtp::errors::{Self};
+
+  // === Friends ===
+    friend dtp::transport_control;
+
     #[test_only]
     friend dtp::test_host;
+
     #[test_only]
     friend dtp::test_transport_control;
 
+  // === Errors ===
+
+  // === Constants ===
+
+  // === Structs ===
 
     // Public Shared  Object
-    public struct AdminCap has key, store {
-        id: UID,
+    struct Connection has store {        
+        tctrl_id: WeakRef,
     }
 
-    public struct Connection has store {        
-        tctrl_id: WeakID,
-        service_id: WeakID,
-    }
-
-    public struct Service has store {
+    struct Service has store {
         service_idx: u8,
 
         // Each connection requested increments one member of either con_accepted or con_rejected.
@@ -59,7 +60,7 @@ module dtp::host {
         cons_recent_closed: LinkedTable<ID,Connection>,
     }
 
-    public struct HostConfig has store {
+    struct HostConfig has store {
         // Configurations that can be changed only by the AdminCap.
 
         // Maximum number of connection allowed for the whole host.
@@ -76,10 +77,12 @@ module dtp::host {
 
     }
 
-    public struct Host has key, store {
+    struct Host has key, store {
         id: UID,
 
         flgs: u8, // DTP version+esc flags always after UID.
+
+        owner: address,
 
         // Creation timestamp (UTC)
         // TODO
@@ -106,20 +109,37 @@ module dtp::host {
         // TODO
     }
 
-    // Constructors
-    fun init(_ctx: &mut TxContext) { /* NOOP */ }
+  // === Public-Mutative Functions ===
+
+  // === Public-View Functions ===
+
+  // === Admin Functions ===
+
+  // === Public-Friend Functions ===
 
     public(friend) fun new(ctx: &mut TxContext) : Host {
         Host {
             id: object::new(ctx),
             flgs: 0,
+            owner: tx_context::sender(ctx),
             config: HostConfig {
                 max_con: consts::MAX_CONNECTION_PER_HOST(),
             },
         }
     }
 
-    public entry fun create( ctx: &mut TxContext ) { transfer::share_object<Host>(new(ctx)); }    
+    public(friend) fun owner(host: &Host): address {
+        host.owner
+    }
+
+    public(friend) fun is_caller_owner(host: &Host, ctx: &TxContext): bool {
+        tx_context::sender(ctx) == host.owner
+    }
+
+  // === Private Functions ===
+
+  // === Test Functions ===  
+
 }
 
 #[test_only]
@@ -143,7 +163,7 @@ module dtp::test_host {
             let new_host = host::new( ctx );
 
             // admnistrator address must be the creator.
-            assert!(host::adm(&new_host) == creator, 1);
+            assert!(host::owner(&new_host) == creator, 1);
 
             transfer::share_object( new_host );
         };

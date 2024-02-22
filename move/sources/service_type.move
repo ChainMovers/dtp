@@ -1,39 +1,13 @@
 #[allow(unused_const, unused_field)]
 module dtp::service_type {
 
-    public struct ServiceType has store{
-        name: vector<u8>, // Human readable name (e.g. "HTTP", "JSON-RPC 2.0", etc...)
+  // === Imports ===
 
-        // Protocol port. 
-        //
-        // Intended to mimic https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
-        //
-        // Keep in mind that DTP provide "layer 7" services, so it will not
-        // match exactly IANA RFC numbers.abort
-        //
-        // As an example, DTP can add gRPC specific functionality, while in the IP
-        // world it is served by HTTPS.
-        //
-        // Example:
-        //      <Host ID Address>:443  --> HTTPS server
-        //      <Host ID Address>:22   --> SSH
+  // === Friends ===
 
-        port: u32, 
+  // === Errors ===
 
-        // The end-users and DTP API uses the protocol_port.
-        //
-        // The DTP SDKs convert the port to ServiceTypeIdx when 
-        // interacting with the Move modules.
-        //
-        // This is to optimize fast service object access using a vector.
-        //
-        // [0..SERVICE_TYPE.length - 1]
-        // where SERVICE_TYPE.length <= 256
-        //       0 means invalid 
-        //       255 is for future use.
-        idx: u8,
-    }
-
+  // === Constants ===
     // Think hard before adding a new type... these are forever.
     // Add new Service only at the end of the list.
     
@@ -101,8 +75,53 @@ module dtp::service_type {
     const C_SERVICE_TYPE_SSH_PORT: u32 = 22;
 
     // !!! Update SERVICE_TYPE_MAX_IDX when appending new service types. !!!
-    const C_SERVICE_TYPE_MAX_IDX: u8 = C_SERVICE_TYPE_SSH_IDX;
-    
+    const C_SERVICE_TYPE_MAX_IDX: u8 = 22;
+ 
+  // === Structs ===
+    struct ServiceType has store{
+        name: vector<u8>, // Human readable name (e.g. "HTTP", "JSON-RPC 2.0", etc...)
+
+        // Protocol port. 
+        //
+        // Intended to mimic https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers
+        //
+        // Keep in mind that DTP provide "layer 7" services, so it will not
+        // match exactly IANA RFC numbers.abort
+        //
+        // As an example, DTP can add gRPC specific functionality, while in the IP
+        // world it is served by HTTPS.
+        //
+        // Example:
+        //      <Host ID Address>:443  --> HTTPS server
+        //      <Host ID Address>:22   --> SSH
+
+        port: u32, 
+
+        // The end-users and DTP API uses the protocol_port.
+        //
+        // The DTP SDKs convert the port to ServiceTypeIdx when 
+        // interacting with the Move modules.
+        //
+        // This is to optimize fast service object access using a vector.
+        //
+        // [0..SERVICE_TYPE.length - 1]
+        // where SERVICE_TYPE.length <= 256
+        //       0 means invalid 
+        //       255 is for future use.
+        idx: u8,
+    }
+
+  // === Public-Mutative Functions ===
+
+  // === Public-View Functions ===
+
+  // === Admin Functions ===
+
+  // === Public-Friend Functions ===
+
+  // === Private Functions ===
+
+  // === Test Functions ===     
     public fun SERVICE_TYPE_MAX_IDX() : u8 {
         C_SERVICE_TYPE_MAX_IDX
     }

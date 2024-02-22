@@ -1,5 +1,5 @@
 module dtp::stats {
-    public struct ConnectionAcceptedStats has store {
+    struct ConnectionAcceptedStats has store {
         con_accepted: u64, // Normally accepted connection.
         con_accepted_lru: u64, // Accepted after LRU eviction of another connection.                
     }
@@ -9,7 +9,7 @@ module dtp::stats {
         stats.con_accepted_lru
     }
 
-    public struct ConnectionClosedStats has store {
+    struct ConnectionClosedStats has store {
         con_closed_srv: u64, // Successful close initiated by server.
         con_closed_cli: u64, // Successful close initiated by client.
         con_closed_exp: u64, // Normal expiration initiated by protocol (e.g. Ping Connection iddle).
@@ -27,7 +27,7 @@ module dtp::stats {
         stats.con_closed_clt_sync_err
     }
 
-    public struct ConnectionRejectedStats has store {
+    struct ConnectionRejectedStats has store {
         con_rej_host_max_con: u64, // Max Host connection limit reached.
         con_rej_srv_max_con: u64,  // Max Service connection limit reached.
         con_rej_firewall: u64,     // Firewall rejected. TODO more granular reasons.

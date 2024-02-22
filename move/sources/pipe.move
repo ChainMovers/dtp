@@ -4,62 +4,89 @@
 //
 // Used only for simple transaction (no consensus).
 // 
+#[allow(unused_field, unused_use)]
 module dtp::pipe {
-    use std::vector::{Self};
-    use sui::object::{Self, UID, ID, uid_to_address, id_from_address};
-    use sui::tx_context::{TxContext};
-    use sui::transfer;
 
-    #[test_only]
-    friend dtp::test_pipe;
+  // === Imports ===
+    use std::vector;  
+    use sui::object::{Self, UID, ID, uid_to_address};
+    use sui::transfer::{Self};
+    use sui::tx_context::{TxContext};
+    use dtp::weak_ref::{Self,WeakRef};
+    //use dtp::errors::{Self};
+    //use dtp::transport_control;
+    use dtp::pipe_sync_data::{Self,PipeSyncData};
+
+  // === Friends ===
+    friend dtp::host;
     friend dtp::transport_control;
 
     #[test_only]
-    friend dtp::test_transport_control;
+    friend dtp::tests_pipe;
 
-    public struct Pipe has key {
+  // === Errors ===
+
+  // === Constants ===
+
+  // === Structs ===
+
+    struct Pipe has key {
         id: UID,
-
         flgs: u8, // DTP version+esc flags always after UID.
 
-        byte_payload_sent: u64,
-        byte_header_sent: u64,
-        send_call_completed: u64,
+        sync_data: PipeSyncData, // Merged of all InnerPipe sync_data.
+
+        tctl_id: WeakRef,
+        inner_pipes: vector<WeakRef>,
     }
 
-    public(friend) fun create_internal( ctx: &mut TxContext, recipient: address ): ID {
-        let pipe = Pipe {
+    struct InnerPipe has key, store {
+        id: UID,
+        flgs: u8, // DTP version+esc flags always after UID.
+
+        pipe_id: WeakRef,
+    }
+
+  // === Public-Mutative Functions ===
+
+  // === Public-View Functions ===
+
+  // === Admin Functions ===
+
+  // === Public-Friend Functions ===
+
+    public(friend) fun new_transfered( tctl_id: &ID, inner_pipe_count: u8, recipient: address, ctx: &mut TxContext ): WeakRef {
+        let new_pipe = Pipe {
             id: object::new(ctx),
             flgs: 0,            
-            byte_payload_sent: 0,
-            byte_header_sent: 0,
-            send_call_completed: 0 
+            sync_data: pipe_sync_data::new(),
+            tctl_id: weak_ref::new(tctl_id),
+            inner_pipes: vector::empty(),
         };
-        let id_copy = id_from_address(uid_to_address(&pipe.id));
-        transfer::transfer(pipe, recipient );
-        id_copy
+        let new_pipe_ref = weak_ref::new_from_address(uid_to_address(&new_pipe.id));
+        let i: u8 = 0;
+        while (i < inner_pipe_count) {
+            let inner_pipe = InnerPipe {
+                id: object::new(ctx),
+                flgs: 0u8,
+                pipe_id: new_pipe_ref,
+            };
+            let inner_pipe_ref = weak_ref::new_from_address(uid_to_address(&inner_pipe.id));
+            vector::push_back(&mut new_pipe.inner_pipes, inner_pipe_ref);
+            transfer::transfer(inner_pipe, recipient);
+        };
+        
+        transfer::transfer(new_pipe, recipient);
+        new_pipe_ref
     }
 
     public(friend) fun delete( self: Pipe ) {
-        let Pipe { id, flgs: _, byte_payload_sent: _, byte_header_sent: _, send_call_completed: _ } = self;
+        let Pipe { id, flgs: _, sync_data: _, tctl_id: _, inner_pipes: _ } = self;        
         object::delete(id);
     }
 
-    public entry fun send(
-        self: &mut Pipe,
-        data: vector<u8>,
-        _control_byte: u8,
-        _ctx: &mut TxContext )
-    {
-        // Sending of the inband control_byte...
-        self.byte_header_sent = self.byte_header_sent + 1; 
+  // === Private Functions ===
 
-        // Sending of the data...
-        self.byte_payload_sent = self.byte_payload_sent + vector::length<u8>(&data);
-
-        self.send_call_completed = self.send_call_completed + 1;
-    }
+  // === Test Functions ===  
 
 }
-
-module dtp::test_pipe {}
