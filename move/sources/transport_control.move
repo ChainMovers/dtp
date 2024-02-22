@@ -25,7 +25,7 @@ module dtp::transport_control {
 
     use sui::object::{Self, ID, UID};
     use sui::tx_context::{Self,TxContext};
-    use sui::event;
+    
     use sui::transfer;
 
     use dtp::service_type::{Self};
@@ -36,9 +36,6 @@ module dtp::transport_control {
     #[test_only]
     friend dtp::test_transport_control;
 
-    struct BEConReq has copy, drop {
-        sender: address, // Sender Requesting a Connection
-    }
 
     // Control Plane of a connection.
     //
@@ -118,8 +115,8 @@ module dtp::transport_control {
             service_idx,
             client_host: weak_ref::new_from_obj(client_host),
             server_host: weak_ref::new_from_obj(server_host),
-            client_addr: host::owner(client_host),
-            server_addr: host::owner(server_host),
+            client_addr: host::creator(client_host),
+            server_addr: host::creator(server_host),
             client_tx_pipe: weak_ref::new_empty(),
             server_tx_pipe: weak_ref::new_empty(),
         };
@@ -191,7 +188,7 @@ module dtp::transport_control {
                                          ctx: &mut TxContext )    
     {
         // Sender must be the owner of the client_host.    
-        assert!(host::is_caller_owner(client_host, ctx), errors::EHostNotOwner());
+        assert!(host::is_caller_creator(client_host, ctx), errors::EHostNotOwner());
 
         // Create the TransportControl/Pipes/InnerPipes
         //
@@ -203,10 +200,9 @@ module dtp::transport_control {
         let tc = dtp::transport_control::new(service_idx, client_host, server_host, ctx);
 
         // Emit the "Connection Request" Move event.
-        // The server will see the sender object therefore will know the TC and plenty of info!
-        event::emit(BEConReq { 
-                sender: client_address(&tc), // Allows further off-chain filtering/firewall.
-            } );
+        // The server will see the sender address therefore will know the TC and plenty of info!
+        let tc_address = object::id_to_address( object::borrow_id<TransportControl>(&tc) );
+        dtp::events::emit_con_req( tc_address, client_address(&tc) );
         transfer::share_object(tc);
     }
 
@@ -257,72 +253,45 @@ module dtp::test_transport_control {
     use std::option::{Self};
 
     use sui::transfer;
-    use sui::test_scenario::{Self};
+    use sui::test_scenario::{Scenario};
+    use sui::test_scenario as ts;
     use sui::object;
 
     use dtp::pipe::{Self};
     use dtp::transport_control::{Self};  // DUT
-    use dtp::host::{Self, Host};
+    use dtp::host::{Self};
+
+    fun create_hosts(scenario: &mut Scenario) {    
+        ts::next_tx(scenario, @0x10);
+        {
+            let sender = ts::sender(scenario);
+            let ctx = ts::ctx(scenario);
+            let client_host = host::new_transfered(sender, ctx);
+        };
+        
+        ts::next_tx(scenario, @0x20);
+        {
+            let sender = ts::sender(scenario);
+            let ctx = ts::ctx(scenario);
+            let _server_host = host::new_transfered(sender,ctx);
+        };
+    }
+
 
     #[test]
-    fun test_instantiation() {
-        let creator = @0x1;
-        let scenario_val = test_scenario::begin(creator);
-        let scenario = &mut scenario_val;
+    fun test_create() {
+      let scenario_val = ts::begin(@0x10);
+      let scenario = &mut scenario_val;
         
-        let fake_client_address = @0x20;
-        let fake_server_address = @0x30;
-        let fake_client_pipe_id;
-        let fake_server_pipe_id;
+      create_hosts(scenario);
+            
+      ts::next_tx(scenario, @0x10);
+      {
+        // Client creates a connection.
+        let _ctx = ts::ctx(scenario);
+      };      
 
-        test_scenario::next_tx(scenario, creator);
-        {
-            let ctx = test_scenario::ctx(scenario);
-
-            fake_client_pipe_id = pipe::create_internal(ctx, fake_client_address);
-            fake_server_pipe_id = pipe::create_internal(ctx, fake_client_address);
-
-            let fake_client_host = host::new(ctx);
-            let fake_client_host_id = object::id<Host>(&fake_client_host);
-
-            let fake_server_host = host::new(ctx);
-            let fake_server_host_id = object::id<Host>(&fake_server_host);
-
-            let port : u16 = 0 ;
-            let protocol : u16 = 0;
-            let return_port : u16 = 0;
-            let tc = transport_control::new( 
-                option::some(fake_client_host_id), fake_server_host_id,
-                option::some(fake_client_address), fake_server_address,
-                option::some(fake_client_pipe_id), option::some(fake_server_pipe_id),
-                protocol, option::some(port), option::some(return_port),
-                ctx );
-
-            // Test accessors
-            assert!(transport_control::server_addr(&tc) == fake_server_address, 1);
-
-            //debug::print(&tc);
-
-            transfer::share_object( fake_client_host );
-            transfer::share_object( fake_server_host );
-            transfer::share_object( tc );
-        };
-
-        // Destruction 
-        // TODO Revisit this once shared object deletion works!?
-        /*
-        test_scenario::next_tx(scenario, node_creator);
-        {
-            let tc = test_scenario::take_shared<TransportControl>(scenario);
-            let fake_client_pipe = test_scenario::take_shared_by_id<Pipe>(scenario,fake_client_pipe_id);
-            let fake_server_pipe = test_scenario::take_shared_by_id<Pipe>(scenario,fake_server_pipe_id);
-
-            transport_control::delete(tc);
-            pipe::delete(fake_client_pipe);
-            pipe::delete(fake_server_pipe);
-        };*/
-
-        test_scenario::end(scenario_val);
+      ts::end(scenario_val);
     }
 
 }

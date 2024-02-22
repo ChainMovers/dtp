@@ -7,7 +7,7 @@
 module dtp::tests_pipe {
 
   // === Imports ===
-    use sui::test_utils::assert_eq;
+    //use sui::test_utils::assert_eq;
     use sui::test_scenario::{Self as ts};    
 
   // === Errors ===
@@ -27,7 +27,7 @@ module dtp::tests_pipe {
 
     ts::next_tx(scn, user);
     { 
-      let ctx = ts::ctx(scn);
+      let _ctx = ts::ctx(scn);
       //let sender = tx_context::sender(ctx);
 
       //let psd = dtp::pipe::new(ctx);

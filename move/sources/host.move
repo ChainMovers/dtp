@@ -12,13 +12,13 @@ module dtp::host {
   // === Imports ===
     use sui::object::{Self, UID, ID, uid_to_address};
         
-    //use sui::transfer::{Self};
+    use sui::transfer::{Self};
     use sui::tx_context::{Self,TxContext};
     use sui::linked_table::{LinkedTable};
 
     //use dtp::service_type::{ServiceType};
     use dtp::stats::{ConnectionAcceptedStats, ConnectionRejectedStats, ConnectionClosedStats};
-    use dtp::weak_ref::{WeakRef};
+    use dtp::weak_ref::{Self,WeakRef};
     use dtp::consts::{Self};
     //use dtp::errors::{Self};
 
@@ -82,7 +82,7 @@ module dtp::host {
 
         flgs: u8, // DTP version+esc flags always after UID.
 
-        owner: address,
+        creator: address,
 
         // Creation timestamp (UTC)
         // TODO
@@ -117,23 +117,31 @@ module dtp::host {
 
   // === Public-Friend Functions ===
 
-    public(friend) fun new(ctx: &mut TxContext) : Host {
+    public(friend) fun new(creator: address, ctx: &mut TxContext) : Host {
         Host {
             id: object::new(ctx),
             flgs: 0,
-            owner: tx_context::sender(ctx),
+            creator,
             config: HostConfig {
                 max_con: consts::MAX_CONNECTION_PER_HOST(),
             },
         }
     }
 
-    public(friend) fun owner(host: &Host): address {
-        host.owner
+    public(friend) fun new_transfered( creator: address, ctx: &mut TxContext ): WeakRef 
+    {
+      let new_obj = new(creator,ctx);
+      let new_obj_ref = weak_ref::new_from_address(uid_to_address(&new_obj.id));
+      transfer::share_object(new_obj);
+      new_obj_ref
     }
 
-    public(friend) fun is_caller_owner(host: &Host, ctx: &TxContext): bool {
-        tx_context::sender(ctx) == host.owner
+    public(friend) fun creator(host: &Host): address {
+        host.creator
+    }
+
+    public(friend) fun is_caller_creator(host: &Host, ctx: &TxContext): bool {
+        tx_context::sender(ctx) == host.creator
     }
 
   // === Private Functions ===
@@ -142,7 +150,7 @@ module dtp::host {
 
 }
 
-#[test_only]
+#[test_only, allow(unused_field, unused_use)]
 module dtp::test_host {
 
     use sui::transfer;
@@ -160,12 +168,10 @@ module dtp::test_host {
         {
             let ctx = test_scenario::ctx(scenario);
 
-            let new_host = host::new( ctx );
-
+            let _new_host_ref = host::new_transfered( creator, ctx );
+        
             // admnistrator address must be the creator.
-            assert!(host::owner(&new_host) == creator, 1);
-
-            transfer::share_object( new_host );
+            //assert!(host::creator(&new_host) == creator, 1);            
         };
 
         test_scenario::end(scenario_val);
