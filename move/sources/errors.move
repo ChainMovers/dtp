@@ -16,6 +16,7 @@ module dtp::errors {
     public fun EServiceIdxOutOfRange() : u64 { 5 }
     public fun EInvalidAccessOnNone() : u64 { 6 }
     public fun EHostNotOwner() : u64 { 7 }
+    public fun EInvalidPipeCount() : u64 { 8 }
 
   // === Structs ===
 

@@ -156,7 +156,7 @@ module dtp::weak_ref {
         assert!(is_set(self), errors::EInvalidAccessOnNone());
         self.reference
     }
-
+    
   // === Private Functions ===
 
   // === Test Functions ===    

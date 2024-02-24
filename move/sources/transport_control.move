@@ -69,10 +69,19 @@ module dtp::transport_control {
         // Intended for slow discovery.
         //
         // It is expected that DTP off-chain will cache these IDs.
-        //
-        // Optional in case of uni-directiobal connection.
         client_tx_pipe: WeakRef,
         server_tx_pipe: WeakRef,
+
+        // Inner Pipe to be used for first request/response.
+        //
+        // This is an optimization for faster first interactions
+        // after connection creation.
+        //
+        // The endpoints can get all the inner pipe addresses with
+        // read of the client_tx_pipe and server_tx_pipe objects.
+        client_tx_ipipe: WeakRef,
+        server_tx_ipipe: WeakRef,
+
     }
 
 
@@ -80,7 +89,7 @@ module dtp::transport_control {
 
     public(friend) fun new( service_idx: u8,
         client_host: &mut Host,
-        server_host: &mut Host,
+        server_host: &Host,
         ctx: &mut TxContext): TransportControl
     {
         // Check service_idx is in-range.        
@@ -119,11 +128,17 @@ module dtp::transport_control {
             server_addr: host::creator(server_host),
             client_tx_pipe: weak_ref::new_empty(),
             server_tx_pipe: weak_ref::new_empty(),
+            client_tx_ipipe: weak_ref::new_empty(),
+            server_tx_ipipe: weak_ref::new_empty(),
         };
 
-        // Weak references between Pipes and TC (for recovery scenario).        
-        tc.client_tx_pipe = dtp::pipe::new_transfered(object::borrow_id<TransportControl>(&tc), 2, tc.client_addr, ctx);
-        tc.server_tx_pipe = dtp::pipe::new_transfered(object::borrow_id<TransportControl>(&tc), 2, tc.server_addr, ctx);
+        // Initialize all the Weak references (for slow discovery).
+        let (a,b) = dtp::pipe::new_transfered(object::borrow_id<TransportControl>(&tc), 2, tc.client_addr, ctx);
+        tc.client_tx_pipe = a;
+        tc.client_tx_ipipe= b;
+        (a,b) = dtp::pipe::new_transfered(object::borrow_id<TransportControl>(&tc), 2, tc.server_addr, ctx);
+        tc.server_tx_pipe = a;
+        tc.server_tx_ipipe= b;
 
         tc
     }
@@ -135,7 +150,9 @@ module dtp::transport_control {
           client_host: _, server_host: _,
           client_addr: _, server_addr: _,
           client_tx_pipe: _, server_tx_pipe: _,
+          client_tx_ipipe: _, server_tx_ipipe: _
         } = self;
+
 
         object::delete(id);
     }    
@@ -147,6 +164,12 @@ module dtp::transport_control {
 
     public(friend) fun client_addr(self: &TransportControl): address {
         self.client_addr
+    }
+
+    // Initial Inner Pipe address.
+    // This is for the first response toward the client.
+    public(friend) fun ipipe_addr(self: &TransportControl): address {
+        weak_ref::get_address(&self.server_tx_pipe)
     }
 
     // The TransportControl is the shared object for the
@@ -173,19 +196,24 @@ module dtp::transport_control {
     // the expectation realistic (base on recent server stats) that the service will be
     // available.
     //
-    // Best-effort has very little control and could be decline in case of a server
-    // being too busy. At worst, the server is not going to respond to the connection 
-    // request and the client will have wasted gas attempting to connect.
+    // Best-effort has very little control and could fail or be decline in case of 
+    // a server being too busy. At worst, the server is not going to respond to the 
+    // connection request and the client will have wasted gas attempting to connect.
     //
     // Pre-approved Service is a more controlled approach where the connection is
-    // "guaranteed" to work for the approved user. It is more appropriate in
-    // circumstance where there is an off-chain business relationship.
+    // "guaranteed" to have dedicated ressources (no oversubscribing). It is more 
+    // appropriate in circumstance where there is an off-chain business relationship.
     //
+    // Returns:
+    //    - tc_address: TransportControl address. Most other addresses can be learn from it.
+    //    - client_tx_ipipe: First InnerPipe used by client to TX to server.
+    //    - server_tx_ipipe: First InnerPipe used by server to TX to client.
+
     #[allow(lint(share_owned))]
     public entry fun create_best_effort( service_idx: u8,
                                          client_host: &mut Host,
-                                         server_host: &mut Host,                                         
-                                         ctx: &mut TxContext )    
+                                         server_host: &Host,
+                                         ctx: &mut TxContext ): (address,address,address)
     {
         // Sender must be the owner of the client_host.    
         assert!(host::is_caller_creator(client_host, ctx), errors::EHostNotOwner());
@@ -202,8 +230,16 @@ module dtp::transport_control {
         // Emit the "Connection Request" Move event.
         // The server will see the sender address therefore will know the TC and plenty of info!
         let tc_address = object::id_to_address( object::borrow_id<TransportControl>(&tc) );
-        dtp::events::emit_con_req( tc_address, client_address(&tc) );
+        dtp::events::emit_con_req( service_idx,  
+                        client_address(&tc), server_address(&tc), 
+                        tc_address, client_tx_ipipe(&tc), server_tx_ipipe(&tc));
+        let client_tx_ipipe = client_tx_ipipe(&tc);
+        let server_tx_ipipe = server_tx_ipipe(&tc);
         transfer::share_object(tc);
+
+        // TODO Add the connection to the Client Host object registry (for slow discovery).
+
+        (tc_address, client_tx_ipipe, server_tx_ipipe)
     }
 
     public entry fun create_preapproved( _ctx: &mut TxContext ) 
@@ -217,6 +253,14 @@ module dtp::transport_control {
 
     public(friend) fun server_address(self: &TransportControl): address {
         self.server_addr
+    }
+
+    public(friend) fun client_tx_ipipe(self: &TransportControl): address {        
+        weak_ref::get_address(&self.client_tx_ipipe)
+    }
+
+    public(friend) fun server_tx_ipipe(self: &TransportControl): address {
+        weak_ref::get_address(&self.server_tx_ipipe)
     }
 
     // Connection State Machine (work-in-progress):
@@ -250,15 +294,15 @@ module dtp::transport_control {
 #[test_only]
 module dtp::test_transport_control {
     //use std::debug;
-    use std::option::{Self};
+    //use std::option::{Self};
 
-    use sui::transfer;
+    //use sui::transfer;
     use sui::test_scenario::{Scenario};
     use sui::test_scenario as ts;
-    use sui::object;
+    //use sui::object;
 
-    use dtp::pipe::{Self};
-    use dtp::transport_control::{Self};  // DUT
+    //use dtp::pipe::{Self};
+    //use dtp::transport_control::{Self};  // DUT
     use dtp::host::{Self};
 
     fun create_hosts(scenario: &mut Scenario) {    
@@ -266,7 +310,7 @@ module dtp::test_transport_control {
         {
             let sender = ts::sender(scenario);
             let ctx = ts::ctx(scenario);
-            let client_host = host::new_transfered(sender, ctx);
+            let _client_host = host::new_transfered(sender, ctx);
         };
         
         ts::next_tx(scenario, @0x20);

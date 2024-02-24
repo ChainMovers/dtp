@@ -52,17 +52,17 @@ module dtp::inner_pipe {
 
   // === Public-Friend Functions ===
 
-    public(friend) fun new( pipe_address: address, ctx: &mut TxContext  ): InnerPipe {
+    public(friend) fun new( pipe_address: &address, ctx: &mut TxContext  ): InnerPipe {
         let new_obj = InnerPipe {
           id: object::new(ctx),
           flgs: 0u8,
-          pipe_id: weak_ref::new_from_address(pipe_address),
+          pipe_id: weak_ref::new_from_address(*pipe_address),
           sync_data: pipe_sync_data::new(),
         };
         new_obj
     }
 
-    public(friend) fun new_transfered( pipe_address: address, recipient: address, ctx: &mut TxContext  ): WeakRef 
+    public(friend) fun new_transfered( pipe_address: &address, recipient: address, ctx: &mut TxContext  ): WeakRef 
     {
       let new_obj = new(pipe_address,ctx);
       let new_obj_ref = weak_ref::new_from_address(uid_to_address(&new_obj.id));

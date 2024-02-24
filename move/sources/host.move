@@ -128,6 +128,7 @@ module dtp::host {
         }
     }
 
+    #[allow(lint(share_owned))]
     public(friend) fun new_transfered( creator: address, ctx: &mut TxContext ): WeakRef 
     {
       let new_obj = new(creator,ctx);

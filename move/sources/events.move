@@ -14,9 +14,20 @@ module dtp::events {
 
   // === Structs ===
     struct ConReq has copy, drop {
-        // TODO Add ServiceTYpe, Pipe and InnerPipe addresses.
-        tc_address: address, // Transport Control Address.
-        sender: address, // Sender requesting the connection.
+        service_idx: u8, // Service Type
+        cli_haddr: address, // Client Host address (requester of the connection).
+        srv_haddr: address, // Server Host address
+        tc_addr: address, // Transport Control        
+
+        // Address of the first inner pipe addresses to use.
+        //
+        // This is for faster initial response time
+        // for some services (e.g. first ping).
+        //
+        // The server should find out about additional
+        // inner pipes with a tc_addr object read.
+        client_tx_ipipe: address,
+        server_tx_ipipe: address,
     }
 
 
@@ -27,8 +38,8 @@ module dtp::events {
   // === Admin Functions ===
 
   // === Public-Friend Functions ===
-  public(friend) fun emit_con_req( tc_address: address, sender: address ) {
-    event::emit(ConReq {tc_address, sender} );
+  public(friend) fun emit_con_req( service_idx: u8, cli_haddr: address, srv_haddr: address, tc_addr: address, client_tx_ipipe: address, server_tx_ipipe: address ) {
+    event::emit(ConReq { service_idx, cli_haddr, srv_haddr, tc_addr, client_tx_ipipe, server_tx_ipipe});
   }
 
   // === Private Functions ===
