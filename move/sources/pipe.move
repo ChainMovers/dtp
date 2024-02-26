@@ -17,6 +17,8 @@ module dtp::pipe {
     use dtp::pipe_sync_data::{Self,PipeSyncData};
     use dtp::inner_pipe::{Self};
 
+    use dtp::conn_objects::{Self,ConnObjects};
+
   // === Friends ===
     friend dtp::host;
     friend dtp::transport_control;
@@ -36,8 +38,8 @@ module dtp::pipe {
 
         sync_data: PipeSyncData, // Merged of all InnerPipe sync_data.
 
-        tctl_id: WeakRef,
-        inner_pipes: vector<WeakRef>,
+        tc: WeakRef, // TransportControl
+        ipipes: vector<WeakRef>, // InnerPipe(s)
     }
 
   // === Public-Mutative Functions ===
@@ -48,44 +50,53 @@ module dtp::pipe {
 
   // === Public-Friend Functions ===
 
-    public(friend) fun new_transfered( tctl_id: &ID, inner_pipe_count: u8, recipient: address, ctx: &mut TxContext ): (WeakRef,WeakRef) {
-        assert!(inner_pipe_count > 0, errors::EInvalidPipeCount());
+    public(friend) fun new_transfered( tc: &ID, ipipe_count: u8, recipient: address, is_cli_tx_pipe: bool, conn: &mut ConnObjects, ctx: &mut TxContext ): WeakRef {
+        assert!(ipipe_count > 0, errors::EInvalidPipeCount());
 
         let new_pipe = Pipe {
             id: object::new(ctx),
             flgs: 0,            
             sync_data: pipe_sync_data::new(),
-            tctl_id: weak_ref::new(tctl_id),
-            inner_pipes: vector::empty(),
+            tc: weak_ref::new(tc),
+            ipipes: vector::empty(),
         };
-        let pipe_address = uid_to_address(&new_pipe.id);
 
-        // First InnerPipe created is "special" because the caller gets a WeakRef on it.
-        let ipipe_ref = inner_pipe::new_transfered(&pipe_address, recipient, ctx);
-        let ipipe_addr = weak_ref::get_address(&ipipe_ref);
-        vector::push_back(&mut new_pipe.inner_pipes, ipipe_ref);
-
-        // Create additional InnerPipes.
-        inner_pipe_count = inner_pipe_count - 1;
+        let pipe_addr = uid_to_address(&new_pipe.id);
+        if (is_cli_tx_pipe) {
+          conn_objects::set_cli_tx_pipe(conn, pipe_addr);
+        } else {
+          conn_objects::set_srv_tx_pipe(conn, pipe_addr);
+        };
+    
+        // Create InnerPipes.
         let i: u8 = 0;
-        while (i < inner_pipe_count) {
-            let ipipe_ref = inner_pipe::new_transfered(&pipe_address, recipient, ctx);
-            vector::push_back(&mut new_pipe.inner_pipes, ipipe_ref);
+        while (i < ipipe_count) {
+            let ipipe_ref = inner_pipe::new_transfered(&pipe_addr, recipient, ctx);
+            let ipipe_addr = weak_ref::get_address(&ipipe_ref);
+
+            // Save WeakRef in the Pipe object (for slow discovery), and the addresses in 
+            // the ConnObjects (to be return/emitted to the end-points).
+            vector::push_back(&mut new_pipe.ipipes, ipipe_ref);
+            if (is_cli_tx_pipe) {
+                conn_objects::add_cli_tx_ipipe(conn, ipipe_addr);
+            } else {
+                conn_objects::add_srv_tx_ipipe(conn, ipipe_addr);
+            };
         };
 
         transfer::transfer(new_pipe, recipient);
 
-        (weak_ref::new_from_address(pipe_address), weak_ref::new_from_address(ipipe_addr))
+        weak_ref::new_from_address(pipe_addr)
     }
 
 /* TODO
-    public(friend) fun delete( self: Pipe, inner_pipes: vector<InnerPipe> ) {
-        let Pipe { id, flgs: _, sync_data: _, tctl_id: _, inner_pipes } = self;        
+    public(friend) fun delete( self: Pipe, ipipes: vector<InnerPipe> ) {
+        let Pipe { id, flgs: _, sync_data: _, tc: _, ipipes } = self;        
         // Delete all the inner pipes.
         // For tracking/debugging purpose, the weak ref is not removed from vector (only cleared).
         let i: u64 = 0;
-        while (i < vector::length(&inner_pipes)) {
-            let inner_pipe_ref = vector::borrow_mut(&mut inner_pipes, i);
+        while (i < vector::length(&ipipes)) {
+            let inner_pipe_ref = vector::borrow_mut(&mut ipipes, i);
             let inner_pipe_id = weak_ref::id(inner_pipe_ref);
             weak_ref::clear(inner_pipe_ref);
             object::delete(inner_pipe_id);

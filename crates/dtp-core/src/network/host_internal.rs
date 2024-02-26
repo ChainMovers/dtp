@@ -26,10 +26,10 @@ pub struct HostMoveRaw {
     id: UID,
     flgs: u8,
     adm: SuiAddress,
-    con_req: u64,
-    con_sdd: u64,
-    con_del: u64,
-    con_rcy: u64,
+    conn_req: u64,
+    conn_sdd: u64,
+    conn_del: u64,
+    conn_rcy: u64,
     max_con: u16,
 }
 

@@ -29,7 +29,7 @@ pub(crate) async fn create_best_effort_transport_control_on_network(
     rpc: &SuiSDKParamsRPC,
     txn: &SuiSDKParamsTxn,
     localhost: &LocalhostInternal,
-    server_host: &HostInternal,
+    srv_host: &HostInternal,
     _server_protocol: u16,
     _server_port: Option<u16>,
     _return_port: Option<u16>,
@@ -39,14 +39,14 @@ pub(crate) async fn create_best_effort_transport_control_on_network(
         None => bail!(DTPError::DTPMissingSuiClient),
     };
 
-    let server_adm = match server_host.admin_address() {
+    let server_adm = match srv_host.admin_address() {
         Some(x) => x,
         None => bail!(DTPError::DTPMissingServerAdminAddress),
     };
 
     /* Params must match. See tranport_control.move
-       client_host: ID,
-       server_host: ID,
+       cli_host: ID,
+       srv_host: ID,
        server_adm: address,
        protocol: u16,
        port: u16,
@@ -55,7 +55,7 @@ pub(crate) async fn create_best_effort_transport_control_on_network(
 
     let call_args = vec![
         SuiJsonValue::from_object_id(localhost.object_id()),
-        SuiJsonValue::from_object_id(server_host.object_id()),
+        SuiJsonValue::from_object_id(srv_host.object_id()),
         SuiJsonValue::from_str(&server_adm.to_string()).unwrap(),
         SuiJsonValue::from_str("0").unwrap(),
         SuiJsonValue::from_str("0").unwrap(),
