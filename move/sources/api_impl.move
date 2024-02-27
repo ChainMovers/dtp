@@ -6,6 +6,9 @@ module dtp::api_impl {
     use dtp::host::{Host};
     use dtp::transport_control::{Self};
     use dtp::conn_objects::{Self,ConnObjects};
+    use dtp::transport_control::{TransportControl};
+    use dtp::pipe::{Pipe};
+    use dtp::inner_pipe::{Self,InnerPipe};
     use dtp::kvalues::{Self,KValues};
 
   // === Friends ===
@@ -52,6 +55,58 @@ module dtp::api_impl {
     //host::add_connection(srv_host, &conn.transport_control);
 
     (conn, kvalues::new())
+  }
+
+  // Can this be replaced with a an array of _ipipe objects instead of calling multiple times?
+  public(friend) fun close_ipipe(ipipe: InnerPipe, _pipe: &mut Pipe, _kvargs: &KValues, _ctx: &mut TxContext ) : KValues {
+    inner_pipe::delete(ipipe);
+    kvalues::new()
+  }
+
+  public(friend) fun close_pipe(_pipe: &mut Pipe, _tc: &mut TransportControl, _kvargs: &KValues, _ctx: &mut TxContext) : KValues {
+    kvalues::new()
+  }
+
+  public(friend) fun close_connection(_service_idx: u8, _host: &mut Host, _peer_host: &Host, _tc: &mut TransportControl, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  {
+    kvalues::new()
+  }
+
+  // Any end-point must perform the following two steps from time to time:
+  //  1) Call sync_ipipe() for every owned ipipe.
+  //  2) Call sync_pipe() for the owned pipe.
+  public(friend) fun fast_sync_ipipe(_ipipe: &mut InnerPipe, _pipe: &mut Pipe, _kvargs: &KValues, _ctx: &mut TxContext) : KValues
+  {
+    kvalues::new()
+  }
+
+  public(friend) fun slow_sync_pipe(_pipe: &mut Pipe, _tc: &mut TransportControl, _kvargs: &KValues, _ctx: &mut TxContext) : KValues
+  {
+    kvalues::new()
+  }
+
+  // Transmit a request toward the server.
+  //
+  // The encoding of the 'data' depends on the service.
+  public(friend) fun send_request(_service_idx: u8, _data: &vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  {
+    kvalues::new()
+  }
+
+  // Transmit a response toward the client.
+  //
+  // The encoding of the 'data' depends on the service.
+  public(friend) fun send_response(_service_idx: u8, _data: &vector<u8>, _seq_number: u64, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  {
+    kvalues::new()
+  }
+
+  // Transmit a notification toward the peer (no response expected).
+  //
+  // The encoding of the 'data' depends on the service.
+  public(friend) fun send_notification(_service_idx: u8, _data: &vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  {
+    kvalues::new()
   }
 
   // === Private Functions ===

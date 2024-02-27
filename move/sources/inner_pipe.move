@@ -18,6 +18,7 @@ module dtp::inner_pipe {
   // === Friends ===
     friend dtp::host;
     friend dtp::pipe;
+    friend dtp::api_impl;
 
     #[test_only]
     friend dtp::tests_pipe;
