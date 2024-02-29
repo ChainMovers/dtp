@@ -1,3 +1,4 @@
+
 module dtp::api {
 
   // === Imports ===
@@ -27,19 +28,18 @@ module dtp::api {
 
   // === Public-Friend Functions ===
 
-  // Functions to add services to an Host.
-  // Cannot change the signature. Can you change the implementation?
+  
+  // Create a new Host
+  //
+  // Returns the "Host Address", which serve a similar purpose as an "IP address".
+  public fun create_host( args: &vector<u8>, ctx: &mut TxContext) : (address, vector<u8>)
+  {
+    let kvargs = kvalues::from_bytes(args);
+    let (host_addr, kvalues) = dtp::api_impl::create_host(&kvargs,ctx);
+    (host_addr, kvalues::to_bytes(&kvalues))
+  }
 
-  // WebApp Old Contract 1  <--- Still working with Contract 2, just by changing the address of the contract.
-  //        New Contract 2
-  //
-  //
-  // public: more composeable
-  //         
-  // entry: Cannot be called by other packages.
-  //
-  // public entry: Callable from CLI, Explorer etc...
-  //
+  // Functions to add services to an Host.
   public fun add_service_ping(host: &mut Host, args: &vector<u8>, ctx: &mut TxContext) : vector<u8>
   {
     let kvargs = kvalues::from_bytes(args);
@@ -75,30 +75,30 @@ module dtp::api {
   // Transmit a request toward the server.
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_request(service_idx: u8, data: &vector<u8>, args: &vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_request(service_idx: u8, data: &vector<u8>, ipipe: &mut InnerPipe, args: &vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(args);
-    let ret_value = dtp::api_impl::send_request(service_idx, data, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_request(service_idx, data, ipipe, &kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 
   // Transmit a response toward the client.
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_response(service_idx: u8, data: &vector<u8>, seq_number: u64, args: &vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_response(service_idx: u8, data: &vector<u8>, seq_number: u64, ipipe: &mut InnerPipe, args: &vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(args);
-    let ret_value = dtp::api_impl::send_response(service_idx, data, seq_number, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_response(service_idx, data, seq_number, ipipe, &kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 
   // Transmit a notification toward the peer (no response expected).
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_notification(service_idx: u8, data: &vector<u8>, args: &vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_notification(service_idx: u8, data: &vector<u8>, ipipe: &mut InnerPipe, args: &vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(args);
-    let ret_value = dtp::api_impl::send_notification(service_idx, data, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_notification(service_idx, data, ipipe,&kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 

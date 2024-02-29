@@ -115,8 +115,8 @@ module dtp::transport_control {
             service_idx,
             cli_host: weak_ref::new_from_obj(cli_host),
             srv_host: weak_ref::new_from_obj(srv_host),
-            cli_addr: host::creator(cli_host),
-            srv_addr: host::creator(srv_host),
+            cli_addr: host::authority(cli_host),
+            srv_addr: host::authority(srv_host),
             cli_tx_pipe: weak_ref::new_empty(),
             srv_tx_pipe: weak_ref::new_empty()
         };
@@ -207,7 +207,7 @@ module dtp::transport_control {
                                    ctx: &mut TxContext )
     {
         // Sender must be the owner of the cli_host.    
-        assert!(host::is_caller_creator(cli_host, ctx), errors::EHostNotOwner());
+        assert!(host::is_caller_authority(cli_host, ctx), errors::ENotClientHostAuthority());
 
         // Create the TransportControl/Pipes/InnerPipes
         //

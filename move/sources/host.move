@@ -21,16 +21,15 @@ module dtp::host {
     //     dtp::transport_control
     //     dtp::pipe 
     //     dtp::inner_pipe
-
     use dtp::stats::{Self,ConnAcceptedStats, ConnRejectedStats, ConnClosedStats};
     use dtp::weak_ref::{Self,WeakRef};
     use dtp::consts::{Self};
     use dtp::kvalues::{KValues};
     
     //use dtp::errors::{Self};
-    
 
   // === Friends ===
+    friend dtp::api_impl;
     friend dtp::transport_control;    
 
     #[test_only]
@@ -69,7 +68,7 @@ module dtp::host {
     }
 
     struct HostConfig has copy, drop, store {
-        // Configurations that can be changed only by the AdminCap.
+        // Configurations that can be changed only by the admin authority.
 
         // Maximum number of connection allowed for the whole host.
         //
@@ -88,9 +87,12 @@ module dtp::host {
     struct Host has key, store {
         id: UID,
 
-        flgs: u8, // DTP version+esc flags always after UID.
-
-        creator: address,
+        // Admin authority has additional capability to modify this Host object.
+        //
+        // Initialized with the sender address in host::new().
+        //
+        // There is no plan to transfer authority.
+        authority: address,
 
         // Creation timestamp (UTC)
         // TODO
@@ -132,9 +134,8 @@ module dtp::host {
 
     public(friend) fun new(ctx: &mut TxContext) : Host {
         Host {
-            id: object::new(ctx),
-            flgs: 0,
-            creator: tx_context::sender(ctx),
+            id: object::new(ctx),            
+            authority: tx_context::sender(ctx),
             config: HostConfig {
                 max_con: consts::MAX_CONNECTION_PER_HOST(),
             },
@@ -168,12 +169,16 @@ module dtp::host {
       // TODO Update/replace when already in table.
     }
 
-    public(friend) fun creator(host: &Host): address {
-        host.creator
+    public(friend) fun get_address(self: &Host): address {
+        uid_to_address(&self.id)
     }
 
-    public(friend) fun is_caller_creator(host: &Host, ctx: &TxContext): bool {
-        tx_context::sender(ctx) == host.creator
+    public(friend) fun authority(host: &Host): address {
+        host.authority
+    }
+
+    public(friend) fun is_caller_authority(host: &Host, ctx: &TxContext): bool {
+        tx_context::sender(ctx) == host.authority
     }
 
   // === Private Functions ===
@@ -192,18 +197,18 @@ module dtp::test_host {
 
     #[test]
     fun test_instantiation() {
-        let creator = @0x1;
-        let scenario_val = test_scenario::begin(creator);
+        let authority = @0x1;
+        let scenario_val = test_scenario::begin(authority);
         let scenario = &mut scenario_val;
 
-        test_scenario::next_tx(scenario, creator);
+        test_scenario::next_tx(scenario, authority);
         {
             let ctx = test_scenario::ctx(scenario);
 
             let _new_host_ref = host::new_transfered( ctx );
         
-            // admnistrator address must be the creator.
-            //assert!(host::creator(&new_host) == creator, 1);            
+            // admnistrator address must be the authority.
+            //assert!(host::authority(&new_host) == authority, 1);            
         };
 
         test_scenario::end(scenario_val);

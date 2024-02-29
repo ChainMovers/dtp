@@ -3,13 +3,15 @@ module dtp::api_impl {
   // === Imports ===
     use sui::tx_context::{TxContext};
 
-    use dtp::host::{Host};
+    use dtp::host::{Self,Host};
     use dtp::transport_control::{Self};
     use dtp::conn_objects::{Self,ConnObjects};
     use dtp::transport_control::{TransportControl};
     use dtp::pipe::{Pipe};
     use dtp::inner_pipe::{Self,InnerPipe};
     use dtp::kvalues::{Self,KValues};
+
+    use dtp::weak_ref::{Self};
 
   // === Friends ===
     friend dtp::api;
@@ -28,10 +30,17 @@ module dtp::api_impl {
 
   // === Public-Friend Functions ===
 
-  
+  // Functions to add services to an Host.
+  public(friend) fun create_host(_kvargs: &KValues, ctx: &mut TxContext) : (address, KValues)
+  {
+    let host_ref = host::new_transfered(ctx);
+    (weak_ref::get_address(&host_ref), kvalues::new())
+  }
+
   // Functions to add services to an Host.
   public(friend) fun add_service_ping(_host: &mut Host, _kvargs: &KValues, _ctx: &mut TxContext) : KValues
   {
+
     kvalues::new()
   }
 
@@ -88,7 +97,7 @@ module dtp::api_impl {
   // Transmit a request toward the server.
   //
   // The encoding of the 'data' depends on the service.
-  public(friend) fun send_request(_service_idx: u8, _data: &vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  public(friend) fun send_request(_service_idx: u8, _data: &vector<u8>, _ipipe: &InnerPipe, _kvargs: &KValues, _ctx: &mut TxContext): KValues
   {
     kvalues::new()
   }
@@ -96,7 +105,7 @@ module dtp::api_impl {
   // Transmit a response toward the client.
   //
   // The encoding of the 'data' depends on the service.
-  public(friend) fun send_response(_service_idx: u8, _data: &vector<u8>, _seq_number: u64, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  public(friend) fun send_response(_service_idx: u8, _data: &vector<u8>, _seq_number: u64, _ipipe: &InnerPipe, _kvargs: &KValues, _ctx: &mut TxContext): KValues
   {
     kvalues::new()
   }
@@ -104,7 +113,7 @@ module dtp::api_impl {
   // Transmit a notification toward the peer (no response expected).
   //
   // The encoding of the 'data' depends on the service.
-  public(friend) fun send_notification(_service_idx: u8, _data: &vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  public(friend) fun send_notification(_service_idx: u8, _data: &vector<u8>, _ipipe: &InnerPipe, _kvargs: &KValues, _ctx: &mut TxContext): KValues
   {
     kvalues::new()
   }

@@ -15,8 +15,7 @@ module dtp::kvalues {
 
   // === Structs ===
 
-    // TODO Consider BCS + typescript and rust codec (helpers).
-    // TODO Consider TLV bytes encoding --> {type: u8, length: u8, vector<u8>}    
+    // TODO Implement BCS + typescript and rust codec (helpers).
     struct KValues has copy, store, drop {
       keys_bool: vector<String>,
 
@@ -57,6 +56,7 @@ module dtp::kvalues {
     }
 
     public fun get_bool( self: &KValues, key: &String ): bool {
+      // Linear search, acceptable assuming small number of keys.
       let i: u64 = 0;
       let ret_value = false;
       let length = vector::length( &self.keys_bool );
@@ -71,6 +71,7 @@ module dtp::kvalues {
     }
 
     public fun get_u64( self: &KValues, key: &String ): Option<u64> {
+      // Linear search, acceptable assuming small number of keys.
       let i: u64 = 0;
       let ret_value = option::none<u64>();
       let length = vector::length( &self.keys_u64 );
@@ -78,6 +79,22 @@ module dtp::kvalues {
         if (vector::borrow<String>(&self.keys_u64, i) == key) {
           let value = vector::borrow<u64>(&self.values_u64, i);
           ret_value = option::some<u64>(*value);
+          break
+        };
+        i = i + 1;
+      };
+      ret_value
+    }
+
+    public fun get_str( self: &KValues, key: &String ): Option<String> {
+      // Linear search, acceptable assuming small number of keys.
+      let i: u64 = 0;
+      let ret_value = option::none<String>();
+      let length = vector::length( &self.keys_str );
+      while (i < length) {
+        if (vector::borrow<String>(&self.values_str, i) == key) {
+          let value = vector::borrow<String>(&self.values_str, i);
+          ret_value = option::some<String>(*value);
           break
         };
         i = i + 1;
