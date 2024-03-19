@@ -40,7 +40,6 @@ module dtp::api_impl {
   // Functions to add services to an Host.
   public(friend) fun add_service_ping(_host: &mut Host, _kvargs: &KValues, _ctx: &mut TxContext) : KValues
   {
-
     kvalues::new()
   }
 
@@ -52,7 +51,7 @@ module dtp::api_impl {
   
 
   // Returns IDs of objects needed to start exchanging data (TransportControl, Pipes, InnerPipes...).  
-  public(friend) fun open_connection(service_idx: u8, cli_host: &mut Host, srv_host: &mut Host, _kvargs: &KValues, ctx: &mut TxContext): (ConnObjects, KValues)
+  public(friend) fun open_connection(service_idx: u8, cli_host: &mut Host, srv_host: &mut Host, _kvargs: &KValues, ctx: &mut TxContext): KValues
   {
     let conn = conn_objects::new();
 
@@ -63,7 +62,7 @@ module dtp::api_impl {
     //host::add_connection(cli_host, &conn.transport_control);
     //host::add_connection(srv_host, &conn.transport_control);
 
-    (conn, kvalues::new())
+    kvalues::new()
   }
 
   // Can this be replaced with a an array of _ipipe objects instead of calling multiple times?

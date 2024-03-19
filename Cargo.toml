@@ -16,29 +16,18 @@ documentation = "https://docs.dtp.dev"
 default-run = "dtp-server"
 
 [workspace.dependencies]
-# By default, DTP is built using a local repo of Sui (devnet branch).
+# DTP uses Suibase for both development and production.
 #
-# This make sure that your localnet, DTP and your app are all 
-# built and tested using the *same* binaries, saving you from chasing
-# unnecessary problems of unmatching versions.
+# This allows to keep multiple SDKs, dependencies and binaries in-sync.
 #
-# The local version is initialized by the script:
-#   dtp/script/init-localnet
+# After installing Suibase, type "dtp start" to enable and start the DTP services daemon.
 #
-# The development environment is further explained here:
+# The DTP SDK is built using the Suibase active workdir.
 #
-#  https://github.com/mario4tier/dtp/tree/main/script
+# As an example, if you did "mainnet set-active", the SDK will be built to be version compatible with mainnet
+# (most of the time, this version will also work with devnet/testnet).
 #
-# This is all initialized by a single bash script:
-#    dtp/script/init-localnet
-#
-# A re-initialization and a single local copy of everything local is a
-# bit "old-school", but it works *SOLID* and keeps your edit/debug cycles
-# fast.
-#
-# If you are not comfortable with this way of doing and
-# prefer to have the "typical" rust way then comment out
-# the "path" dependencies and un-comment out the "git" ones.
+# If you want to build to maximize testnet compatibility, you can do "testnet set-active" first and rebuild your Rust app.
 sui-sdk = { path = "../dtp-dev/sui-devnet-branch/crates/sui-sdk/" }
 sui-json-rpc-types = { path = "../dtp-dev/sui-devnet-branch/crates/sui-json-rpc-types/" }
 sui-keys = { path = "../dtp-dev/sui-devnet-branch/crates/sui-keys/" }

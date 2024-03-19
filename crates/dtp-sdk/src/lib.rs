@@ -18,9 +18,7 @@
 // There is a one-to-one relationship between a Sui client address
 // and a DTP instance.
 //
-// Sui SDK and DTP SDK can co-exist and be used indepedently.
-//
-//
+// Sui SDK and DTP SDK can co-exist and be used independently.
 
 use anyhow::bail;
 use dtp_core::{
@@ -127,10 +125,10 @@ impl DTP {
     //
     // Create a new DTP Host on the Sui network.
     //
-    // The Host shared objects created on the network are retreiveable
+    // The Host shared objects created on the network are retrievable
     // as a read-only DTP::Host by everyone with get_host_by_id()
     //
-    // To edit/modify the Host shared object, the DTP appplication
+    // To edit/modify the Host shared object, the DTP application
     // must have the administrator capability for it. Any DTP
     // application with the same client address and keystore as
     // the creator of the DTP Host object has such capability.

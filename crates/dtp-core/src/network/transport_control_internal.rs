@@ -44,7 +44,7 @@ pub(crate) async fn create_best_effort_transport_control_on_network(
         None => bail!(DTPError::DTPMissingServerAdminAddress),
     };
 
-    /* Params must match. See tranport_control.move
+    /* Params must match. See transport_control.move
        cli_host: ID,
        srv_host: ID,
        server_adm: address,

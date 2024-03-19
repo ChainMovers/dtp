@@ -216,6 +216,7 @@ module dtp::transport_control {
         // refuse the request (which is relatively nice since it save the 
         // client some storage fee by allowing to delete the object created).
         //
+        // Temproary remove for testing.
         let tc = dtp::transport_control::new(service_idx, cli_host, srv_host, conn, ctx);
         conn_objects::set_tc(conn, object::id_to_address( object::borrow_id<TransportControl>(&tc) ));
 

@@ -10,12 +10,12 @@
 module dtp::host {
 
   // === Imports ===
-    use sui::object::{Self, UID, ID, uid_to_address};
-    use sui::table::{Self,Table};
-        
+    use std::vector;
+
+    use sui::object::{Self, UID, uid_to_address};
+    use sui::table::{Self,Table};        
     use sui::transfer::{Self};
     use sui::tx_context::{Self,TxContext};
-    use sui::linked_table::{Self,LinkedTable};
 
     // To avoid circular reference, this Host module *must* not use: 
     //     dtp::transport_control
@@ -46,11 +46,14 @@ module dtp::host {
 
     // Public Shared  Object
     struct Connection has copy, drop, store {      
-      tx: WeakRef, // Reference on the TransportControl (for slow discovery).
+      tc: WeakRef, // Reference on the TransportControl (for slow discovery).
     }
 
     struct Service has store {
-        service_idx: u8,
+        service_id: u8,  // [0..255] Unique identifier for each Service instance of this Host.        
+        service_type: u8, // [1..253] ( See service_type.move )
+
+        fee_per_request: u64,
 
         // Each connection requested increments one member of either conn_accepted or conn_rejected.
         conn_accepted: ConnAcceptedStats,
@@ -60,11 +63,13 @@ module dtp::host {
         // container or an increment of one member of conn_closed.
         conn_closed: ConnClosedStats,
         
-        // Active connections 
-        conns: LinkedTable<ID,Connection>,
+        // Active connections (
+        // TODO: Replace with a LinkedList... think BCS issues here.
+        conns: vector<Connection>,
 
         // Recently closed connections (for debug purpose).
-        conns_recent_closed: LinkedTable<ID,Connection>,
+        // TODO: Replace with a LinkedList... think BCS issues here.
+        conns_recent_closed: vector<Connection>,
     }
 
     struct HostConfig has copy, drop, store {
@@ -81,7 +86,6 @@ module dtp::host {
         // The protocol will progressively close LRU connections until eventual
         // respect the new limit.        
         max_con: u32,
-
     }
 
     struct Host has key, store {
@@ -109,18 +113,15 @@ module dtp::host {
         // Last Protocol Sync timestamp (UTC) - For debugging purpose.
         // TODO
 
-        // Settings controlled by AdminCap.
+        // Settings controlled by Admin authority.
         config: HostConfig, 
 
         // Aggregated connections statistic (updated periodically).
         // TODO
 
-        // Service Level Agreements
-        // TODO
-
-        // Services provided by this Host.
-        //   key is a service idx [1..253] ( See service_type.move )        
-        services: Table<u8, Service>,
+        // Service Level Agreements provided by this Host.
+        // TODO: Replace with a Table<u8,Service>... think BCS issues here.
+        services: vector<Service>,
     }
 
 
@@ -139,7 +140,8 @@ module dtp::host {
             config: HostConfig {
                 max_con: consts::MAX_CONNECTION_PER_HOST(),
             },
-            services: table::new(ctx),
+            //services: table::new(ctx),
+            services: vector::empty<Service>(),
         }
     }
 
@@ -152,19 +154,29 @@ module dtp::host {
       new_obj_ref
     }
 
-    public(friend) fun upsert_service(self: &mut Host, service_idx: u8, _args: &KValues, ctx: &mut TxContext )
+    public(friend) fun upsert_service(self: &mut Host, service_id: u8, service_type: u8, _args: &KValues, ctx: &mut TxContext )
     {     
-      if (!table::contains(&self.services, service_idx )) {
+      /*if (!table::contains(&self.services, service_idx )) {
         //assert!(table::contains(&self.services, service_idx) == false, 1);
         table::add(&mut self.services, service_idx, Service{
           service_idx: service_idx,
           conn_accepted: stats::new_conn_accepted_stats(),
           conn_rejected: stats::new_conn_rejected_stats(),
           conn_closed: stats::new_conn_closed_stats(),
-          conns: linked_table::new(ctx),
-          conns_recent_closed: linked_table::new(ctx),
+          conns: vector::empty<Connection>(),
+          conns_recent_closed: vector::empty<Connection>(),
+        });*/
+        // TODO real upsert... for now just append.
+        vector::push_back(&mut self.services, Service{
+          service_id: service_id,
+          service_type: service_type,          
+          fee_per_request: 0,
+          conn_accepted: stats::new_conn_accepted_stats(),
+          conn_rejected: stats::new_conn_rejected_stats(),
+          conn_closed: stats::new_conn_closed_stats(),
+          conns: vector::empty<Connection>(),
+          conns_recent_closed: vector::empty<Connection>(),
         });
-      }
 
       // TODO Update/replace when already in table.
     }

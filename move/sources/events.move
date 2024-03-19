@@ -15,9 +15,9 @@ module dtp::events {
   // === Constants ===
 
   // === Structs ===
-    struct ConReq has copy, drop {
-        service_idx: u8, // Service Type
-        conn: ConnObjects, // All Connection Objects (TransportControl, Pipe etc...)       
+    struct ConnReq has copy, drop {
+        service_idx: u8, // Service Type        
+        conn: ConnObjects, // Info to get the connection started (e.g. Pipes and InnerPipes addresses).
     }
 
 
@@ -29,7 +29,7 @@ module dtp::events {
 
   // === Public-Friend Functions ===
   public(friend) fun emit_conn_req( service_idx: u8, conn: ConnObjects ) {
-    event::emit(ConReq { service_idx, conn });
+    event::emit(ConnReq { service_idx, conn });
   }
 
   // === Private Functions ===

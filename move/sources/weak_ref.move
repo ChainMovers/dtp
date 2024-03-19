@@ -46,9 +46,10 @@ module dtp::weak_ref {
       //
       //     Bit1  Bit0
       //     ==========
-      //       0    0   Reference was not initialized
-      //       0    1   Reference was initialized, but object does not exist (likely deleted).
-      //       1    X   Reference is considered valid and object is last known to exist.
+      //       0    0   Reference is not initialized
+      //       0    1   Reference was initialized, but object is last known to not exist anymore.
+      //       1    0   Reference is considered valid and object is last known to exist.
+      //       1    1   Reserved for future
       //
       //   The highest 6 bits [Bit8..Bit3] can mean anything the user wants.
       //   See set_flags_user() and get_flags_user().

@@ -82,6 +82,7 @@ module dtp::pipe {
             } else {
                 conn_objects::add_srv_tx_ipipe(conn, ipipe_addr);
             };
+            i = i + 1;            
         };
 
         transfer::transfer(new_pipe, recipient);
