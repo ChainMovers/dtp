@@ -35,11 +35,10 @@ module dtp::pipe {
     struct Pipe has key {
         id: UID,
         flgs: u8, // DTP version+esc flags always after UID.
-
+        service_idx: u8,
+        tc_ref: WeakRef, // TransportControl
+        ipipe_refs: vector<WeakRef>, // InnerPipe(s)
         sync_data: PipeSyncData, // Merged of all InnerPipe sync_data.
-
-        tc: WeakRef, // TransportControl
-        ipipes: vector<WeakRef>, // InnerPipe(s)
     }
 
   // === Public-Mutative Functions ===
@@ -50,15 +49,16 @@ module dtp::pipe {
 
   // === Public-Friend Functions ===
 
-    public(friend) fun new_transfered( tc: &ID, ipipe_count: u8, recipient: address, is_cli_tx_pipe: bool, conn: &mut ConnObjects, ctx: &mut TxContext ): WeakRef {
+    public(friend) fun new_transfered( service_idx: u8, tc_id: &ID, ipipe_count: u8, recipient: address, is_cli_tx_pipe: bool, conn: &mut ConnObjects, ctx: &mut TxContext ): address {
         assert!(ipipe_count > 0, errors::EInvalidPipeCount());
 
         let new_pipe = Pipe {
             id: object::new(ctx),
-            flgs: 0,            
+            flgs: 0,
+            service_idx,
+            tc_ref: weak_ref::new(tc_id),
+            ipipe_refs: vector::empty(),
             sync_data: pipe_sync_data::new(),
-            tc: weak_ref::new(tc),
-            ipipes: vector::empty(),
         };
 
         let pipe_addr = uid_to_address(&new_pipe.id);
@@ -71,23 +71,23 @@ module dtp::pipe {
         // Create InnerPipes.
         let i: u8 = 0;
         while (i < ipipe_count) {
-            let ipipe_ref = inner_pipe::new_transfered(&pipe_addr, recipient, ctx);
-            let ipipe_addr = weak_ref::get_address(&ipipe_ref);
+            let ipipe_addr = inner_pipe::new_transfered(service_idx, tc_id, pipe_addr, recipient, ctx);
 
             // Save WeakRef in the Pipe object (for slow discovery), and the addresses in 
             // the ConnObjects (to be return/emitted to the end-points).
-            vector::push_back(&mut new_pipe.ipipes, ipipe_ref);
             if (is_cli_tx_pipe) {
                 conn_objects::add_cli_tx_ipipe(conn, ipipe_addr);
             } else {
                 conn_objects::add_srv_tx_ipipe(conn, ipipe_addr);
             };
+            let ipipe_ref = weak_ref::new_from_address(ipipe_addr);
+            vector::push_back(&mut new_pipe.ipipe_refs, ipipe_ref);
             i = i + 1;            
         };
 
         transfer::transfer(new_pipe, recipient);
 
-        weak_ref::new_from_address(pipe_addr)
+        pipe_addr
     }
 
 /* TODO

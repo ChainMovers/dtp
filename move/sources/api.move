@@ -10,8 +10,6 @@ module dtp::api {
     use dtp::pipe::{Pipe};
     use dtp::inner_pipe::{InnerPipe};
 
-    use dtp::conn_objects::{ConnObjects};
-
   // === Friends ===
 
   // === Errors ===
@@ -76,30 +74,30 @@ module dtp::api {
   // Transmit a request toward the server.
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_request(service_idx: u8, data: &vector<u8>, ipipe: &mut InnerPipe, args: vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_request(ipipe: &mut InnerPipe, data: vector<u8>, args: vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(&args);
-    let ret_value = dtp::api_impl::send_request(service_idx, data, ipipe, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_request(ipipe, data, &kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 
   // Transmit a response toward the client.
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_response(service_idx: u8, data: &vector<u8>, seq_number: u64, ipipe: &mut InnerPipe, args: vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_response( ipipe: &mut InnerPipe, seq_num: u64, data: vector<u8>, args: vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(&args);
-    let ret_value = dtp::api_impl::send_response(service_idx, data, seq_number, ipipe, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_response(ipipe, seq_num, data, &kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 
   // Transmit a notification toward the peer (no response expected).
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_notification(service_idx: u8, data: &vector<u8>, ipipe: &mut InnerPipe, args: vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_notification(ipipe: &mut InnerPipe, data: &vector<u8>, args: vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(&args);
-    let ret_value = dtp::api_impl::send_notification(service_idx, data, ipipe,&kvargs, ctx);
+    let ret_value = dtp::api_impl::send_notification( ipipe, data,&kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 

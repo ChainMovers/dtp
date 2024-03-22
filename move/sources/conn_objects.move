@@ -21,6 +21,8 @@ module dtp::conn_objects {
       // If an end-point loose these references, they can be
       // re-discovered using one of the related Host object.
       tc: address, // TransportControl
+      cli_auth: address,
+      srv_auth: address,
       cli_tx_pipe: address,
       srv_tx_pipe: address,
       cli_tx_ipipes: vector<address>,
@@ -37,6 +39,8 @@ module dtp::conn_objects {
     public(friend) fun new(): ConnObjects {
         ConnObjects{
             tc: @0x0,
+            cli_auth: @0x0,
+            srv_auth: @0x0,
             cli_tx_pipe: @0x0,
             srv_tx_pipe: @0x0,
             cli_tx_ipipes: vector::empty(),
@@ -46,6 +50,26 @@ module dtp::conn_objects {
 
     public(friend) fun set_tc(self: &mut ConnObjects, tc: address) {
         self.tc = tc;
+    }
+
+    public(friend) fun get_tc_address(self: &ConnObjects): address {
+        self.tc
+    }
+
+    public(friend) fun set_cli_auth(self: &mut ConnObjects, cli_auth: address) {
+        self.cli_auth = cli_auth;
+    }
+
+    public(friend) fun get_cli_auth_address(self: &ConnObjects): address {
+        self.cli_auth
+    }
+
+    public(friend) fun set_srv_auth(self: &mut ConnObjects, srv_auth: address) {
+        self.srv_auth = srv_auth;
+    }
+
+    public(friend) fun get_srv_auth_address(self: &ConnObjects): address {
+        self.srv_auth
     }
 
     public(friend) fun set_cli_tx_pipe(self: &mut ConnObjects, cli_tx_pipe: address) {

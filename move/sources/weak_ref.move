@@ -32,6 +32,7 @@ module dtp::weak_ref {
     friend dtp::inner_pipe;
     friend dtp::host;
     friend dtp::api_impl;
+    friend dtp::events;
 
   // === Errors ===
 

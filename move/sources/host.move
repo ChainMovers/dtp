@@ -145,7 +145,7 @@ module dtp::host {
         }
     }
 
-    #[allow(lint(share_owned))]
+    //#[allow(lint(share_owned))]
     public(friend) fun new_transfered( ctx: &mut TxContext ): WeakRef 
     {
       let new_obj = dtp::host::new(ctx);
@@ -154,7 +154,7 @@ module dtp::host {
       new_obj_ref
     }
 
-    public(friend) fun upsert_service(self: &mut Host, service_id: u8, service_type: u8, _args: &KValues, ctx: &mut TxContext )
+    public(friend) fun upsert_service(self: &mut Host, service_id: u8, service_type: u8, _args: &KValues, _ctx: &mut TxContext )
     {     
       /*if (!table::contains(&self.services, service_idx )) {
         //assert!(table::contains(&self.services, service_idx) == false, 1);
@@ -185,13 +185,18 @@ module dtp::host {
         uid_to_address(&self.id)
     }
 
-    public(friend) fun authority(host: &Host): address {
-        host.authority
+    public(friend) fun authority(self: &Host): address {
+        self.authority
     }
 
-    public(friend) fun is_caller_authority(host: &Host, ctx: &TxContext): bool {
-        tx_context::sender(ctx) == host.authority
+    public(friend) fun is_caller_authority(self: &Host, ctx: &TxContext): bool {
+        tx_context::sender(ctx) == self.authority
     }
+
+    public(friend) fun add_connection(_self: &mut Host, _tc_ref: WeakRef ) {
+        // TODO Keep track of connections for slow discovery.
+    }
+
 
   // === Private Functions ===
 

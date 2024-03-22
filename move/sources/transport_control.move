@@ -122,14 +122,22 @@ module dtp::transport_control {
         };
 
         // Initialize the Weak references (for slow discovery).
-        tc.cli_tx_pipe = dtp::pipe::new_transfered(object::borrow_id<TransportControl>(&tc), 
+        let cli_tx_pipe_addr = dtp::pipe::new_transfered(service_idx, 
+                                                    object::borrow_id<TransportControl>(&tc), 
                                                     2, tc.cli_addr, true, conn, ctx);
-        tc.srv_tx_pipe =  dtp::pipe::new_transfered(object::borrow_id<TransportControl>(&tc),
-                                                    2, tc.srv_addr, false, conn, ctx);
         
-        // Update the ConnObjects (returned to the end-points when a connection is completed).
-        conn_objects::set_cli_tx_pipe(conn, weak_ref::get_address(&tc.cli_tx_pipe));
-        conn_objects::set_srv_tx_pipe(conn, weak_ref::get_address(&tc.srv_tx_pipe));
+        let srv_tx_pipe_addr = dtp::pipe::new_transfered(service_idx, 
+                                                        object::borrow_id<TransportControl>(&tc),
+                                                        2, tc.srv_addr, false, conn, ctx );
+
+        // Update the ConnObjects (observed by the end-points when a connection is initiated).
+        conn_objects::set_cli_tx_pipe(conn, cli_tx_pipe_addr);
+        conn_objects::set_srv_tx_pipe(conn, srv_tx_pipe_addr);                
+        conn_objects::set_cli_auth(conn, host::authority(cli_host));
+        conn_objects::set_srv_auth(conn, host::authority(srv_host));
+
+        tc.cli_tx_pipe = weak_ref::new_from_address(cli_tx_pipe_addr);                                            
+        tc.srv_tx_pipe = weak_ref::new_from_address(srv_tx_pipe_addr);                                        
 
         tc
     }
@@ -199,7 +207,7 @@ module dtp::transport_control {
     //    - cli_tx_ipipe: First InnerPipe used by client to TX to server.
     //    - server_tx_ipipe: First InnerPipe used by server to TX to client.
 
-    #[allow(lint(share_owned))]
+    //#[allow(lint(share_owned))]
     public fun create_best_effort( service_idx: u8,
                                    cli_host: &mut Host,
                                    srv_host: &Host,
@@ -221,8 +229,9 @@ module dtp::transport_control {
         conn_objects::set_tc(conn, object::id_to_address( object::borrow_id<TransportControl>(&tc) ));
 
         // Emit the "Connection Request" Move event.
-        // The server will see the sender address therefore will know the TC and plenty of info!        
-        dtp::events::emit_conn_req( service_idx, *conn );
+        // "src_addr" helps events consumer to filter for this srv_host.
+        let src_addr = host::get_address(srv_host);
+        dtp::events::emit_conn_req( src_addr, service_idx, *conn );
         transfer::share_object(tc);
 
         // TODO Add the TC address to the Client Host object registry (for slow discovery).        

@@ -5,11 +5,12 @@ module dtp::api_impl {
 
     use dtp::host::{Self,Host};
     use dtp::transport_control::{Self};
-    use dtp::conn_objects::{Self,ConnObjects};
+    use dtp::conn_objects::{Self};
     use dtp::transport_control::{TransportControl};
     use dtp::pipe::{Pipe};
     use dtp::inner_pipe::{Self,InnerPipe};
     use dtp::kvalues::{Self,KValues};
+    use dtp::events::{Self};
 
     use dtp::weak_ref::{Self};
 
@@ -58,9 +59,9 @@ module dtp::api_impl {
     // Create the connection. Will emit an event on success
     transport_control::create_best_effort(service_idx, cli_host, srv_host, &mut conn, ctx);
 
-    // TODO Add references in Host object for slow discovery.
-    //host::add_connection(cli_host, &conn.transport_control);
-    //host::add_connection(srv_host, &conn.transport_control);
+    // Add weak references in Host objects for slow discovery.
+    host::add_connection(cli_host, weak_ref::new_from_address(conn_objects::get_tc_address(&conn)));
+    host::add_connection(srv_host, weak_ref::new_from_address(conn_objects::get_tc_address(&conn)));
 
     kvalues::new()
   }
@@ -96,23 +97,43 @@ module dtp::api_impl {
   // Transmit a request toward the server.
   //
   // The encoding of the 'data' depends on the service.
-  public(friend) fun send_request(_service_idx: u8, _data: &vector<u8>, _ipipe: &InnerPipe, _kvargs: &KValues, _ctx: &mut TxContext): KValues
-  {
+  public(friend) fun send_request(ipipe: &mut InnerPipe, data: vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  {    
+    let seq_num = inner_pipe::inc_seq_num(ipipe);
+
+    // Emit a request event.
+    let ipipe_ref = weak_ref::new_from_obj(ipipe);
+    let tc_ref = inner_pipe::get_tc_ref(ipipe);
+    let service_idx = inner_pipe::get_service_idx(ipipe);    
+    events::emit_request(service_idx, seq_num, tc_ref, ipipe_ref, data);
+
+    // Update stats for debugging.
+    inner_pipe::inc_emit_cnt(ipipe);
+
     kvalues::new()
   }
 
   // Transmit a response toward the client.
   //
   // The encoding of the 'data' depends on the service.
-  public(friend) fun send_response(_service_idx: u8, _data: &vector<u8>, _seq_number: u64, _ipipe: &InnerPipe, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  public(friend) fun send_response(ipipe: &mut InnerPipe, seq_num: u64, data: vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
   {
+    // Emit a response event.   
+    let ipipe_ref = weak_ref::new_from_obj(ipipe);    
+    let tc_ref = inner_pipe::get_tc_ref(ipipe);
+    let service_idx = inner_pipe::get_service_idx(ipipe);
+    events::emit_response(service_idx, seq_num, tc_ref, ipipe_ref, data);
+
+    // Update stats for debugging.
+    inner_pipe::inc_emit_cnt(ipipe);
+
     kvalues::new()
   }
 
   // Transmit a notification toward the peer (no response expected).
   //
   // The encoding of the 'data' depends on the service.
-  public(friend) fun send_notification(_service_idx: u8, _data: &vector<u8>, _ipipe: &InnerPipe, _kvargs: &KValues, _ctx: &mut TxContext): KValues
+  public(friend) fun send_notification(_ipipe: &InnerPipe, _data: &vector<u8>, _kvargs: &KValues, _ctx: &mut TxContext): KValues
   {
     kvalues::new()
   }
