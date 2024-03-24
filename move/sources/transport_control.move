@@ -21,8 +21,6 @@ module dtp::transport_control {
     //    ================ Tests =====================
     //    Unit Tests
 
-    use std::option::{Option};
-
     use sui::object::{Self, UID};
     use sui::tx_context::{TxContext};
     
@@ -32,6 +30,7 @@ module dtp::transport_control {
     use dtp::errors::{Self};
     use dtp::weak_ref::{Self,WeakRef};
     use dtp::host::{Self,Host};
+    use dtp::pipe::{Self,Pipe};
     use dtp::conn_objects::{Self,ConnObjects};
 
     #[test_only]
@@ -121,14 +120,18 @@ module dtp::transport_control {
             srv_tx_pipe: weak_ref::new_empty()
         };
 
-        // Initialize the Weak references (for slow discovery).
-        let cli_tx_pipe_addr = dtp::pipe::new_transfered(service_idx, 
-                                                    object::borrow_id<TransportControl>(&tc), 
-                                                    2, tc.cli_addr, true, conn, ctx);
         
-        let srv_tx_pipe_addr = dtp::pipe::new_transfered(service_idx, 
-                                                        object::borrow_id<TransportControl>(&tc),
-                                                        2, tc.srv_addr, false, conn, ctx );
+        let cli_id = object::borrow_id<Host>(cli_host);
+        let srv_id = object::borrow_id<Host>(srv_host);
+        // Initialize the Weak references (for slow discovery).
+        let (cli_tx_pipe, srv_tx_pipe) = dtp::pipe::new_pipes(service_idx, cli_id, srv_id,
+                                                    object::borrow_id<TransportControl>(&tc), 
+                                                    2,
+                                                    tc.cli_addr, tc.srv_addr, 
+                                                    conn, ctx);
+
+        let cli_tx_pipe_addr = object::id_to_address( object::borrow_id<Pipe>(&cli_tx_pipe) );
+        let srv_tx_pipe_addr = object::id_to_address( object::borrow_id<Pipe>(&srv_tx_pipe) );
 
         // Update the ConnObjects (observed by the end-points when a connection is initiated).
         conn_objects::set_cli_tx_pipe(conn, cli_tx_pipe_addr);
@@ -138,6 +141,9 @@ module dtp::transport_control {
 
         tc.cli_tx_pipe = weak_ref::new_from_address(cli_tx_pipe_addr);                                            
         tc.srv_tx_pipe = weak_ref::new_from_address(srv_tx_pipe_addr);                                        
+
+        pipe::transfer( cli_tx_pipe, tc.cli_addr);
+        pipe::transfer(srv_tx_pipe, tc.srv_addr);
 
         tc
     }
@@ -150,7 +156,6 @@ module dtp::transport_control {
           cli_addr: _, srv_addr: _,
           cli_tx_pipe: _, srv_tx_pipe: _,          
         } = self;
-
 
         object::delete(id);
     }    

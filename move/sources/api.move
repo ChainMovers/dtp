@@ -74,20 +74,20 @@ module dtp::api {
   // Transmit a request toward the server.
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_request(ipipe: &mut InnerPipe, data: vector<u8>, args: vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_request(ipipe: &mut InnerPipe, data: vector<u8>, cid: u64, args: vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(&args);
-    let ret_value = dtp::api_impl::send_request(ipipe, data, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_request(ipipe, data, cid, &kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 
   // Transmit a response toward the client.
   //
   // The encoding of the 'data' depends on the service.
-  public fun send_response( ipipe: &mut InnerPipe, seq_num: u64, data: vector<u8>, args: vector<u8>, ctx: &mut TxContext): vector<u8>
+  public fun send_response( ipipe: &mut InnerPipe, req_ipipe_idx: u8, req_seq_num: u64, data: vector<u8>, cid: u64, args: vector<u8>, ctx: &mut TxContext): vector<u8>
   {
     let kvargs = kvalues::from_bytes(&args);
-    let ret_value = dtp::api_impl::send_response(ipipe, seq_num, data, &kvargs, ctx);
+    let ret_value = dtp::api_impl::send_response(ipipe, req_ipipe_idx, req_seq_num, data, cid, &kvargs, ctx);
     kvalues::to_bytes(&ret_value)
   }
 
