@@ -115,19 +115,7 @@ tagline: ""
 <b> Why Sui and not blockchain 'x' ?</b><br>
 SUI has good finality latency stability (low jitter) and network scalability (maintains per connection throughput regardless of total load).<br>
 
-Sui provides two type of processing:
-
-<p>
-<ul style="padding-left: 40px;">
-  <li>Fast path transactions with sub-second finality for data plane transfer (See 'partial ordering' illustration). This facilitate async/parallel/scalable transmission.</li>
-
-  <li>Narwhal/Bullshark consensus with 2-3 seconds finality used for slower control plane synchronization, like connection creations, services and firewall reconfiguration etc...
-  </li>
-</ul>
-</p>
-
-
-With its flexible dual-type transactions, Sui makes practical implementing the typical data + control plane design found in IP networks ( [Cloudflare explains it well](https://www.cloudflare.com/learning/network-layer/what-is-the-control-plane/) ).
+With its flexible dual-type transactions (Fast Path & Consensus), Sui makes practical implementing the typical data + control plane design found in IP networks ( [Cloudflare explains it well](https://www.cloudflare.com/learning/network-layer/what-is-the-control-plane/) ).
  
 See [How Sui Differs from Other Blockchains?](https://docs.sui.io)
 
