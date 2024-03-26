@@ -19,3 +19,7 @@ Protect or enhance your off-chain backends with:
 DTP/Sui is well suited for most hybrid dApps.
 
 More info:  https://dtp.dev
+
+Important: You will find here only the Move code. The Rust Daemon + SDK code is
+           integrated in Suibase.io. See:
+           https://github.com/ChainMovers/suibase/tree/main/rust/suibase/crates
